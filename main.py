@@ -46,12 +46,12 @@ if useFront == False:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Team8_Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Team8_Cancer_ML\HNSCC\Patient and Treatment Characteristics.csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\METABRIC_RNA_Mutation\METABRIC_RNA_Mutation.csv"
     sec_data = ""
     test_file = "test_2.csv"
 
     # list with strings or a single string may be inputted
-    target_variables = "Received Concurrent Chemoradiotherapy?"
+    target_variables = "chemotherapy"
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -75,7 +75,7 @@ if useFront == False:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = True
+    run_img_model = False
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -88,7 +88,7 @@ if useFront == False:
     img_id_name_loc = (3,6)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
-    ID_dataset_col = "TCIA ID"
+    ID_dataset_col = "patient_id"
 
     # tuple with dimension of imagery. All images must equal this dimension
     img_dimensions = (512, 512)
@@ -109,10 +109,10 @@ if useFront == False:
     dcmDirect = True
 
     # number of epochs in model
-    num_epochs = 10
+    num_epochs = 20
 
     # if true, CNN will be used
-    useCNN = True
+    useCNN = False
 
     # END VARIABLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 elif useFront == True:
@@ -803,6 +803,31 @@ def feature_selection(pd_dataset,target_vars,num_features):
 
     return featureDict
 
+def format_data(data_file, test_file, target_var):
+
+        if str(type(data_file)) == "<class 'pandas.core.frame.DataFrame'>":
+            df = data_file
+        elif main_data[-4:] == ".csv":
+            df = pd.read_csv(data_file)
+
+        if use_additional_test_file == True:
+            #Recognizing what variables are in the test data
+            input_data = pd.read_csv(test_file)
+            input_vars = input_data.columns.tolist()
+
+            #collect data for the variables from main dataset
+            dataset = df[input_vars]
+
+            # Append y data for target column into new dataset
+            y_data = df[target_var]
+            dataset = dataset.assign(target_variables=y_data)
+            target_name = str(target_var)
+            dataset = dataset.rename(columns={'target_variables':target_name},inplace=True)
+        elif use_additional_test_file == False:
+            dataset = df
+
+        return dataset
+
 def model(data_file, test_file, target_vars, epochs_num):
 
     # initialize bool as false
@@ -829,31 +854,6 @@ def model(data_file, test_file, target_vars, epochs_num):
 
     # only use features determined by feature_selection
     data_file = data_file[data_file.columns.intersection(features)]
-
-    def format_data(data_file, test_file, target_var):
-
-        if str(type(data_file)) == "<class 'pandas.core.frame.DataFrame'>":
-            df = data_file
-        elif main_data[-4:] == ".csv":
-            df = pd.read_csv(data_file)
-
-        if use_additional_test_file == True:
-            #Recognizing what variables are in the test data
-            input_data = pd.read_csv(test_file)
-            input_vars = input_data.columns.tolist()
-
-            #collect data for the variables from main dataset
-            dataset = df[input_vars]
-
-            # Append y data for target column into new dataset
-            y_data = df[target_var]
-            dataset = dataset.assign(target_variables=y_data)
-            target_name = str(target_var)
-            dataset = dataset.rename(columns={'target_variables':target_name},inplace=True)
-        elif use_additional_test_file == False:
-            dataset = df
-
-        return dataset
 
     adapted_dataset = format_data(data_file, test_file, target_vars)
 
@@ -1181,31 +1181,6 @@ def image_model(save_loc,data_file,test_file,target_vars,epochs_num):
 
     # only use features determined by feature_selection in clinical data
     data_file = data_file[data_file.columns.intersection(features)]
-
-    def format_data(data_file, test_file, target_vars):
-
-        if str(type(data_file)) == "<class 'pandas.core.frame.DataFrame'>":
-            df = data_file
-        elif main_data[-4:] == ".csv":
-            df = pd.read_csv(data_file)
-
-        if use_additional_test_file == True:
-            #Recognizing what variables are in the input data
-            input_data = pd.read_csv(test_file)
-            input_vars = input_data.columns.tolist()
-
-            #collect data for the variables from main dataset
-            dataset = df[input_vars]
-
-            # Append y data for target column into new dataset
-            y_data = df[target_vars]
-            dataset = dataset.assign(target_variables=y_data)
-            target_name = str(target_vars)
-            dataset.rename(columns={'target_variables':target_name},inplace=True)
-        elif use_additional_test_file == False:
-            dataset = df
-
-        return dataset
 
     adapted_dataset = format_data(data_file, test_file,target_vars)
     adapted_dataset.index.names = ["ID"]
