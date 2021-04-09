@@ -828,6 +828,141 @@ def format_data(data_file, test_file, target_var):
 
         return dataset
 
+def postTrain(multiple_targets,y_val,X_val,X_test,y_test,model):
+    # utilize validation data
+    prediction = model.predict(X_val, batch_size=1)
+
+    roundedPred = np.around(prediction,0)
+
+    if multiple_targets == False and roundedPred.ndim == 1:
+        i = 0
+        for vals in roundedPred:
+            if int(vals) == -0:
+                vals = abs(vals)
+                roundedPred[i] = vals
+
+            i = i + 1
+    else:
+        preShape = roundedPred.shape
+
+        # if array has multiple dimensions, flatten the array
+        roundedPred = roundedPred.flatten()
+
+        i = 0
+        for vals in roundedPred:
+            if int(vals) == -0:
+                vals = abs(vals)
+                roundedPred[i] = vals
+
+            i = i + 1
+
+        if len(preShape) == 3:
+            if preShape[2] == 1:
+                # reshape array to previous shape without the additional dimension
+                roundedPred = np.reshape(roundedPred, preShape[:2])
+            else:
+                roundedPred = np.reshape(roundedPred, preShape)
+        else:
+            roundedPred = np.reshape(roundedPred, preShape)
+
+    print("Validation Metrics")
+    print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
+    print(prediction)
+    print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
+    print(roundedPred)
+    print("- - - - - - - - - - - - - y val - - - - - - - - - - - - -")
+    print(y_val)
+
+    if str(type(prediction)) == "<class 'list'>":
+        prediction = np.array([prediction])
+
+    percentAcc = percentageAccuracy(roundedPred, y_val)
+
+    print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
+    print(percentAcc)
+
+    resultList.append(str(prediction))
+    resultList.append(str(roundedPred))
+    resultList.append(str(y_val))
+    resultList.append(str(percentAcc))
+
+    # utilize test data
+    prediction = model.predict(X_test,batch_size=1)
+
+    roundedPred = np.around(prediction,0)
+
+    if multiple_targets == False and roundedPred.ndim == 1: 
+        i = 0
+        for vals in roundedPred:
+            if int(vals) == -0:
+                vals = abs(vals)
+                roundedPred[i] = vals
+
+            i = i + 1
+    else: 
+        preShape = roundedPred.shape
+
+        # if array has multiple dimensions, flatten the array 
+        roundedPred = roundedPred.flatten()
+
+        i = 0 
+        for vals in roundedPred: 
+            if int(vals) == -0: 
+                vals = abs(vals)
+                roundedPred[i] = vals 
+            
+            i = i + 1 
+
+        if len(preShape) == 3: 
+            if preShape[2] == 1: 
+                # reshape array to previous shape without the additional dimension
+                roundedPred = np.reshape(roundedPred,preShape[:2])
+            else: 
+                roundedPred = np.reshape(roundedPred,preShape)
+        else: 
+            roundedPred = np.reshape(roundedPred,preShape)
+
+    print("Test Metrics")
+    print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
+    print(prediction)
+    print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
+    print(roundedPred)
+    print("- - - - - - - - - - - - - y test - - - - - - - - - - - - -")
+    print(y_test)
+
+    if str(type(prediction)) == "<class 'list'>":
+        prediction = np.array([prediction])
+
+    percentAcc = percentageAccuracy(roundedPred,y_test)
+    
+    print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
+    print(percentAcc)
+
+    resultList.append(str(prediction))
+    resultList.append(str(roundedPred))
+    resultList.append(str(y_test))
+    resultList.append(str(percentAcc))
+
+    if multiple_targets == True and str(type(isBinary)) == "<class 'list'>": 
+        
+        # initialize var as error message
+        decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
+
+        i = 0
+        for bools in isBinary: 
+            if bools == True: 
+                decodedPrediction = decode(prediction[0,i],targetDict)
+            i = i + 1     
+    else: 
+        if isBinary: 
+            decodedPrediction = decode(prediction,targetDict)
+        else: 
+            decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
+
+    print("- - - - - - - - - - - - - Translated Prediction - - - - - - - - - - - - -")
+    print(decodedPrediction)
+
+
 def model(data_file, test_file, target_vars, epochs_num):
 
     # initialize bool as false
@@ -1031,138 +1166,7 @@ def model(data_file, test_file, target_vars, epochs_num):
         else:
             model = keras.models.load_model(model_save_loc)
 
-        # utilize validation data
-        prediction = model.predict(X_val, batch_size=1)
-
-        roundedPred = np.around(prediction,0)
-
-        if multiple_targets == False and roundedPred.ndim == 1:
-            i = 0
-            for vals in roundedPred:
-                if int(vals) == -0:
-                    vals = abs(vals)
-                    roundedPred[i] = vals
-
-                i = i + 1
-        else:
-            preShape = roundedPred.shape
-
-            # if array has multiple dimensions, flatten the array
-            roundedPred = roundedPred.flatten()
-
-            i = 0
-            for vals in roundedPred:
-                if int(vals) == -0:
-                    vals = abs(vals)
-                    roundedPred[i] = vals
-
-                i = i + 1
-
-            if len(preShape) == 3:
-                if preShape[2] == 1:
-                    # reshape array to previous shape without the additional dimension
-                    roundedPred = np.reshape(roundedPred, preShape[:2])
-                else:
-                    roundedPred = np.reshape(roundedPred, preShape)
-            else:
-                roundedPred = np.reshape(roundedPred, preShape)
-
-        print("Validation Metrics")
-        print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
-        print(prediction)
-        print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
-        print(roundedPred)
-        print("- - - - - - - - - - - - - y val - - - - - - - - - - - - -")
-        print(y_val)
-
-        if str(type(prediction)) == "<class 'list'>":
-            prediction = np.array([prediction])
-
-        percentAcc = percentageAccuracy(roundedPred, y_val)
-
-        print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
-        print(percentAcc)
-
-        resultList.append(str(prediction))
-        resultList.append(str(roundedPred))
-        resultList.append(str(y_val))
-        resultList.append(str(percentAcc))
-
-        # utilize test data
-        prediction = model.predict(X_test,batch_size=1)
-
-        roundedPred = np.around(prediction,0)
-
-        if multiple_targets == False and roundedPred.ndim == 1: 
-            i = 0
-            for vals in roundedPred:
-                if int(vals) == -0:
-                    vals = abs(vals)
-                    roundedPred[i] = vals
-
-                i = i + 1
-        else: 
-            preShape = roundedPred.shape
-
-            # if array has multiple dimensions, flatten the array 
-            roundedPred = roundedPred.flatten()
-
-            i = 0 
-            for vals in roundedPred: 
-                if int(vals) == -0: 
-                    vals = abs(vals)
-                    roundedPred[i] = vals 
-                
-                i = i + 1 
-
-            if len(preShape) == 3: 
-                if preShape[2] == 1: 
-                    # reshape array to previous shape without the additional dimension
-                    roundedPred = np.reshape(roundedPred,preShape[:2])
-                else: 
-                    roundedPred = np.reshape(roundedPred,preShape)
-            else: 
-                roundedPred = np.reshape(roundedPred,preShape)
-
-        print("Test Metrics")
-        print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
-        print(prediction)
-        print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
-        print(roundedPred)
-        print("- - - - - - - - - - - - - y test - - - - - - - - - - - - -")
-        print(y_test)
-
-        if str(type(prediction)) == "<class 'list'>":
-            prediction = np.array([prediction])
-
-        percentAcc = percentageAccuracy(roundedPred,y_test)
-        
-        print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
-        print(percentAcc)
-
-        resultList.append(str(prediction))
-        resultList.append(str(roundedPred))
-        resultList.append(str(y_test))
-        resultList.append(str(percentAcc))
-
-        if multiple_targets == True and str(type(isBinary)) == "<class 'list'>": 
-            
-            # initialize var as error message
-            decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
-
-            i = 0
-            for bools in isBinary: 
-                if bools == True: 
-                    decodedPrediction = decode(prediction[0,i],targetDict)
-                i = i + 1     
-        else: 
-            if isBinary: 
-                decodedPrediction = decode(prediction,targetDict)
-            else: 
-                decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
-
-        print("- - - - - - - - - - - - - Translated Prediction - - - - - - - - - - - - -")
-        print(decodedPrediction)
+        postTrain(multiple_targets,y_val,X_val,X_test,y_test,model)
 
     NN(adapted_dataset, target_vars, epochs_num, act_func)
 
@@ -1522,141 +1526,7 @@ def image_model(save_loc,data_file,test_file,target_vars,epochs_num):
         if str(type(prediction)) == "<class 'list'>":
             prediction = np.array([prediction])
 
-        # utilize validation data
-        prediction = model.predict(X_val, batch_size=1)
-
-        roundedPred = np.around(prediction,0)
-
-        if multiple_targets == False and roundedPred.ndim == 1: 
-            i = 0
-            for vals in roundedPred: 
-                if int(vals) == -0: 
-                    vals = abs(vals)
-                    roundedPred[i] = vals
-
-                i = i + 1 
-        else: 
-            preShape = roundedPred.shape
-
-            roundedPred = roundedPred.flatten()
-
-            roundedPred = roundedPred.tolist()
-
-            i = 0 
-            for vals in roundedPred:
-                if int(vals) == -0: 
-                    vals = abs(vals)
-                    roundedPred[i] = vals
-                
-                i = i + 1 
-
-            roundedPred = np.array(roundedPred)
-
-            if len(preShape) == 3: 
-                if preShape[2] == 1:
-                    # reshape array to previous shape without the additional dimension
-                    roundedPred = np.reshape(roundedPred,preShape[:2])
-                else: 
-                    roundedPred = np.reshape(roundedPred,preShape)
-
-            else: 
-                roundedPred = np.reshape(roundedPred,preShape)
-
-        print("Validation Metrics")
-        print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
-        print(prediction)
-        print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
-        print(roundedPred)
-        print("- - - - - - - - - - - - - y val - - - - - - - - - - - - -")
-        print(y_val)
-
-        if str(type(prediction)) == "<class 'list'>":
-            prediction = np.array([prediction])
-
-        percentAcc = percentageAccuracy(prediction,y_val)
-        
-        print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
-        print(percentAcc)
-
-        resultList.append(str(prediction))
-        resultList.append(str(roundedPred))
-        resultList.append(str(y_val))
-        resultList.append(str(percentAcc))
-
-        # utilize test data
-        prediction = model.predict(X_test,batch_size=1)
-
-        if multiple_targets == False and roundedPred.ndim == 1:
-            i = 0
-            for vals in roundedPred:
-                if int(vals) == -0:
-                    vals = abs(vals)
-                    roundedPred[i] = vals
-
-                i = i + 1
-        else:
-            preShape = roundedPred.shape
-
-            # if array has multiple dimensions, flatten the array
-            roundedPred = roundedPred.flatten()
-
-            i = 0
-            for vals in roundedPred:
-                if int(vals) == -0:
-                    vals = abs(vals)
-                    roundedPred[i] = vals
-
-                i = i + 1
-
-            if len(preShape) == 3:
-                if preShape[2] == 1:
-                    # reshape array to previous shape without the additional dimension
-                    roundedPred = np.reshape(roundedPred, preShape[:2])
-                else:
-                    roundedPred = np.reshape(roundedPred, preShape)
-            else:
-                roundedPred = np.reshape(roundedPred, preShape)
-
-        print("Test Metrics")
-        print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
-        print(prediction)
-        print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
-        print(roundedPred)
-        print("- - - - - - - - - - - - - y test - - - - - - - - - - - - -")
-        print(y_test)
-
-        if str(type(prediction)) == "<class 'list'>":
-            prediction = np.array([prediction])
-
-        percentAcc = percentageAccuracy(roundedPred, y_test)
-
-        print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
-        print(percentAcc)
-
-        resultList.append(str(prediction))
-        resultList.append(str(roundedPred))
-        resultList.append(str(y_test))
-        resultList.append(str(percentAcc))
-
-        if multiple_targets == True and str(type(isBinary)) == "<class 'list'>": 
-
-            # initialize var as error message 
-            decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
-
-            i = 0
-            for bools in isBinary: 
-                if bools == True: 
-                    decodedPrediction = decode(prediction[0,i],targetDict)
-                i = i + 1
-
-        else:
-            if isBinary:
-                decodedPrediction = decode(prediction,targetDict)
-            else:
-                decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
-
-        print("- - - - - - - - - - - - - Translated Prediction - - - - - - - - - - - - -")
-        print(decodedPrediction)
+        postTrain(multiple_targets,y_val,X_val,X_test,y_test,model)
 
     model(adapted_dataset,img_array,target_vars,act_func)
 
