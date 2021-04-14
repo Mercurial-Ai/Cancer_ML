@@ -24,6 +24,7 @@ import random
 from tkinter import ttk
 import GUI
 from statistics import mean
+import diag
 
 # un-comment to show all of pandas dataframe
 #pd.set_option('display.max_rows', None)
@@ -200,6 +201,9 @@ elif useFront == True:
 
     # number of epochs in model
     num_epochs = int(dictTxt["num_epochs "])
+
+diag = diag.diagnostic(main_data)
+diag.pre()
 
 mainPath = main_data
 
