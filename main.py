@@ -47,7 +47,7 @@ if useFront == False:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Team8_Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020.csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\diag data TEST\data.csv"
     sec_data = ""
     test_file = "test_2.csv"
 
