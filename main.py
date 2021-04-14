@@ -49,10 +49,10 @@ if useFront == False:
 
     main_data = "D:\Cancer_Project\Cancer_ML\diag data TEST\data.csv"
     sec_data = ""
-    test_file = "test_2.csv"
+    test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = "chemotherapy_given"
+    target_variables = "diagnosis"
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -202,7 +202,7 @@ elif useFront == True:
     # number of epochs in model
     num_epochs = int(dictTxt["num_epochs "])
 
-diag = diag.diagnostic(main_data)
+diag = diag.diagnostic(main_data,target_variables)
 diag.pre()
 
 mainPath = main_data
