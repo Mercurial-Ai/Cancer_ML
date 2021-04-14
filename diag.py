@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from keras.layers import Dense, Input
+from keras import Model
 
 class diagnostic:
     def __init__(self,dataset,target_var):
@@ -29,5 +30,20 @@ class diagnostic:
         x = df.drop(self.target_var,axis=1)
         y = df[self.target_var]
 
-        x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.4,random_state=5)
-        x_val,x_test,y_val,y_test = train_test_split(x_test,y_test,test_size=0.5,random_state=5)
+        self.x_train,self.x_test,self.y_train,self.y_test = train_test_split(x,y,test_size=0.4,random_state=5)
+        self.x_val,self.x_test,self.y_val,self.y_test = train_test_split(self.x_test,self.y_test,test_size=0.5,random_state=5)
+
+    def model(self):
+        input = Input(shape=self.x_train.shape[1],)
+        x = Dense(9,activation="relu")(input)
+        x = Dense(6,activation="relu")(x)
+        x = Dense(3,activation="relu")(x)
+        output = Dense(1,activation="linear")(x)
+
+        model = Model(input,output)
+
+        model.compile(optimizer="SGD",
+                      loss="mean_squared_error",
+                      metrics=["accuracy"])
+
+        fit = model.fit(self.x_train,self.y_train,epochs=20,batch_size=32)

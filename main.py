@@ -204,6 +204,7 @@ elif useFront == True:
 
 diag = diag.diagnostic(main_data,target_variables)
 diag.pre()
+diag.model()
 
 mainPath = main_data
 
