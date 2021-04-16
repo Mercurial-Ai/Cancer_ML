@@ -33,6 +33,11 @@ class diagnostic:
         self.x_train,self.x_test,self.y_train,self.y_test = train_test_split(x,y,test_size=0.4,random_state=5)
         self.x_val,self.x_test,self.y_val,self.y_test = train_test_split(self.x_test,self.y_test,test_size=0.5,random_state=5)
 
+    # function for val/test pred
+    def post(self,dataX,dataY,model):
+        results = model.evaluate(dataX, dataY, batch_size=32)
+        pred = model.predict(dataX)
+
     def model(self):
         input = Input(shape=self.x_train.shape[1],)
         x = Dense(9,activation="relu")(input)
@@ -47,3 +52,8 @@ class diagnostic:
                       metrics=["accuracy"])
 
         fit = model.fit(self.x_train,self.y_train,epochs=20,batch_size=32)
+
+        self.post(self.x_val, self.y_val, model)
+        self.post(self.x_test,self.y_test,model)
+
+
