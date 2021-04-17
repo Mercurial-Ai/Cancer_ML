@@ -6,9 +6,10 @@ from keras import Model
 
 class diagnostic:
 
-    def __init__(self,dataset,target_var):
+    def __init__(self,dataset,target_var,num_epochs):
         self.dataset = dataset
         self.target_var = target_var
+        self.numEpochs = num_epochs
 
     def normalize(self,data,columns):
         min_max_scaler = preprocessing.MinMaxScaler()
@@ -48,6 +49,8 @@ class diagnostic:
         results = model.evaluate(dataX, dataY, batch_size=32)
         pred = model.predict(dataX)
 
+        return pred
+
     def model(self):
         self.pre()
 
@@ -63,7 +66,7 @@ class diagnostic:
                       loss="mean_squared_error",
                       metrics=["accuracy"])
 
-        fit = model.fit(self.x_train,self.y_train,epochs=20,batch_size=32)
+        fit = model.fit(self.x_train,self.y_train,epochs=self.numEpochs,batch_size=32)
 
         self.post(self.x_val, self.y_val, model)
         self.post(self.x_test,self.y_test,model)
