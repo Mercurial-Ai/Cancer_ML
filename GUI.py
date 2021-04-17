@@ -66,7 +66,7 @@ class boolButtons:
         bool = True
         boolList.append(bool)
 
-        self.buttonTrue.config(relief=SUNKEN)
+        self.buttonTrue.config(relief=SUNKEN,background='orange')
         self.buttonFalse.config(relief=RAISED)
 
     def false(self):
@@ -76,7 +76,7 @@ class boolButtons:
         boolList.append(bool)
 
         self.buttonTrue.config(relief=RAISED)
-        self.buttonFalse.config(relief=SUNKEN)
+        self.buttonFalse.config(relief=SUNKEN,background='orange')
 
     def label(self):
         label = Label(second_frame,text=self.name,font=varFont,fg=varColor)
