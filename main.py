@@ -25,6 +25,7 @@ from tkinter import ttk
 import GUI
 from statistics import mean
 import diag
+from sklearn.datasets import load_breast_cancer
 
 # un-comment to show all of pandas dataframe
 #pd.set_option('display.max_rows', None)
@@ -47,12 +48,13 @@ if useFront == False:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Team8_Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\diag data TEST\data.csv"
+    data = load_breast_cancer()
+    main_data = data
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = "diagnosis"
+    target_variables = "target"
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -110,7 +112,7 @@ if useFront == False:
     dcmDirect = True
 
     # number of epochs in model
-    num_epochs = 1
+    num_epochs = 20
 
     # if true, CNN will be used
     useCNN = True
@@ -203,7 +205,6 @@ elif useFront == True:
     num_epochs = int(dictTxt["num_epochs "])
 
 diag = diag.diagnostic(main_data,target_variables)
-diag.pre()
 diag.model()
 
 mainPath = main_data

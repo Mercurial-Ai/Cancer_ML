@@ -3,10 +3,6 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from keras.layers import Dense, Input
 from keras import Model
-from sklearn.datasets import load_breast_cancer
-import numpy as np
-
-data = load_breast_cancer()
 
 class diagnostic:
 
@@ -71,7 +67,3 @@ class diagnostic:
 
         self.post(self.x_val, self.y_val, model)
         self.post(self.x_test,self.y_test,model)
-
-diag = diagnostic(data,"target")
-diag.model()
-
