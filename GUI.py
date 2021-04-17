@@ -9,7 +9,7 @@ window = Tk()
 
 window.title("Cancer ML")
 
-window.iconbitmap("D:\Cancer_Project\Team8_Cancer_ML\cancer_icon.ico")
+window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
 
 main_frame = Frame(window)
 main_frame.pack(fill=BOTH,expand=1)
@@ -55,27 +55,39 @@ title.grid(column=1)
 # initalize vars
 boolList = []
 
-def true():
-    global boolList
+# class to make pair of true/false buttons
+class boolButtons:
+    def __init__(self,name):
+        self.name = name
 
-    bool = True
-    boolList.append(bool)
+    def true(self):
+        global boolList
 
-def false():
-    global boolList
+        bool = True
+        boolList.append(bool)
 
-    bool = False
-    boolList.append(bool)
+        self.buttonTrue.config(relief=SUNKEN)
+        self.buttonFalse.config(relief=RAISED)
 
-def makeButton(name):
-    label = Label(second_frame,text=name,font=varFont,fg=varColor)
-    label.grid(column=1,pady=40)
+    def false(self):
+        global boolList
 
-    button = Button(second_frame,text="True",width=25,height=3,font=inputFont,command=true,activebackground='orange')
-    button.grid(column=1)
+        bool = False
+        boolList.append(bool)
 
-    button = Button(second_frame,text="False",width=25,height=3,font=inputFont,command=false,activebackground='orange')
-    button.grid(column=1)
+        self.buttonTrue.config(relief=RAISED)
+        self.buttonFalse.config(relief=SUNKEN)
+
+    def label(self):
+        label = Label(second_frame,text=self.name,font=varFont,fg=varColor)
+        label.grid(column=1,pady=40)
+
+    def makeButton(self):
+        self.buttonTrue = Button(second_frame,text="True",width=25,height=3,font=inputFont,command=self.true,activebackground="orange")
+        self.buttonTrue.grid(column=1)
+
+        self.buttonFalse = Button(second_frame,text="False",width=25,height=3,font=inputFont,command=self.false,activebackground="orange")
+        self.buttonFalse.grid(column=1)
 
 def makeEntry(name):
     entryText = StringVar()
@@ -110,7 +122,8 @@ for var in vars:
     var = var.rsplit('=', 1)[0]
 
     if i == -1 and t == -1 and t2 == -1 and n == False:
-        makeButton(var[:-1])
+        label = boolButtons(var[:-1]).label()
+        buttons = boolButtons(var[:-1]).makeButton()
         varList_bool.append(var)
     else:
         entryText = makeEntry(var[:-1])
