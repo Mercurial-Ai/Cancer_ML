@@ -207,6 +207,10 @@ elif useFront == True:
     # number of epochs in model
     num_epochs = int(dictTxt["num_epochs "])
 
+    useCNN = dictBool["useCNN "]
+
+    diagModel = dictBool["diagModel "]
+
 if diagModel:
     diag = diag.diagnostic(main_data,target_variables,20)
     diag.model()

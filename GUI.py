@@ -2,7 +2,7 @@ from tkinter import *
 import tkinter.font as tkFont
 from tkinter import ttk
 
-with open("D:\Cancer_Project\Team8_Cancer_ML\project_variables.txt","r") as projectVars:
+with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
     vars=projectVars.readlines()
 
 window = Tk()
