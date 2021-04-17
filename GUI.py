@@ -2,6 +2,8 @@ from tkinter import *
 import tkinter.font as tkFont
 from tkinter import ttk
 
+themeColor = "orange"
+
 with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
     vars=projectVars.readlines()
 
@@ -66,8 +68,8 @@ class boolButtons:
         bool = True
         boolList.append(bool)
 
-        self.buttonTrue.config(relief=SUNKEN,background='orange')
-        self.buttonFalse.config(relief=RAISED)
+        self.buttonTrue.config(relief=SUNKEN,background=themeColor)
+        self.buttonFalse.config(relief=RAISED,background='SystemButtonFace')
 
     def false(self):
         global boolList
@@ -75,18 +77,18 @@ class boolButtons:
         bool = False
         boolList.append(bool)
 
-        self.buttonTrue.config(relief=RAISED)
-        self.buttonFalse.config(relief=SUNKEN,background='orange')
+        self.buttonTrue.config(relief=RAISED,background='SystemButtonFace')
+        self.buttonFalse.config(relief=SUNKEN,background=themeColor)
 
     def label(self):
         label = Label(second_frame,text=self.name,font=varFont,fg=varColor)
         label.grid(column=1,pady=40)
 
     def makeButton(self):
-        self.buttonTrue = Button(second_frame,text="True",width=25,height=3,font=inputFont,command=self.true,activebackground="orange")
+        self.buttonTrue = Button(second_frame,text="True",width=25,height=3,font=inputFont,command=self.true,activebackground=themeColor)
         self.buttonTrue.grid(column=1)
 
-        self.buttonFalse = Button(second_frame,text="False",width=25,height=3,font=inputFont,command=self.false,activebackground="orange")
+        self.buttonFalse = Button(second_frame,text="False",width=25,height=3,font=inputFont,command=self.false,activebackground=themeColor)
         self.buttonFalse.grid(column=1)
 
 def makeEntry(name):
@@ -153,11 +155,11 @@ def useDefault():
     window.quit()
 
 # make default button
-defaultButton = Button(second_frame,text="Use Defaults",bg="orange",command=useDefault,font=varFont)
+defaultButton = Button(second_frame,text="Use Defaults",bg=themeColor,command=useDefault,font=varFont)
 defaultButton.grid(column=2,padx=screenWidth/1.4)
 
 # make continue button
-contButton = Button(second_frame,text="Continue",bg="orange",command=Continue,font=varFont)
+contButton = Button(second_frame,text="Continue",bg=themeColor,command=Continue,font=varFont)
 contButton.grid(column=2,padx=screenWidth/1.4)
 
 window.mainloop()
