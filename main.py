@@ -117,6 +117,9 @@ if useFront == False:
     # if true, CNN will be used
     useCNN = True
 
+    # if true, diagnosis model will run
+    diagModel = True
+
     # END VARIABLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 elif useFront == True:
 
@@ -204,8 +207,9 @@ elif useFront == True:
     # number of epochs in model
     num_epochs = int(dictTxt["num_epochs "])
 
-diag = diag.diagnostic(main_data,target_variables,20)
-diag.model()
+if diagModel:
+    diag = diag.diagnostic(main_data,target_variables,20)
+    diag.model()
 
 mainPath = main_data
 
