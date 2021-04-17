@@ -3,23 +3,37 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from keras.layers import Dense, Input
 from keras import Model
+from sklearn.datasets import load_breast_cancer
+import numpy as np
+
+data = load_breast_cancer()
 
 class diagnostic:
+
     def __init__(self,dataset,target_var):
         self.dataset = dataset
         self.target_var = target_var
 
+    def normalize(self,data,columns):
+        min_max_scaler = preprocessing.MinMaxScaler()
+        data = min_max_scaler.fit_transform(data)
+        df = pd.DataFrame(data, columns=columns)
+        return df
+
     def pre(self):
-        df = pd.read_csv(self.dataset)
+        if str(type(self.dataset)) == "<class 'str'>":
+            df = pd.read_csv(self.dataset)
+        else:
+            data = self.dataset
+
+            df = pd.DataFrame(data.data, columns=data.feature_names)
+            df["target"] = pd.Series(data.target)
 
         # drop rows with missing values
         df = df.dropna()
         x = df
 
-        # normalize
-        min_max_scaler = preprocessing.MinMaxScaler()
-        x = min_max_scaler.fit_transform(x)
-        df = pd.DataFrame(x,columns=df.columns)
+        df = self.normalize(x,df.columns)
 
         # feature selection
         corr = df.corr()
@@ -39,6 +53,8 @@ class diagnostic:
         pred = model.predict(dataX)
 
     def model(self):
+        self.pre()
+
         input = Input(shape=self.x_train.shape[1],)
         x = Dense(9,activation="relu")(input)
         x = Dense(6,activation="relu")(x)
@@ -56,4 +72,6 @@ class diagnostic:
         self.post(self.x_val, self.y_val, model)
         self.post(self.x_test,self.y_test,model)
 
+diag = diagnostic(data,"target")
+diag.model()
 
