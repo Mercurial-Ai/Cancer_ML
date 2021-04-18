@@ -4,6 +4,29 @@ from tkinter import ttk
 
 themeColor = "orange"
 
+class index:
+    def draw(self):
+        self.window = Tk()
+        self.window.title("Cancer ML")
+        self.window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
+
+        label = Label(text="Select a configuration")
+        label.grid()
+
+        self.HNSCCbutton = Button(text="HNSCC Dataset")
+        self.HNSCCbutton.grid()
+
+        self.HN1button = Button(text="HNSCC-HN1 Dataset")
+        self.HN1button.grid()
+
+        self.MTBCbutton = Button(text="METABRIC Dataset")
+        self.MTBCbutton.grid()
+
+        self.window.mainloop()
+
+indexPage = index()
+indexPage.draw()
+
 with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
     vars=projectVars.readlines()
 
