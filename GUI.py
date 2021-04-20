@@ -42,6 +42,9 @@ class index:
         self.BRbutton.config(relief=RAISED, background="SystemButtonFace")
         self.otherButton.config(relief=SUNKEN, background=themeColor)
 
+    def cont(self):
+        self.window.destroy()
+
     def label(self):
         label = Label(text="Select a configuration")
         label.grid(column=1,pady=40)
@@ -64,6 +67,9 @@ class index:
 
         self.otherButton = Button(text="Other", width=25,height=3,font=self.font,command=self.other)
         self.otherButton.grid(column=1,pady=25)
+
+        self.contButton = Button(text="Continue", width=25, height=3,font=self.font,command=self.cont)
+        self.contButton.grid(column=1,pady=35)
 
         self.window.mainloop()
 
