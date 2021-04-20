@@ -15,28 +15,28 @@ class index:
 
     # choices of data
     def HNSCC(self):
-        dataset = "HNSCC"
+        self.dataset = "HNSCC"
         self.HNSbutton.config(relief=SUNKEN,background=themeColor)
         self.HN1button.config(relief=RAISED,background="SystemButtonFace")
         self.BRbutton.config(relief=RAISED,background="SystemButtonFace")
         self.otherButton.config(relief=RAISED, background="SystemButtonFace")
 
     def HN1(self):
-        dataset = "HN1"
+        self.dataset = "HN1"
         self.HNSbutton.config(relief=RAISED, background="SystemButtonFace")
         self.HN1button.config(relief=SUNKEN, background=themeColor)
         self.BRbutton.config(relief=RAISED, background="SystemButtonFace")
         self.otherButton.config(relief=RAISED, background="SystemButtonFace")
 
     def BRIC(self):
-        dataset = "METABRIC"
+        self.dataset = "METABRIC"
         self.HNSbutton.config(relief=RAISED, background="SystemButtonFace")
         self.HN1button.config(relief=RAISED, background="SystemButtonFace")
         self.BRbutton.config(relief=SUNKEN, background=themeColor)
         self.otherButton.config(relief=RAISED, background="SystemButtonFace")
 
     def other(self):
-        dataset = "other"
+        self.dataset = "other"
         self.HNSbutton.config(relief=RAISED, background="SystemButtonFace")
         self.HN1button.config(relief=RAISED, background="SystemButtonFace")
         self.BRbutton.config(relief=RAISED, background="SystemButtonFace")
@@ -76,6 +76,7 @@ class index:
 indexPage = index()
 indexPage.setup()
 indexPage.draw()
+dataset = indexPage.dataset
 
 with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
     vars=projectVars.readlines()
