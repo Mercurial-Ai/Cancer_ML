@@ -5,26 +5,70 @@ from tkinter import ttk
 themeColor = "orange"
 
 class index:
-    def draw(self):
+    def setup(self):
         self.window = Tk()
         self.window.title("Cancer ML")
         self.window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
 
+        # font used for page elements
+        self.font = tkFont.Font(family="Georgia",size=12)
+
+    # choices of data
+    def HNSCC(self):
+        dataset = "HNSCC"
+        self.HNSbutton.config(relief=SUNKEN,background=themeColor)
+        self.HN1button.config(relief=RAISED,background="SystemButtonFace")
+        self.BRbutton.config(relief=RAISED,background="SystemButtonFace")
+        self.otherButton.config(relief=RAISED, background="SystemButtonFace")
+
+    def HN1(self):
+        dataset = "HN1"
+        self.HNSbutton.config(relief=RAISED, background="SystemButtonFace")
+        self.HN1button.config(relief=SUNKEN, background=themeColor)
+        self.BRbutton.config(relief=RAISED, background="SystemButtonFace")
+        self.otherButton.config(relief=RAISED, background="SystemButtonFace")
+
+    def BRIC(self):
+        dataset = "METABRIC"
+        self.HNSbutton.config(relief=RAISED, background="SystemButtonFace")
+        self.HN1button.config(relief=RAISED, background="SystemButtonFace")
+        self.BRbutton.config(relief=SUNKEN, background=themeColor)
+        self.otherButton.config(relief=RAISED, background="SystemButtonFace")
+
+    def other(self):
+        dataset = "other"
+        self.HNSbutton.config(relief=RAISED, background="SystemButtonFace")
+        self.HN1button.config(relief=RAISED, background="SystemButtonFace")
+        self.BRbutton.config(relief=RAISED, background="SystemButtonFace")
+        self.otherButton.config(relief=SUNKEN, background=themeColor)
+
+    def label(self):
         label = Label(text="Select a configuration")
-        label.grid()
+        label.grid(column=1,pady=40)
 
-        self.HNSCCbutton = Button(text="HNSCC Dataset")
-        self.HNSCCbutton.grid()
+    def draw(self):
+        self.label()
 
-        self.HN1button = Button(text="HNSCC-HN1 Dataset")
-        self.HN1button.grid()
+        # make buttons
+        self.HNSbutton = Button(text="HNSCC Dataset", width=25, height=3, font=self.font, command=self.HNSCC,
+                             activebackground=themeColor)
+        self.HNSbutton.grid(column=1, pady=25)
 
-        self.MTBCbutton = Button(text="METABRIC Dataset")
-        self.MTBCbutton.grid()
+        self.HN1button = Button(text="HNSCC-HN1 Dataset", width=25, height=3, font=self.font, command=self.HN1,
+                                activebackground=themeColor)
+        self.HN1button.grid(column=1,pady=25)
+
+        self.BRbutton = Button(text="METABRIC Dataset", width=25, height=3, font=self.font, command=self.BRIC,
+                               activebackground=themeColor)
+        self.BRbutton.grid(column=1,pady=25)
+
+        self.otherButton = Button(text="Other", width=25,height=3,font=self.font,command=self.other)
+        self.otherButton.grid(column=1,pady=25)
 
         self.window.mainloop()
 
 indexPage = index()
+indexPage.setup()
 indexPage.draw()
 
 with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
@@ -77,7 +121,7 @@ inputFont = tkFont.Font(family="Georgia",size=12)
 title = Label(second_frame,text="Data Page",font=fontTitle)
 title.grid(column=1)
 
-# initalize vars
+# initialize vars
 boolList = []
 
 # class to make pair of true/false buttons
