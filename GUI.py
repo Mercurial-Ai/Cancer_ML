@@ -1,6 +1,7 @@
 from tkinter import *
 import tkinter.font as tkFont
 from tkinter import ttk
+import pandas as pd
 
 themeColor = "orange"
 
@@ -74,10 +75,46 @@ class index:
 
         self.window.mainloop()
 
+class targetUI:
+    def __init__(self,dataset):
+        self.data = dataset
+
+    def setup(self):
+        self.window = Tk()
+        self.window.title("Cancer ML")
+        self.window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
+
+    def getCols(self):
+        df = pd.read_csv(self.data)
+        cols = list(df.columns)
+        return cols
+
+    def draw(self):
+        cols = self.getCols()
+
+        buttonList = []
+        for var in cols:
+            var = str(var)
+
+            button = Button(text=var)
+            button.grid(column=1,pady=40)
+
+            buttonList.append(button)
+
 indexPage = index()
 indexPage.setup()
 indexPage.draw()
 dataset = indexPage.dataset
+
+if dataset == "HNSCC":
+    save_fit = False
+    load_fit = False
+
+    main_data = "HNSCC/Patient and Treatment Characteristics.csv"
+    sec_data = ""
+    test_file = ""
+
+    target_variables = target
 
 with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
     vars=projectVars.readlines()
