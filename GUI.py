@@ -46,8 +46,9 @@ class index:
         self.window.destroy()
 
     def label(self):
-        label = Label(text="Select a configuration")
-        label.grid(column=1,pady=40)
+        labelFont = tkFont.Font(family="Georgia",size=20)
+        label = Label(text="Select a configuration",font=labelFont)
+        label.grid(column=1,padx=40,pady=40)
 
     def draw(self):
         self.label()
