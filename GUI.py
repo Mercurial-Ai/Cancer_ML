@@ -84,6 +84,27 @@ class targetUI:
         self.window.title("Cancer ML")
         self.window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
 
+        main_frame = Frame(self.window)
+        main_frame.pack(fill=BOTH,expand=1)
+
+        canvas = Canvas(main_frame)
+        canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+        # add scrollbars to the canvas
+        scrollbar = ttk.Scrollbar(main_frame, orient=VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=RIGHT, fill=Y)
+
+        scrollbar_x = ttk.Scrollbar(main_frame,orient=HORIZONTAL, command=canvas.xview)
+        scrollbar_x.pack(side=BOTTOM, fill=X)
+
+        # Configure the canvas
+        canvas.configure(xscrollcommand=scrollbar_x.set)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+        self.second_frame = Frame(canvas)
+        canvas.create_window((0,0), window=self.second_frame, anchor="nw")
+
     def getCols(self):
         df = pd.read_csv(self.data)
         cols = list(df.columns)
@@ -96,7 +117,7 @@ class targetUI:
         for var in cols:
             var = str(var)
 
-            button = Button(text=var)
+            button = Button(self.second_frame,text=var)
             button.grid(column=1,pady=40)
 
             buttonList.append(button)
