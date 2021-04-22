@@ -101,20 +101,23 @@ class targetUI:
 
             buttonList.append(button)
 
+        self.window.mainloop()
+
 indexPage = index()
 indexPage.setup()
 indexPage.draw()
 dataset = indexPage.dataset
 
 if dataset == "HNSCC":
-    save_fit = False
-    load_fit = False
-
     main_data = "HNSCC/Patient and Treatment Characteristics.csv"
-    sec_data = ""
-    test_file = ""
+elif dataset == "HN1":
+    main_data = "HNSCC-HN1/Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020.csv"
+elif dataset == "METABRIC":
+    main_data = "METABRIC_RNA_Mutation/METABRIC_RNA_Mutation.csv"
 
-    target_variables = target
+tUI = targetUI(main_data)
+tUI.setup()
+tUI.draw()
 
 with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
     vars=projectVars.readlines()
