@@ -117,10 +117,15 @@ class targetUI:
         for var in cols:
             var = str(var)
 
-            button = Button(self.second_frame,text=var)
-            button.grid(column=1,pady=40)
+            # remove any char not alphanumeric
+            anFil = filter(str.isalnum,var)
+            var = "".join(anFil)
 
-            buttonList.append(button)
+            exStr = "self." + var + " = Button(self.second_frame,text=" + "'" + var + "'" + ")"
+            exec(exStr)
+
+            exStr = "self." + var + ".grid(column=1,pady=40)"
+            exec(exStr)
 
         self.window.mainloop()
 
