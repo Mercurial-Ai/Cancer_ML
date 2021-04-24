@@ -10,17 +10,23 @@ class targetButton:
         self.frame = frame
         self.name = name
 
+    def setup(self):
+        self.targetList = []
+
     # to be done upon button press
     def cmd(self):
         if self.isClicked == False:
             self.button.config(relief=SUNKEN, background=themeColor)
             self.isClicked = True
+            self.targetList.append(self.name)
         elif self.isClicked == True:
             # un-click functionality
             self.button.config(relief=RAISED, background="SystemButtonFace")
             self.isClicked = False
+            self.targetList.remove(self.name)
 
     def draw(self):
+        self.setup()
         self.isClicked = False
         self.button = Button(self.frame,text=self.name,width=25,height=3,command=self.cmd,activebackground=themeColor)
         self.button.grid(column=1, pady=25)
