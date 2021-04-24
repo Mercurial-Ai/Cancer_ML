@@ -5,6 +5,26 @@ import pandas as pd
 
 themeColor = "orange"
 
+class targetButton:
+    def __init__(self,frame,name):
+        self.frame = frame
+        self.name = name
+
+    # to be done upon button press
+    def cmd(self):
+        if self.isClicked == False:
+            self.button.config(relief=SUNKEN, background=themeColor)
+            self.isClicked = True
+        elif self.isClicked == True:
+            # un-click functionality
+            self.button.config(relief=RAISED, background="SystemButtonFace")
+            self.isClicked = False
+
+    def draw(self):
+        self.isClicked = False
+        self.button = Button(self.frame,text=self.name,width=25,height=3,command=self.cmd,activebackground=themeColor)
+        self.button.grid(column=1, pady=25)
+
 class index:
     def setup(self):
         self.window = Tk()
@@ -112,20 +132,9 @@ class targetUI:
 
     def draw(self):
         cols = self.getCols()
-
-        buttonList = []
         for var in cols:
-            var = str(var)
-
-            # remove any char not alphanumeric
-            anFil = filter(str.isalnum,var)
-            var = "".join(anFil)
-
-            exStr = "self." + var + " = Button(self.second_frame,text=" + "'" + var + "'" + ")"
-            exec(exStr)
-
-            exStr = "self." + var + ".grid(column=1,pady=40)"
-            exec(exStr)
+            target = targetButton(self.second_frame,var)
+            target.draw()
 
         self.window.mainloop()
 
