@@ -139,8 +139,8 @@ class targetUI:
     def draw(self):
         cols = self.getCols()
         for var in cols:
-            target = targetButton(self.second_frame,var)
-            target.draw()
+            self.target = targetButton(self.second_frame,var)
+            self.target.draw()
 
         self.window.mainloop()
 
@@ -159,6 +159,7 @@ elif dataset == "METABRIC":
 tUI = targetUI(main_data)
 tUI.setup()
 tUI.draw()
+target = tUI.target.targetList
 
 with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
     vars=projectVars.readlines()
