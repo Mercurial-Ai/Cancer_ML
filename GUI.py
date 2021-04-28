@@ -150,11 +150,11 @@ indexPage.draw()
 dataset = indexPage.dataset
 
 if dataset == "HNSCC":
-    main_data = "HNSCC/Patient and Treatment Characteristics.csv"
+    main_data = "data/HNSCC/Patient and Treatment Characteristics.csv"
 elif dataset == "HN1":
-    main_data = "HNSCC-HN1/Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020.csv"
+    main_data = "data/HNSCC-HN1/Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020.csv"
 elif dataset == "METABRIC":
-    main_data = "METABRIC_RNA_Mutation/METABRIC_RNA_Mutation.csv"
+    main_data = "data/METABRIC_RNA_Mutation/METABRIC_RNA_Mutation.csv"
 
 tUI = targetUI(main_data)
 tUI.setup()
