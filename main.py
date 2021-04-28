@@ -24,7 +24,7 @@ import random
 from tkinter import ttk
 import GUI
 from statistics import mean
-import diag
+import mod.diag as diag
 from sklearn.datasets import load_breast_cancer
 
 # un-comment to show all of pandas dataframe
