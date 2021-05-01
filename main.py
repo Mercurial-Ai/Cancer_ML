@@ -1131,8 +1131,8 @@ def model(data_file, test_file, target_vars, epochs_num):
                 # set input shape to dimension of data
                 input = keras.layers.Input(shape=(X_train.shape[1],))
 
-                x = Dense(20,activation=activation_function)(input)
-                x = Dense(15,activation=activation_function)(x)
+                x = Dense(9,activation=activation_function)(input)
+                x = Dense(9,activation=activation_function)(x)
                 x = Dense(6,activation=activation_function)(x)
                 x = Dense(4,activation=activation_function)(x)
                 x = Dense(2,activation=activation_function)(x)
