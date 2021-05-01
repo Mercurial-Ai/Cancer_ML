@@ -142,6 +142,9 @@ class targetUI:
             self.target = targetButton(self.second_frame,var)
             self.target.draw()
 
+        contButton = Button(self.second_frame,text="Continue", width=25, height=3, command=self.window.quit)
+        contButton.grid(column=1, pady=35)
+
         self.window.mainloop()
 
 indexPage = index()

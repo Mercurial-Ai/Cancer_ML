@@ -48,8 +48,7 @@ if useFront == False:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Team8_Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    data = load_breast_cancer()
-    main_data = data
+    main_data = GUI.main_data
     sec_data = ""
     test_file = ""
 
