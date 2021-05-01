@@ -75,7 +75,7 @@ if useFront == False:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = True
+    run_img_model = False
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -109,10 +109,10 @@ if useFront == False:
     dcmDirect = True
 
     # number of epochs in model
-    num_epochs = 1
+    num_epochs = 20
 
     # if true, CNN will be used
-    useCNN = True
+    useCNN = False
 
     # END VARIABLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 elif useFront == True:
@@ -1118,8 +1118,8 @@ def model(data_file, test_file, target_vars, epochs_num):
                 # set input shape to dimension of data
                 input = keras.layers.Input(shape=(X_train.shape[1],))
 
-                x = Dense(20,activation=activation_function)(input)
-                x = Dense(15,activation=activation_function)(x)
+                x = Dense(9,activation=activation_function)(input)
+                x = Dense(9,activation=activation_function)(x)
                 x = Dense(6,activation=activation_function)(x)
                 x = Dense(4,activation=activation_function)(x)
                 x = Dense(2,activation=activation_function)(x)
