@@ -51,7 +51,7 @@ if useFront == False:
     test_file = "test_2.csv"
 
     # list with strings or a single string may be inputted
-    target_variables = "chemotherapy_given"
+    target_variables = ["chemotherapy_given","cancer_surgery_performed"]
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -75,7 +75,7 @@ if useFront == False:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = False
+    run_img_model = True
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -103,7 +103,7 @@ if useFront == False:
     show_figs = True
 
     # if true, graphs will be saved after training model
-    save_figs = True
+    save_figs = False
 
     # if true, convert dicom directly to numpy. Otherwise, convert to jpg or png first in save_dir
     dcmDirect = True
@@ -992,6 +992,8 @@ def model(data_file, test_file, target_vars, epochs_num):
 
     adapted_dataset = format_data(data_file, test_file, target_vars)
 
+    print(adapted_dataset)
+
     # initiate negative_vals as False
     negative_vals = False
 
@@ -1085,26 +1087,14 @@ def model(data_file, test_file, target_vars, epochs_num):
             if str(type(target_vars))=="<class 'list'>" and len(target_vars) > 1:
                 input = keras.Input(shape=X_train.shape[1],)
 
-                def add_target(Input):
-                    x = layers.Dense(40,activation=activation_function)(Input)
-                    x = layers.Dense(40,activation=activation_function)(x)
-                    x = layers.Dense(35,activation=activation_function)(x)
-                    x = layers.Dense(35,activation=activation_function)(x)
-                    return x
+                x = layers.Dense(10,activation=activation_function)(input)
+                x = layers.Dense(10,activation=activation_function)(x)
+                x = layers.Dense(6,activation=activation_function)(x)
+                x = layers.Dense(4,activation=activation_function)(x)
+                x = layers.Dense(4,activation=activation_function)(x)
+                output = layers.Dense(len(target_vars),activation=activation_function)(x)
 
-                output_list = []
-                for vars in range(len(target_vars)):
-                    x = add_target(input)
-                    output_list.append(x)
-
-                x = layers.Concatenate()(output_list)
-                output_list.clear()
-                x = layers.Dense(12,activation='relu')(x)
-                for vars in range(len(target_vars)):
-                    y = layers.Dense(1,activation='linear')(x)
-                    output_list.append(y)
-
-                model = keras.Model(inputs=input,outputs=output_list)
+                model = keras.Model(inputs=input,outputs=output)
 
                 model.compile(optimizer='SGD',
                               loss='mean_absolute_error',
@@ -1410,6 +1400,9 @@ def image_model(save_loc,data_file,test_file,target_vars,epochs_num):
         if not load_fit:
             if not useCNN:
                 if str(type(target_vars))!="<class 'list'>" or len(target_vars) == 1:
+
+                    print(X_train.shape)
+
                     # set input shape to dimension of data
                     input = keras.layers.Input(shape=(X_train.shape[1],))
 
@@ -1435,28 +1428,19 @@ def image_model(save_loc,data_file,test_file,target_vars,epochs_num):
                 else:
                     input = keras.layers.Input(shape=(X_train.shape[1],))
 
-                    def add_target(Input):
-                        x = layers.Dense(90,activation=activation_function)(Input)
-                        x = layers.Dense(60, activation=activation_function)(x)
-                        x = layers.Dense(45, activation=activation_function)(x)
-                        x = layers.Dense(35, activation=activation_function)(x)
-                        x = layers.Dense(20, activation=activation_function)(x)
-                        return x
+                    x = Dense(150, activation=activation_function)(input)
+                    x = Dense(150, activation=activation_function)(x)
+                    x = Dense(150, activation=activation_function)(x)
+                    x = Dense(120, activation=activation_function)(x)
+                    x = Dense(120, activation=activation_function)(x)
+                    x = Dense(100, activation=activation_function)(x)
+                    x = Dense(100, activation=activation_function)(x)
+                    x = Dense(80, activation=activation_function)(x)
+                    x = Dense(80, activation=activation_function)(x)
+                    x = Dense(45, activation=activation_function)(x)
+                    output = Dense(len(target_vars), activation='linear')(x)
 
-                    output_list = []
-                    for vars in range(len(target_vars)):
-                        x = add_target(input)
-                        output_list.append(x)
-
-                    x = layers.Concatenate()(output_list)
-                    output_list.clear()
-                    x = layers.Dense(12,activation=activation_function)(x)
-                    for vars in range(len(target_vars)):
-                        # create output layer
-                        y = layers.Dense(1,activation='linear')(x)
-                        output_list.append(y)
-
-                    model = keras.Model(inputs=input,outputs=output_list)
+                    model = keras.Model(inputs=input,outputs=output)
 
                     model.compile(optimizer='adam',
                                   loss='mean_squared_error',
