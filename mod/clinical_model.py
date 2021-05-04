@@ -27,7 +27,7 @@ class clinical:
 
         return features
 
-    def hasNan(array):
+    def hasNan(self,array):
         # function checks for nans/non-compatible objects
 
         nan = np.isnan(array)
@@ -96,35 +96,38 @@ class clinical:
         y = df.loc[:, self.target_vars]
 
         # partition data
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=42)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.4, random_state=42)
 
         # partition val/test
-        X_test, X_val = train_test_split(X_test, test_size=0.5, random_state=34)
-        y_test, y_val = train_test_split(y_test, test_size=0.5, random_state=34)
+        self.X_test, self.X_val = train_test_split(self.X_test, test_size=0.5, random_state=34)
+        self.y_test, self.y_val = train_test_split(self.y_test, test_size=0.5, random_state=34)
 
         # normalize data
         min_max_scaler = MinMaxScaler()
-        X_train = min_max_scaler.fit_transform(X_train)
-        X_test = min_max_scaler.fit_transform(X_test)
-        X_val = min_max_scaler.fit_transform(X_val)
+        self.X_train = min_max_scaler.fit_transform(self.X_train)
+        self.X_test = min_max_scaler.fit_transform(self.X_test)
+        self.X_val = min_max_scaler.fit_transform(self.X_val)
 
         if self.multiple_targets:
-            y_test = min_max_scaler.fit_transform(y_test)
-            y_train = min_max_scaler.fit_transform(y_train)
-            y_val = min_max_scaler.fit_transform(y_val)
+            self.y_test = min_max_scaler.fit_transform(self.y_test)
+            self.y_train = min_max_scaler.fit_transform(self.y_train)
+            self.y_val = min_max_scaler.fit_transform(self.y_val)
 
-        if str(type(y_train)) == "<class 'pandas.core.frame.DataFrame'>":
-            y_train = y_train.to_numpy()
+        if str(type(self.y_train)) == "<class 'pandas.core.frame.DataFrame'>":
+            self.y_train = self.y_train.to_numpy()
 
-        if str(type(y_test)) == "<class 'pandas.core.frame.DataFrame'>":
-            y_test = y_test.to_numpy()
+        if str(type(self.y_test)) == "<class 'pandas.core.frame.DataFrame'>":
+            self.y_test = self.y_test.to_numpy()
 
         # check y_train for NANs
-        self.hasNan(y_train)
+        self.hasNan(self.y_train)
+
+    def NN(self):
+        self.pre()
 
         if not self.load_fit:
             if str(type(self.target_vars))=="<class 'list'>" and len(self.target_vars) > 1:
-                input = keras.Input(shape=X_train.shape[1],)
+                input = keras.Input(shape=self.X_train.shape[1],)
 
                 x = Dense(10, activation=self.activation_function)(input)
                 x = Dense(10, activation=self.activation_function)(x)
@@ -139,13 +142,13 @@ class clinical:
                               loss='mean_absolute_error',
                               metrics=['accuracy'])
 
-                fit = model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=5)
+                fit = model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=5)
 
             else:
-                print(X_train.shape[1])
+                print(self.X_train.shape[1])
 
                 # set input shape to dimension of data
-                input = keras.layers.Input(shape=(X_train.shape[1],))
+                input = keras.layers.Input(shape=(self.X_train.shape[1],))
 
                 x = Dense(9, activation=self.activation_function)(input)
                 x = Dense(9, activation=self.activation_function)(x)
@@ -159,7 +162,7 @@ class clinical:
                               loss='mean_squared_error',
                               metrics=['accuracy'])
 
-                fit = model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32)
+                fit = model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32)
 
                 if self.save_fit == True:
                     model.save(self.save_location)

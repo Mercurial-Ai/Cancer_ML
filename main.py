@@ -25,6 +25,7 @@ from tkinter import ttk
 import GUI
 from statistics import mean
 import mod.diag as diag
+import mod.clinical_model as clinical
 from sklearn.datasets import load_breast_cancer
 
 # un-comment to show all of pandas dataframe
@@ -33,6 +34,7 @@ from sklearn.datasets import load_breast_cancer
 
 # un-comment to show all of numpy array
 #np.set_printoptions(threshold=sys.maxsize)
+from mod.clinical_model import clinical
 
 useDefaults = GUI.useDefaults
 if useDefaults:
@@ -53,7 +55,7 @@ if useFront == False:
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = ["chemotherapy_given","cancer_surgery_performed"]
+    target_variables = "chemotherapy_given"
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -77,7 +79,7 @@ if useFront == False:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = True
+    run_img_model = False
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -117,7 +119,7 @@ if useFront == False:
     useCNN = False
 
     # if true, diagnosis model will run
-    diagModel = True
+    diagModel = False
 
     # END VARIABLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 elif useFront == True:
@@ -976,210 +978,8 @@ def postTrain(multiple_targets,y_val,X_val,X_test,y_test,model):
     print(decodedPrediction)
 
 
-def model(data_file, test_file, target_vars, epochs_num):
-
-    # initialize bool as false
-    multiple_targets = False
-
-    if str(type(target_vars)) == "<class 'list'>" and len(target_vars) > 1:
-        multiple_targets = True
-
-    if multiple_targets == False:  
-        # get top 10 most correlated features to utilize
-        features = list(feature_selection(data_file,target_vars,10).keys())
-    else: 
-        # initialize list 
-        features = []
-
-        # make list with top 10 most correlated features from both vars. 
-        # Ex. 20 total features for 2 target vars 
-        for vars in target_vars: 
-            featuresVar = list(feature_selection(data_file,vars,10).keys())
-            features = features + featuresVar
-
-        # remove duplicates 
-        features = list(set(features))
-
-    # only use features determined by feature_selection
-    data_file = data_file[data_file.columns.intersection(features)]
-
-    adapted_dataset = format_data(data_file, test_file, target_vars)
-
-    print(adapted_dataset)
-
-    # initiate negative_vals as False
-    negative_vals = False
-
-    # determine activation function (relu or tanh) from if there are negative numbers in target variable
-    df_values = adapted_dataset.values
-    df_values = df_values.flatten()
-    for val in df_values:
-        val = float(val)
-        if val < 0:
-            negative_vals = True
-
-    if negative_vals == True:
-        act_func = "tanh"
-    else:
-        act_func = 'relu'
-
-    print(act_func)
-
-    def NN(data_file, target_vars, epochs_num,activation_function):
-        global resultList
-        global prediction
-
-        # Get data. Data must already be in a Pandas Dataframe
-        df = data_file
-
-        #y data
-        labels = df.loc[:,target_vars]
-        #x data
-        features = df.drop(target_vars,axis=1)
-
-        X = features
-        y = labels
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=42)
-
-        # split test data into validation and test
-        X_test, X_val = train_test_split(X_test, test_size=0.5, random_state=34)
-        y_test, y_val = train_test_split(y_test, test_size=0.5, random_state=34)
-
-        # normalize data
-        min_max_scaler = MinMaxScaler()
-        X_train = min_max_scaler.fit_transform(X_train)
-        X_test = min_max_scaler.fit_transform(X_test)
-        X_val = min_max_scaler.fit_transform(X_val)
-
-        if multiple_targets:
-            y_test = min_max_scaler.fit_transform(y_test)
-            y_train = min_max_scaler.fit_transform(y_train)
-            y_val = min_max_scaler.fit_transform(y_val)
-
-        if str(type(y_train)) == "<class 'pandas.core.frame.DataFrame'>":
-            y_train = y_train.to_numpy()
-
-        if str(type(y_test)) == "<class 'pandas.core.frame.DataFrame'>":
-            y_test = y_test.to_numpy()
-
-        # check data for nans/non-compatible objects
-        def hasNan(array):
-            nan = np.isnan(array)
-            for arr in nan:
-                if array.ndim == 2: 
-                    for bool in arr:
-                        if bool: 
-                            containsNan = True
-                        else: 
-                            containsNan = False
-                elif array.ndim == 1: 
-                    if arr: 
-                        containsNan = True
-                    else: 
-                        containsNan = False
-
-            # check that all data is floats or integers 
-            if array.ndim == 1: 
-                typeList = []
-                for vals in array: 
-                    valType = str(type(vals))
-                    typeList.append(valType)
-
-                for types in typeList: 
-                    if types != "<class 'numpy.float64'>" and types != "<class 'numpy.int64'>": 
-                        containsNan = True
-
-            if containsNan: 
-                print("Data contains nan values")
-            else: 
-                print("Data does not contain nan values")
-
-        hasNan(y_train)
-
-        if not load_fit:
-            if str(type(target_vars))=="<class 'list'>" and len(target_vars) > 1:
-                input = keras.Input(shape=X_train.shape[1],)
-
-                x = layers.Dense(10,activation=activation_function)(input)
-                x = layers.Dense(10,activation=activation_function)(x)
-                x = layers.Dense(6,activation=activation_function)(x)
-                x = layers.Dense(4,activation=activation_function)(x)
-                x = layers.Dense(4,activation=activation_function)(x)
-                output = layers.Dense(len(target_vars),activation=activation_function)(x)
-
-                model = keras.Model(inputs=input,outputs=output)
-
-                model.compile(optimizer='SGD',
-                              loss='mean_absolute_error',
-                              metrics=['accuracy'])
-
-                fit = model.fit(X_train, y_train, epochs=epochs_num, batch_size=5)
-
-            else:
-                print(X_train.shape[1])
-
-                # set input shape to dimension of data
-                input = keras.layers.Input(shape=(X_train.shape[1],))
-
-                x = Dense(9,activation=activation_function)(input)
-                x = Dense(9,activation=activation_function)(x)
-                x = Dense(6,activation=activation_function)(x)
-                x = Dense(4,activation=activation_function)(x)
-                x = Dense(2,activation=activation_function)(x)
-                output = Dense(1, activation='linear')(x)
-                model = keras.Model(input, output)
-
-                model.compile(optimizer='SGD',
-                              loss='mean_squared_error',
-                              metrics=['accuracy'])
-
-                fit = model.fit(X_train, y_train, epochs=epochs_num, batch_size=32)
-
-            # plotting
-            history = fit
-
-            def plot(model_history,metric,graph_title):
-                history = model_history
-                plt.plot(history.history[metric])
-                plt.title(graph_title)
-                plt.ylabel(metric)
-                plt.xlabel('epoch')
-
-                save_path = os.path.join(data_save_loc, str(target_vars) + " " + metric + ".jpg")
-
-                if "?" in save_path:
-                    save_path = save_path.replace("?","")
-
-                if save_figs == True:
-                    plt.savefig(save_path)
-
-                if show_figs == True:
-                    plt.show()
-                else:
-                    plt.clf()
-
-            plot(history,'loss','model loss')
-
-            def save_fitted_model(model,save_location):
-                model.save(save_location)
-
-            if save_fit == True:
-                save_fitted_model(model,model_save_loc)
-
-        else:
-            model = keras.models.load_model(model_save_loc)
-
-        postTrain(multiple_targets,y_val,X_val,X_test,y_test,model)
-
-    NN(adapted_dataset, target_vars, epochs_num, act_func)
-
-if run_img_model == False and target_all == False:
-    model(main_data,test_file,target_variables,num_epochs)
-elif run_img_model == False and target_all == True:
-    # collect columns in data
-    cols = list(main_data.columns)
-    for column in cols:
-        model(main_data,test_file,column,num_epochs)
+clinical_model = clinical(main_data, target_variables, load_fit, save_fit, model_save_loc, num_epochs, "relu")
+clinical_model.NN()
 
 def image_model(save_loc,data_file,test_file,target_vars,epochs_num):
     print("starting image model")
