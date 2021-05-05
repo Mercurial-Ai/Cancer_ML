@@ -978,7 +978,7 @@ def postTrain(multiple_targets,y_val,X_val,X_test,y_test,model):
     print(decodedPrediction)
 
 
-clinical_model = clinical(main_data, target_variables, load_fit, save_fit, model_save_loc, num_epochs, "relu")
+clinical_model = clinical(main_data, mainPath, target_variables, load_fit, save_fit, model_save_loc, num_epochs, "relu")
 clinical_model.NN()
 
 def image_model(save_loc,data_file,test_file,target_vars,epochs_num):
@@ -1370,10 +1370,10 @@ def ValResultPage():
     resultFont = tkFont.Font(family="Consolas",size=16)
 
     # ADD WIDGETS
-    prediction = resultList[0]
-    roundedPred = resultList[1]
-    y_val = resultList[2]
-    percentAcc = resultList[3]
+    prediction = clinical_model.resultList[0]
+    roundedPred = clinical_model.resultList[1]
+    y_val = clinical_model.resultList[2]
+    percentAcc = clinical_model.resultList[3]
 
     def placeResults(txt):
         result = tk.Label(second_frame,text=txt,font=resultFont,bg='black',fg='white')
@@ -1449,10 +1449,10 @@ def trainResultPage():
     resultFont = tkFont.Font(family="Consolas", size=16)
 
     # ADD WIDGETS
-    prediction = resultList[4]
-    roundedPred = resultList[5]
-    y_test = resultList[6]
-    percentAcc = resultList[7]
+    prediction = clinical_model.resultList[4]
+    roundedPred = clinical_model.resultList[5]
+    y_test = clinical_model.resultList[6]
+    percentAcc = clinical_model.resultList[7]
 
     def placeResults(txt):
         result = tk.Label(second_frame,text=txt,font=resultFont,bg='black',fg='white')

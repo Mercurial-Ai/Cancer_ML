@@ -3,16 +3,147 @@ from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 from keras.layers import Dense
 import keras
+import pandas as pd 
 
 class clinical:
-    def __init__(self, data_file, target_vars, load_fit, save_fit, save_location, epochs_num, activation_function):
+    def __init__(self, data_file, mainPath, target_vars, load_fit, save_fit, save_location, epochs_num, activation_function):
         self.data_file = data_file
+        self.mainPath = mainPath
         self.target_vars = target_vars
         self.load_fit = load_fit
         self.save_fit = save_fit
         self.save_location = save_location
         self.epochs_num = epochs_num
         self.activation_function = activation_function
+
+    def checkBinary(self, target_var):  
+
+        orgPD = pd.read_csv(self.mainPath)
+        orgPD = orgPD.dropna()
+
+        # check if param is a list of multiple vars 
+        if str(type(target_var)) == "<class 'list'>" and len(target_var) > 1:
+
+            for vars in target_var: 
+
+                # initialize list to hold bools 
+                areBinary = []
+            
+                col = list(orgPD[vars])
+
+                # remove duplicates 
+                col = list(set(col))
+
+                # check if data is numerical 
+                for vals in col: 
+                    if str(type(vals)) == "<class 'int'>" or str(type(vals)) == "<class 'float'>": 
+                        numeric = True
+                    else: 
+                        numeric = False 
+
+                if not numeric: 
+
+                    if len(col) == 2: 
+                        isBinary = True
+                    else: 
+                        isBinary = False 
+
+                    areBinary.append(isBinary)
+                else: 
+                    areBinary = False
+
+            isBinary = areBinary 
+
+        else: 
+
+            col = list(orgPD[target_var])
+
+            # remove duplicates 
+            col = list(set(col))
+
+            # check if original data is numerical
+            for vals in col: 
+                if str(type(vals)) == "<class 'int'>" or str(type(vals)) == "<class 'float'>": 
+                    numeric = True
+                else: 
+                    numeric = False 
+            
+            if not numeric: 
+                if len(col) == 2: 
+                    isBinary = True
+                else: 
+                    isBinary = False 
+
+            else: 
+                isBinary = False
+
+        return isBinary
+
+    # function to decode post-training vals into text
+    # only use with binary values
+    # function rounds vals to convert  
+    def decode(self, iterable, codeDict): 
+        
+        if str(type(iterable)) == "<class 'list'>": 
+            iterable = np.array(iterable)
+
+        initialShape = iterable.shape
+        
+        iterable = iterable.flatten()
+
+        iterable = np.around(iterable,decimals=0)
+
+        dictKeys = list(codeDict.keys())
+        dictVals = list(codeDict.values())
+
+        # determine type of vals
+        # initialize text bool as false 
+        textKeys = False 
+        for keys in dictKeys: 
+            if str(type(keys)) == "<class 'str'>": 
+                textKeys = True
+
+        if not textKeys: 
+            i = 0 
+            for keys in dictKeys: 
+                keys = round(keys,0)
+                dictKeys[i] = keys
+                i = i + 1 
+        else: 
+            i = 0 
+            for vals in dictVals:
+                try:
+                    vals = round(vals,0)
+                    dictVals[i] = vals
+                except:
+                    i = i + 1
+
+        roundedDict = dict(zip(dictKeys,dictVals))
+
+        def target_dict(): 
+            colData = self.data_file.loc[:, self.target_vars]
+            try: 
+                for cols in list(colData.columns): 
+                    col = colData[cols].tolist()
+                    col = list(set(col))
+            except: 
+                col = colData.tolist()
+                col = list(set(col))
+
+        if self.isBinary: 
+            target_dict()
+        
+        convIt = []
+        for vals in iterable: 
+            tran = roundedDict[vals]
+            convIt.append(tran)
+
+        convIt = np.array(convIt)
+
+        # make array back into initial shape
+        convIt = np.reshape(convIt,initialShape)
+
+        return convIt
 
     def percentageAccuracy(self, iterable1, iterable2):
 
@@ -131,6 +262,8 @@ class clinical:
 
     def pre(self):
 
+        self.isBinary = self.checkBinary(self.target_vars)
+
         # initialize bool as false
         self.multiple_targets = False
 
@@ -192,6 +325,7 @@ class clinical:
         self.hasNan(self.y_train)
 
     def post(self):
+
         # utilize validation data
         prediction = self.model.predict(self.X_val,batch_size=1)
 
@@ -246,17 +380,19 @@ class clinical:
             print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
             print(percentAcc)
 
-            resultList.append(str(prediction))
-            resultList.append(str(roundedPred))
-            resultList.append(str(y_val))
-            resultList.append(str(percentAcc))
+            self.resultList = []
+
+            self.resultList.append(str(prediction))
+            self.resultList.append(str(roundedPred))
+            self.resultList.append(str(self.y_val))
+            self.resultList.append(str(percentAcc))
 
             # utilize test data
-            prediction = model.predict(X_test, batch_size=1)
+            prediction = self.model.predict(self.X_test, batch_size=1)
 
             roundedPred = np.around(prediction, 0)
 
-            if multiple_targets == False and roundedPred.ndim == 1:
+            if self.multiple_targets == False and roundedPred.ndim == 1:
                 i = 0
                 for vals in roundedPred:
                     if int(vals) == -0:
@@ -293,34 +429,34 @@ class clinical:
             print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
             print(roundedPred)
             print("- - - - - - - - - - - - - y test - - - - - - - - - - - - -")
-            print(y_test)
+            print(self.y_test)
 
             if str(type(prediction)) == "<class 'list'>":
                 prediction = np.array([prediction])
 
-            percentAcc = percentageAccuracy(roundedPred, y_test)
+            percentAcc = self.percentageAccuracy(roundedPred, self.y_test)
 
             print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
             print(percentAcc)
 
-            resultList.append(str(prediction))
-            resultList.append(str(roundedPred))
-            resultList.append(str(y_test))
-            resultList.append(str(percentAcc))
+            self.resultList.append(str(prediction))
+            self.resultList.append(str(roundedPred))
+            self.resultList.append(str(self.y_test))
+            self.resultList.append(str(percentAcc))
 
-            if multiple_targets == True and str(type(isBinary)) == "<class 'list'>":
+            if self.multiple_targets == True and str(type(self.isBinary)) == "<class 'list'>":
 
                 # initialize var as error message
                 decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
 
                 i = 0
-                for bools in isBinary:
+                for bools in self.isBinary:
                     if bools == True:
-                        decodedPrediction = decode(prediction[0, i], targetDict)
+                        decodedPrediction = self.decode(prediction[0, i], targetDict)
                     i = i + 1
             else:
-                if isBinary:
-                    decodedPrediction = decode(prediction, targetDict)
+                if self.isBinary:
+                    decodedPrediction = self.decode(prediction, targetDict)
                 else:
                     decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
 
@@ -373,3 +509,5 @@ class clinical:
                     self.model.save(self.save_location)
         else:
             self.model = keras.models.load_model(self.save_location)
+
+        self.post()
