@@ -14,6 +14,75 @@ class clinical:
         self.epochs_num = epochs_num
         self.activation_function = activation_function
 
+    def percentageAccuracy(self, iterable1, iterable2):
+
+        def roundList(iterable):
+
+            if str(type(iterable)) == "<class 'tensorflow.python.framework.ops.EagerTensor'>":
+                iterable = iterable.numpy()
+            roundVals = []
+            if int(iterable.ndim) == 1:
+                for i in iterable:
+                    i = round(i, 0)
+                    roundVals.append(i)
+
+            elif int(iterable.ndim) == 2:
+                for arr in iterable:
+                    for i in arr:
+                        i = round(i, 0)
+                        roundVals.append(i)
+
+            elif int(iterable.ndim) == 3:
+                for dim in iterable:
+                    for arr in dim:
+                        for i in arr:
+                            i = round(i, 0)
+                            roundVals.append(i)
+
+            elif int(iterable.ndim) == 4:
+                for d in iterable:
+                    for dim in d:
+                        for arr in dim:
+                            for i in arr:
+                                i = round(i, 0)
+                                roundVals.append(i)
+
+            else:
+                print("Too many dimensions--ERROR")
+
+            return roundVals
+
+        rounded1 = roundList(iterable1)
+        rounded2 = roundList(iterable2)
+
+        # remove negative zeros from lists
+        i = 0
+        for vals in rounded1:
+            if int(vals) == -0 or int(vals) == 0:
+                vals = abs(vals)
+                rounded1[i] = vals
+
+            i = i + 1
+
+        i = 0
+        for vals in rounded2:
+            if int(vals) == -0 or int(vals) == 0:
+                vals = abs(vals)
+                rounded2[i] = vals
+
+            i = i + 1
+
+        numCorrect = len([i for i, j in zip(rounded1, rounded2) if i == j])
+
+        listLen = len(rounded1)
+
+        percentCorr = numCorrect / listLen
+        percentCorr = percentCorr * 100
+
+        percentCorr = round(percentCorr, 2)
+
+        return percentCorr
+
     def feature_selection(self, dataset, target_vars, num_features):
         if self.multiple_targets == False:
             features = list(dataset.corr().abs().nlargest(num_features, target_vars).index)
@@ -122,6 +191,142 @@ class clinical:
         # check y_train for NANs
         self.hasNan(self.y_train)
 
+    def post(self):
+        # utilize validation data
+        prediction = self.model.predict(self.X_val,batch_size=1)
+
+        roundedPred = np.around(prediction, 0)
+
+        if self.multiple_targets == False and roundedPred.ndim == 1:
+            i = 0
+            for vals in roundedPred:
+                if int(vals) == -0:
+                    vals = abs(vals)
+                    roundedPred[i] = vals
+
+                i = i + 1
+
+        else:
+            preShape = roundedPred.shape
+
+            # if array has multiple dimensions, flatten the array
+            roundedPred = roundedPred.flatten()
+
+            i = 0
+            for vals in roundedPred:
+                if int(vals) == -0:
+                    vals = abs(vals)
+                    roundedPred[i] = vals
+
+                i = i + 1
+
+            if len(preShape) == 3:
+                if preShape[2] == 1:
+                    # reshape array to previous shape without the additional dimension
+                    roundedPred = np.reshape(roundedPred, preShape[:2])
+                else:
+                    roundedPred = np.reshape(roundedPred, preShape)
+
+            else:
+                roundedPred = np.reshape(roundedPred, preShape)
+
+            print("Validation Metrics")
+            print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
+            print(prediction)
+            print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
+            print(roundedPred)
+            print("- - - - - - - - - - - - - y val - - - - - - - - - - - - -")
+            print(self.y_val)
+
+            if str(type(prediction)) == "<class 'list'>":
+                prediction = np.array([prediction])
+
+            percentAcc = self.percentageAccuracy(roundedPred, self.y_val)
+
+            print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
+            print(percentAcc)
+
+            resultList.append(str(prediction))
+            resultList.append(str(roundedPred))
+            resultList.append(str(y_val))
+            resultList.append(str(percentAcc))
+
+            # utilize test data
+            prediction = model.predict(X_test, batch_size=1)
+
+            roundedPred = np.around(prediction, 0)
+
+            if multiple_targets == False and roundedPred.ndim == 1:
+                i = 0
+                for vals in roundedPred:
+                    if int(vals) == -0:
+                        vals = abs(vals)
+                        roundedPred[i] = vals
+
+                    i = i + 1
+            else:
+                preShape = roundedPred.shape
+
+                # if array has multiple dimensions, flatten the array
+                roundedPred = roundedPred.flatten()
+
+                i = 0
+                for vals in roundedPred:
+                    if int(vals) == -0:
+                        vals = abs(vals)
+                        roundedPred[i] = vals
+
+                    i = i + 1
+
+                if len(preShape) == 3:
+                    if preShape[2] == 1:
+                        # reshape array to previous shape without the additional dimension
+                        roundedPred = np.reshape(roundedPred, preShape[:2])
+                    else:
+                        roundedPred = np.reshape(roundedPred, preShape)
+                else:
+                    roundedPred = np.reshape(roundedPred, preShape)
+
+            print("Test Metrics")
+            print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
+            print(prediction)
+            print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
+            print(roundedPred)
+            print("- - - - - - - - - - - - - y test - - - - - - - - - - - - -")
+            print(y_test)
+
+            if str(type(prediction)) == "<class 'list'>":
+                prediction = np.array([prediction])
+
+            percentAcc = percentageAccuracy(roundedPred, y_test)
+
+            print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
+            print(percentAcc)
+
+            resultList.append(str(prediction))
+            resultList.append(str(roundedPred))
+            resultList.append(str(y_test))
+            resultList.append(str(percentAcc))
+
+            if multiple_targets == True and str(type(isBinary)) == "<class 'list'>":
+
+                # initialize var as error message
+                decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
+
+                i = 0
+                for bools in isBinary:
+                    if bools == True:
+                        decodedPrediction = decode(prediction[0, i], targetDict)
+                    i = i + 1
+            else:
+                if isBinary:
+                    decodedPrediction = decode(prediction, targetDict)
+                else:
+                    decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
+
+            print("- - - - - - - - - - - - - Translated Prediction - - - - - - - - - - - - -")
+            print(decodedPrediction)
+
     def NN(self):
         self.pre()
 
@@ -136,13 +341,13 @@ class clinical:
                 x = Dense(4, activation=self.activation_function)(x)
                 output = Dense(len(self.target_vars), activation=self.activation_function)(x)
 
-                model = keras.Model(inputs=input, outputs=output)
+                self.model = keras.Model(inputs=input, outputs=output)
 
-                model.compile(optimizer='SGD',
+                self.model.compile(optimizer='SGD',
                               loss='mean_absolute_error',
                               metrics=['accuracy'])
 
-                fit = model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=5)
+                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=5)
 
             else:
                 print(self.X_train.shape[1])
@@ -156,15 +361,15 @@ class clinical:
                 x = Dense(4, activation=self.activation_function)(x)
                 x = Dense(2, activation=self.activation_function)(x)
                 output = Dense(1, activation='linear')(x)
-                model = keras.Model(input, output)
+                self.model = keras.Model(input, output)
 
-                model.compile(optimizer='SGD',
+                self.model.compile(optimizer='SGD',
                               loss='mean_squared_error',
                               metrics=['accuracy'])
 
-                fit = model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32)
+                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32)
 
                 if self.save_fit == True:
-                    model.save(self.save_location)
+                    self.model.save(self.save_location)
         else:
-            model = keras.models.load_model(self.save_location)
+            self.model = keras.models.load_model(self.save_location)
