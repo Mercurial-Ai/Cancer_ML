@@ -79,72 +79,6 @@ class clinical:
 
         return isBinary
 
-    # function to decode post-training vals into text
-    # only use with binary values
-    # function rounds vals to convert  
-    def decode(self, iterable, codeDict): 
-        
-        if str(type(iterable)) == "<class 'list'>": 
-            iterable = np.array(iterable)
-
-        initialShape = iterable.shape
-        
-        iterable = iterable.flatten()
-
-        iterable = np.around(iterable,decimals=0)
-
-        dictKeys = list(codeDict.keys())
-        dictVals = list(codeDict.values())
-
-        # determine type of vals
-        # initialize text bool as false 
-        textKeys = False 
-        for keys in dictKeys: 
-            if str(type(keys)) == "<class 'str'>": 
-                textKeys = True
-
-        if not textKeys: 
-            i = 0 
-            for keys in dictKeys: 
-                keys = round(keys,0)
-                dictKeys[i] = keys
-                i = i + 1 
-        else: 
-            i = 0 
-            for vals in dictVals:
-                try:
-                    vals = round(vals,0)
-                    dictVals[i] = vals
-                except:
-                    i = i + 1
-
-        roundedDict = dict(zip(dictKeys,dictVals))
-
-        def target_dict(): 
-            colData = self.data_file.loc[:, self.target_vars]
-            try: 
-                for cols in list(colData.columns): 
-                    col = colData[cols].tolist()
-                    col = list(set(col))
-            except: 
-                col = colData.tolist()
-                col = list(set(col))
-
-        if self.isBinary: 
-            target_dict()
-        
-        convIt = []
-        for vals in iterable: 
-            tran = roundedDict[vals]
-            convIt.append(tran)
-
-        convIt = np.array(convIt)
-
-        # make array back into initial shape
-        convIt = np.reshape(convIt,initialShape)
-
-        return convIt
-
     def percentageAccuracy(self, iterable1, iterable2):
 
         def roundList(iterable):
@@ -443,25 +377,6 @@ class clinical:
             self.resultList.append(str(roundedPred))
             self.resultList.append(str(self.y_test))
             self.resultList.append(str(percentAcc))
-
-            if self.multiple_targets == True and str(type(self.isBinary)) == "<class 'list'>":
-
-                # initialize var as error message
-                decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
-
-                i = 0
-                for bools in self.isBinary:
-                    if bools == True:
-                        decodedPrediction = self.decode(prediction[0, i], targetDict)
-                    i = i + 1
-            else:
-                if self.isBinary:
-                    decodedPrediction = self.decode(prediction, targetDict)
-                else:
-                    decodedPrediction = "One or all of the target variables are non-binary and/or numeric"
-
-            print("- - - - - - - - - - - - - Translated Prediction - - - - - - - - - - - - -")
-            print(decodedPrediction)
 
     def NN(self):
         self.pre()
