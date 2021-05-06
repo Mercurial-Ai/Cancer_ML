@@ -296,6 +296,9 @@ class image_model:
 
             X_val_img = remove_ids(X_val_img)
 
+            print(X_train.shape)
+            print(X_train_img.shape)
+
             X_train = np.concatenate((X_train_img,X_train),axis=1)
             X_test = np.concatenate((X_test,X_test_img),axis=1)
             X_val = np.concatenate((X_val,X_val_img),axis=1)
