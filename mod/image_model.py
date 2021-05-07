@@ -86,23 +86,24 @@ class image_model:
         print("starting image model")
 
         if str(type(self.data_file)) == "<class 'pandas.core.frame.DataFrame'>":
-            adapted_dataset = self.data_file
+            self.df = self.data_file
         elif self.data_file[-4:] == ".csv":
-            adapted_dataset = pd.read_csv(self.data_file)
-            
-        if self.ID_dataset_col != "index":
-            print(adapted_dataset)
-            print(self.ID_dataset_col)
-            adapted_dataset = adapted_dataset.set_index(self.ID_dataset_col)
+            self.df = pd.read_csv(self.data_file)     
+        
+        # if statement fails, id is already index 
+        try: 
+            self.df = self.df.set_index(self.ID_dataset_col)
+        except: 
+            pass   
 
-        features = list(self.feature_selection(self.data_file, self.target_vars,10))
+        features = list(self.feature_selection(self.df, self.target_vars,10))
 
         # only use features determined by feature_selection in clinical data
-        self.data_file = self.data_file[self.data_file.columns.intersection(features)]
+        self.df = self.df[self.df.columns.intersection(features)]
 
-        adapted_dataset.index.names = ["ID"]
+        self.df.index.names = ["ID"]
 
-        img_array = np.array([])
+        self.img_array = np.array([])
         matching_ids = []
         img_list = os.listdir(self.model_save_loc)
 
@@ -125,7 +126,7 @@ class image_model:
             img_df = pd.DataFrame(data=self.img_array)
             cols = list(img_df.columns)
             id_col = img_df[cols[-1]].tolist()
-            dataset_id = adapted_dataset.index.tolist()
+            dataset_id = self.df.index.tolist()
 
             # determine what to put first in loop
             if len(id_col) >= len(dataset_id):
@@ -145,7 +146,7 @@ class image_model:
             for imgs in img_list:
 
                 # find matching ids
-                for ids in adapted_dataset.index:
+                for ids in self.df.index:
                     ids = int(ids)
                     if ids == int(imgs[self.img_id_name_loc[0]:self.img_id_name_loc[1]]):
                         matching_ids.append(ids)
@@ -161,7 +162,7 @@ class image_model:
                             img_numpy_array = img_numpy_array.flatten()
                             img_numpy_array = np.insert(img_numpy_array,len(img_numpy_array),ids)
                             num_usable_img = num_usable_img + 1
-                            img_array = np.append(img_array,img_numpy_array,axis=0)
+                            self.img_array = np.append(self.img_array,img_numpy_array,axis=0)
                             imgs_processed = imgs_processed + 1
 
                         else:
@@ -183,13 +184,13 @@ class image_model:
             # reshape into legal dimensions
             self.img_array = np.reshape(img_array,(num_usable_img,int(img_array.size/num_usable_img)))
 
-        adapted_dataset = adapted_dataset.loc[matching_ids]
+        self.df = self.df.loc[matching_ids]
 
         # initialize negative_vals as false
         negative_vals = False
 
         # determine activation function (relu or tanh) from if there are negative numbers in target variable
-        df_values = adapted_dataset.values
+        df_values = self.df.values
         df_values = df_values.flatten()
         for val in df_values:
             val = float(val)
@@ -213,7 +214,7 @@ class image_model:
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Clinical
         # Get data
-        df = self.data_file
+        df = self.df
 
         # y data
         labels = df[self.target_vars]

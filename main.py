@@ -62,7 +62,7 @@ if useFront == False:
     png = False
 
     # folder containing Cancer Imagery
-    load_dir = "D:\Cancer_Project\\Cancer Imagery\\HNSCC"
+    load_dir = "D:\Cancer_Project\Cancer Imagery\HEAD-NECK-RADIOMICS-HN1\HEAD-NECK-RADIOMICS-HN1"
 
     # directory to save data such as converted images
     save_dir = "D:\\Cancer_Project\\converted_img"
@@ -73,7 +73,7 @@ if useFront == False:
     # if true, numpy image array will be searched for in img_array_save
     load_numpy_img = True
 
-    # if true, attempt will be made to convert dicom files to jpg,png,or directly to npy
+    # if true, attempt will be made to convert dicom files to npy
     convert_imgs = False
 
     #if true, converted dicom images will be deleted after use
