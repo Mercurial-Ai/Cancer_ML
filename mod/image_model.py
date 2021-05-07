@@ -15,7 +15,7 @@ import psutil
 import matplotlib.pyplot as plt
 
 class image_model: 
-    def __init__(self, model_save_loc, data_file, target_vars, epochs_num, load_numpy_img, img_array_save, load_fit, img_dimensions, img_id_name_loc, useCNN, data_save_loc, save_figs, show_figs): 
+    def __init__(self, model_save_loc, data_file, target_vars, epochs_num, load_numpy_img, img_array_save, load_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs): 
         self.model_save_loc = model_save_loc
         self.data_file = data_file 
         self.target_vars = target_vars
@@ -25,6 +25,7 @@ class image_model:
         self.load_fit = load_fit
         self.img_dimensions = img_dimensions
         self.img_id_name_loc = img_id_name_loc
+        self.ID_dataset_col = ID_dataset_col
         self.useCNN = useCNN
         self.data_save_loc = data_save_loc
         self.save_figs = save_figs
@@ -42,56 +43,6 @@ class image_model:
             features = sum(features, [])
 
         return features
-
-    def prep_data(self, data_file_1, data_file_2):
-    if str(type(data_file_1)) != "<class 'pandas.core.frame.DataFrame'>":
-        file_1 = pd.read_csv(data_file_1)
-    else:
-        file_1 = data_file_1
-
-    common_ids = []
-
-    if ID_dataset_col != "index":
-        file_1 = file_1.set_index(ID_dataset_col)
-
-    ids_1 = file_1.index
-
-    if two_datasets == True:
-        if str(type(data_file_2)) != "<class 'pandas.core.frame.DataFrame'>":
-            file_2 = pd.read_csv(data_file_2)
-        else:
-            file_2 = data_file_2
-
-        file_2 = file_2.set_index(ID_dataset_col)
-        ids_2 = file_2.index
-        # determine the largest dataset to put first in the for statement
-        if ids_1.shape[0] > ids_2.shape[0]:
-            longest_ids = ids_1.values.tolist()
-            shortest_ids = ids_2.values.tolist()
-        elif ids_1.shape[0] < ids_2.shape[0]:
-            longest_ids = ids_2.values.tolist()
-            shortest_ids = ids_1.values.tolist()
-        elif ids_1.shape[0] == ids_2.shape[0]:
-            longest_ids = ids_1.values.tolist()
-            shortest_ids = ids_2.values.tolist()
-
-        for i in longest_ids:
-            for z in shortest_ids:
-                if int(i) == int(z):
-                    common_ids.append(i)
-
-        adapted_1 = file_1.loc[common_ids]
-        adapted_2 = file_2.loc[common_ids]
-        combined_dataset = adapted_1.join(adapted_2)
-
-        # eliminate duplicate variables
-        for i in varMatches.values():
-            combined_dataset = combined_dataset.drop(i,axis=1)
-        data = combined_dataset
-    else:
-        data = file_1
-
-    return data
 
     def percentageAccuracy(self, iterable1, iterable2):
 
@@ -138,6 +89,11 @@ class image_model:
             adapted_dataset = self.data_file
         elif self.data_file[-4:] == ".csv":
             adapted_dataset = pd.read_csv(self.data_file)
+            
+        if self.ID_dataset_col != "index":
+            print(adapted_dataset)
+            print(self.ID_dataset_col)
+            adapted_dataset = adapted_dataset.set_index(self.ID_dataset_col)
 
         features = list(self.feature_selection(self.data_file, self.target_vars,10))
 

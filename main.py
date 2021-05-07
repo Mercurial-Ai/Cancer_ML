@@ -984,7 +984,7 @@ if not run_img_model:
     clinical_model.NN()
 
 elif run_img_model: 
-    image_model = image_model(save_dir, main_data, target_variables, num_epochs, load_numpy_img, img_array_save, load_fit, img_dimensions, img_id_name_loc, useCNN, data_save_loc, save_figs, show_figs)
+    image_model = image_model(save_dir, main_data, target_variables, num_epochs, load_numpy_img, img_array_save, load_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs)
     image_model.NN()
 
 def ValResultPage():
