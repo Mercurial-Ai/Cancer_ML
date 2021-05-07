@@ -114,13 +114,13 @@ class image_model:
         imgs_processed = 0
 
         if self.load_numpy_img == True:
-            self.img_array = np.load(os.path.join(self.img_array_save,os.listdir(self.img_array_save)[0]))
+            self.img_array = np.load(os.path.join(self.img_array_save, os.listdir(self.img_array_save)[0]))
             if len(self.img_dimensions) == 3:
                 flat_res = int((self.img_dimensions[0]*self.img_dimensions[1]*self.img_dimensions[2])+1)
             elif len(self.img_dimensions) == 2:
                 flat_res = int((self.img_dimensions[0]*self.img_dimensions[1])+1)
             num_img = int(self.img_array.shape[0]/flat_res)
-            self.img_array = np.reshape(self.img_array,(num_img,flat_res))
+            self.img_array = np.reshape(self.img_array, (num_img, flat_res))
 
             ## retrieving ids
             img_df = pd.DataFrame(data=self.img_array)
@@ -160,9 +160,9 @@ class image_model:
                         img_numpy_array = img_to_array(img)
                         if img_numpy_array.shape == self.img_dimensions:
                             img_numpy_array = img_numpy_array.flatten()
-                            img_numpy_array = np.insert(img_numpy_array,len(img_numpy_array),ids)
+                            img_numpy_array = np.insert(img_numpy_array, len(img_numpy_array), ids)
                             num_usable_img = num_usable_img + 1
-                            self.img_array = np.append(self.img_array,img_numpy_array,axis=0)
+                            self.img_array = np.append(self.img_array, img_numpy_array, axis=0)
                             imgs_processed = imgs_processed + 1
 
                         else:
@@ -179,10 +179,10 @@ class image_model:
                     print(str(psutil.virtual_memory()))
 
             # save the array
-            np.save(os.path.join(self.img_array_save, "img_array"), img_array)
+            np.save(os.path.join(self.img_array_save, "img_array"), self.img_array)
 
             # reshape into legal dimensions
-            self.img_array = np.reshape(img_array,(num_usable_img,int(img_array.size/num_usable_img)))
+            self.img_array = np.reshape(self.img_array,(num_usable_img,int(self.img_array.size/num_usable_img)))
 
         self.df = self.df.loc[matching_ids]
 
@@ -219,7 +219,7 @@ class image_model:
         # y data
         labels = df[self.target_vars]
         # x data
-        features = df.drop(self.target_vars,axis=1)
+        features = df.drop(self.target_vars, axis=1)
 
         X = features
         y = labels
@@ -257,9 +257,9 @@ class image_model:
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Image
 
-        X_train_img, X_test_img = train_test_split(self.img_array,test_size=0.4,random_state=42)
+        X_train_img, X_test_img = train_test_split(self.img_array, test_size=0.4, random_state=42)
 
-        X_test_img, X_val_img = train_test_split(X_test_img,test_size=0.5,random_state=34)
+        X_test_img, X_val_img = train_test_split(X_test_img, test_size=0.5, random_state=34)
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -289,9 +289,9 @@ class image_model:
             X_test_img = min_max_scaler.fit_transform(X_test_img)
             X_val_img = min_max_scaler.fit_transform(X_val_img)
 
-            X_train_img = np.reshape(X_train_img,(X_train_img.shape[0], self.img_dimensions[0], self.img_dimensions[1],1))
-            X_test_img = np.reshape(X_test_img,(X_test_img.shape[0], self.img_dimensions[0], self.img_dimensions[1],1))
-            X_val_img = np.reshape(X_val_img,(X_val_img.shape[0], self.img_dimensions[0], self.img_dimensions[1],1))
+            X_train_img = np.reshape(X_train_img, (X_train_img.shape[0], self.img_dimensions[0], self.img_dimensions[1], 1))
+            X_test_img = np.reshape(X_test_img, (X_test_img.shape[0], self.img_dimensions[0], self.img_dimensions[1], 1))
+            X_val_img = np.reshape(X_val_img, (X_val_img.shape[0], self.img_dimensions[0], self.img_dimensions[1], 1))
 
             X_train = X_train_img
             X_test = X_test_img
@@ -307,9 +307,9 @@ class image_model:
             print(X_train.shape)
             print(X_train_img.shape)
 
-            X_train = np.concatenate((X_train_img,X_train),axis=1)
-            X_test = np.concatenate((X_test,X_test_img),axis=1)
-            X_val = np.concatenate((X_val,X_val_img),axis=1)
+            X_train = np.concatenate((X_train_img, X_train), axis=1)
+            X_test = np.concatenate((X_test, X_test_img), axis=1)
+            X_val = np.concatenate((X_val, X_val_img), axis=1)
 
             # normalize data
             min_max_scaler = MinMaxScaler()
@@ -385,13 +385,13 @@ class image_model:
             else:
                 self.model = Sequential()
 
-                self.model.add(layers.Conv2D(64,(3,3),input_shape=X_train.shape[1:]))
+                self.model.add(layers.Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
                 self.model.add(layers.Activation('relu'))
-                self.model.add(layers.MaxPooling2D(pool_size=(2,2)))
+                self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
-                self.model.add(layers.Conv2D(64,(3,3)))
+                self.model.add(layers.Conv2D(64, (3, 3)))
                 self.model.add(layers.Activation('relu'))
-                self.model.add(layers.MaxPooling2D(pool_size=(2,2)))
+                self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
                 self.model.add(layers.Flatten())
 
@@ -423,10 +423,10 @@ class image_model:
             plt.ylabel(metric)
             plt.xlabel('epoch')
 
-            save_path = os.path.join(self.data_save_loc,str(self.target_vars) + " " + metric + ".jpg")
+            save_path = os.path.join(self.data_save_loc, str(self.target_vars) + " " + metric + ".jpg")
 
             if "?" in save_path:
-                save_path = save_path.replace("?","")
+                save_path = save_path.replace("?", "")
 
             if self.save_figs == True:
                 plt.savefig(save_path)
@@ -447,7 +447,7 @@ class image_model:
         # utilize validation data
         prediction = self.model.predict(self.X_val, batch_size=1)
 
-        roundedPred = np.around(prediction,0)
+        roundedPred = np.around(prediction, 0)
 
         if self.multiple_targets == False and roundedPred.ndim == 1:
             i = 0
@@ -504,9 +504,9 @@ class image_model:
         self.resultList.append(str(percentAcc))
 
         # utilize test data
-        prediction = self.model.predict(self.X_test,batch_size=1)
+        prediction = self.model.predict(self.X_test, batch_size=1)
 
-        roundedPred = np.around(prediction,0)
+        roundedPred = np.around(prediction, 0)
 
         if self.multiple_targets == False and roundedPred.ndim == 1: 
             i = 0
