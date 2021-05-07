@@ -8,6 +8,7 @@ import keras
 from keras import layers
 import os 
 from keras.preprocessing.image import img_to_array
+from keras.preprocessing.image import load_img
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import psutil
@@ -41,6 +42,56 @@ class image_model:
             features = sum(features, [])
 
         return features
+
+    def prep_data(self, data_file_1, data_file_2):
+    if str(type(data_file_1)) != "<class 'pandas.core.frame.DataFrame'>":
+        file_1 = pd.read_csv(data_file_1)
+    else:
+        file_1 = data_file_1
+
+    common_ids = []
+
+    if ID_dataset_col != "index":
+        file_1 = file_1.set_index(ID_dataset_col)
+
+    ids_1 = file_1.index
+
+    if two_datasets == True:
+        if str(type(data_file_2)) != "<class 'pandas.core.frame.DataFrame'>":
+            file_2 = pd.read_csv(data_file_2)
+        else:
+            file_2 = data_file_2
+
+        file_2 = file_2.set_index(ID_dataset_col)
+        ids_2 = file_2.index
+        # determine the largest dataset to put first in the for statement
+        if ids_1.shape[0] > ids_2.shape[0]:
+            longest_ids = ids_1.values.tolist()
+            shortest_ids = ids_2.values.tolist()
+        elif ids_1.shape[0] < ids_2.shape[0]:
+            longest_ids = ids_2.values.tolist()
+            shortest_ids = ids_1.values.tolist()
+        elif ids_1.shape[0] == ids_2.shape[0]:
+            longest_ids = ids_1.values.tolist()
+            shortest_ids = ids_2.values.tolist()
+
+        for i in longest_ids:
+            for z in shortest_ids:
+                if int(i) == int(z):
+                    common_ids.append(i)
+
+        adapted_1 = file_1.loc[common_ids]
+        adapted_2 = file_2.loc[common_ids]
+        combined_dataset = adapted_1.join(adapted_2)
+
+        # eliminate duplicate variables
+        for i in varMatches.values():
+            combined_dataset = combined_dataset.drop(i,axis=1)
+        data = combined_dataset
+    else:
+        data = file_1
+
+    return data
 
     def percentageAccuracy(self, iterable1, iterable2):
 
@@ -148,7 +199,7 @@ class image_model:
                 print("starting data preparation process")
                 for ids in matching_ids:
                     if ids == int(imgs[self.img_id_name_loc[0]:self.img_id_name_loc[1]]):
-                        img = self.load_img(os.path.join(self.data_save_loc, imgs))
+                        img = load_img(os.path.join(self.data_save_loc, imgs))
                         img_numpy_array = img_to_array(img)
                         if img_numpy_array.shape == self.img_dimensions:
                             img_numpy_array = img_numpy_array.flatten()
