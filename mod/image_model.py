@@ -96,7 +96,7 @@ class image_model:
         except: 
             pass   
 
-        features = list(self.feature_selection(self.df, self.target_vars,10))
+        features = list(self.feature_selection(self.df, self.target_vars, 10))
 
         # only use features determined by feature_selection in clinical data
         self.df = self.df[self.df.columns.intersection(features)]
