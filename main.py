@@ -980,12 +980,12 @@ def postTrain(multiple_targets,y_val,X_val,X_test,y_test,model):
 
 
 if not run_img_model: 
-    clinical_model = clinical(main_data, mainPath, target_variables, load_fit, save_fit, model_save_loc, num_epochs, "relu")
-    clinical_model.NN()
+    model = clinical(main_data, mainPath, target_variables, load_fit, save_fit, model_save_loc, num_epochs, "relu")
+    model.NN()
 
 elif run_img_model: 
-    image_model = image_model(save_dir, main_data, target_variables, num_epochs, load_numpy_img, img_array_save, load_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs)
-    image_model.NN()
+    model = image_model(save_dir, main_data, target_variables, num_epochs, load_numpy_img, img_array_save, load_fit, save_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs)
+    model.NN()
 
 def ValResultPage():
     root = tk.Tk()
@@ -1022,10 +1022,10 @@ def ValResultPage():
     resultFont = tkFont.Font(family="Consolas",size=16)
 
     # ADD WIDGETS
-    prediction = clinical_model.resultList[0]
-    roundedPred = clinical_model.resultList[1]
-    y_val = clinical_model.resultList[2]
-    percentAcc = clinical_model.resultList[3]
+    prediction = model.resultList[0]
+    roundedPred = model.resultList[1]
+    y_val = model.resultList[2]
+    percentAcc = model.resultList[3]
 
     def placeResults(txt):
         result = tk.Label(second_frame,text=txt,font=resultFont,bg='black',fg='white')
@@ -1101,10 +1101,10 @@ def trainResultPage():
     resultFont = tkFont.Font(family="Consolas", size=16)
 
     # ADD WIDGETS
-    prediction = clinical_model.resultList[4]
-    roundedPred = clinical_model.resultList[5]
-    y_test = clinical_model.resultList[6]
-    percentAcc = clinical_model.resultList[7]
+    prediction = model.resultList[4]
+    roundedPred = model.resultList[5]
+    y_test = model.resultList[6]
+    percentAcc = model.resultList[7]
 
     def placeResults(txt):
         result = tk.Label(second_frame,text=txt,font=resultFont,bg='black',fg='white')

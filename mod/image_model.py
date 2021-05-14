@@ -13,9 +13,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import psutil
 import matplotlib.pyplot as plt
+from mod.percentage_accuracy import percentageAccuracy
 
 class image_model: 
-    def __init__(self, model_save_loc, data_file, target_vars, epochs_num, load_numpy_img, img_array_save, load_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs): 
+    def __init__(self, model_save_loc, data_file, target_vars, epochs_num, load_numpy_img, img_array_save, load_fit, save_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs): 
         self.model_save_loc = model_save_loc
         self.data_file = data_file 
         self.target_vars = target_vars
@@ -23,6 +24,7 @@ class image_model:
         self.load_numpy_img = load_numpy_img
         self.img_array_save = img_array_save
         self.load_fit = load_fit
+        self.save_fit = save_fit
         self.img_dimensions = img_dimensions
         self.img_id_name_loc = img_id_name_loc
         self.ID_dataset_col = ID_dataset_col
@@ -43,44 +45,6 @@ class image_model:
             features = sum(features, [])
 
         return features
-
-    def percentageAccuracy(self, iterable1, iterable2):
-
-        def roundList(iterable):
-
-            if str(type(iterable)) == "<class 'tensorflow.python.framework.ops.EagerTensor'>":
-                iterable = iterable.numpy()
-            roundVals = []
-            if int(iterable.ndim) == 1:
-                for i in iterable:
-                    i = round(i, 0)
-                    roundVals.append(i)
-
-            elif int(iterable.ndim) == 2:
-                for arr in iterable:
-                    for i in arr:
-                        i = round(i, 0)
-                        roundVals.append(i)
-
-            elif int(iterable.ndim) == 3:
-                for dim in iterable:
-                    for arr in dim:
-                        for i in arr:
-                            i = round(i, 0)
-                            roundVals.append(i)
-
-            elif int(iterable.ndim) == 4:
-                for d in iterable:
-                    for dim in d:
-                        for arr in dim:
-                            for i in arr:
-                                i = round(i, 0)
-                                roundVals.append(i)
-
-            else:
-                print("Too many dimensions--ERROR")
-
-            return roundVals
 
     def pre(self): 
         print("starting image model")
@@ -491,7 +455,7 @@ class image_model:
         if str(type(prediction)) == "<class 'list'>":
             prediction = np.array([prediction])
 
-        percentAcc = self.percentageAccuracy(roundedPred, self.y_val)
+        percentAcc = percentageAccuracy(roundedPred, self.y_val)
 
         print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
         print(percentAcc)
@@ -550,7 +514,7 @@ class image_model:
         if str(type(prediction)) == "<class 'list'>":
             prediction = np.array([prediction])
 
-        percentAcc = self.percentageAccuracy(roundedPred, self.y_test)
+        percentAcc = percentageAccuracy(roundedPred, self.y_test)
         
         print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
         print(percentAcc)
