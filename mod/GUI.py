@@ -158,168 +158,173 @@ elif dataset == "HN1":
     main_data = "data/HNSCC-HN1/Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020.csv"
 elif dataset == "METABRIC":
     main_data = "data/METABRIC_RNA_Mutation/METABRIC_RNA_Mutation.csv"
+elif dataset == "other": 
+    main_data = "other"
 
-tUI = targetUI(main_data)
-tUI.setup()
-tUI.draw()
-target = tUI.target.targetList
+if main_data != "other": 
+    tUI = targetUI(main_data)
+    tUI.setup()
+    tUI.draw()
+    target = tUI.target.targetList
 
-with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
-    vars=projectVars.readlines()
+if dataset == "other": 
 
-window = Tk()
+    with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
+        vars=projectVars.readlines()
 
-window.title("Cancer ML")
+    window = Tk()
 
-window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
+    window.title("Cancer ML")
 
-main_frame = Frame(window)
-main_frame.pack(fill=BOTH,expand=1)
+    window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
 
-canvas = Canvas(main_frame)
-canvas.pack(side=LEFT, fill=BOTH, expand=1)
+    main_frame = Frame(window)
+    main_frame.pack(fill=BOTH,expand=1)
 
-# Add scrollbars to the canvas
-scrollbar = ttk.Scrollbar(main_frame, orient=VERTICAL, command=canvas.yview)
-scrollbar.pack(side=RIGHT, fill=Y)
+    canvas = Canvas(main_frame)
+    canvas.pack(side=LEFT, fill=BOTH, expand=1)
 
-scrollbar_x = ttk.Scrollbar(main_frame,orient=HORIZONTAL, command=canvas.xview)
-scrollbar_x.pack(side=BOTTOM, fill=X)
+    # Add scrollbars to the canvas
+    scrollbar = ttk.Scrollbar(main_frame, orient=VERTICAL, command=canvas.yview)
+    scrollbar.pack(side=RIGHT, fill=Y)
 
-# Configure the canvas
-canvas.configure(xscrollcommand=scrollbar_x.set)
-canvas.configure(yscrollcommand=scrollbar.set)
-canvas.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    scrollbar_x = ttk.Scrollbar(main_frame,orient=HORIZONTAL, command=canvas.xview)
+    scrollbar_x.pack(side=BOTTOM, fill=X)
 
-second_frame = Frame(canvas)
-canvas.create_window((0,0), window=second_frame, anchor="nw")
+    # Configure the canvas
+    canvas.configure(xscrollcommand=scrollbar_x.set)
+    canvas.configure(yscrollcommand=scrollbar.set)
+    canvas.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
-# get screen dimensions
-screenHeight = second_frame.winfo_screenheight()
-screenWidth = second_frame.winfo_screenwidth()
+    second_frame = Frame(canvas)
+    canvas.create_window((0,0), window=second_frame, anchor="nw")
 
-# make font for title
-fontTitle = tkFont.Font(family="Georgia",size=20)
+    # get screen dimensions
+    screenHeight = second_frame.winfo_screenheight()
+    screenWidth = second_frame.winfo_screenwidth()
 
-# make font for variable labels
-varFont = tkFont.Font(family="Times New Roman",size=16)
+    # make font for title
+    fontTitle = tkFont.Font(family="Georgia",size=20)
 
-# color for variable labels
-varColor = "#262121"
+    # make font for variable labels
+    varFont = tkFont.Font(family="Times New Roman",size=16)
 
-# make font for entry boxes
-inputFont = tkFont.Font(family="Georgia",size=12)
+    # color for variable labels
+    varColor = "#262121"
 
-# make title
-title = Label(second_frame,text="Data Page",font=fontTitle)
-title.grid(column=1)
+    # make font for entry boxes
+    inputFont = tkFont.Font(family="Georgia",size=12)
 
-# initialize vars
-boolList = []
+    # make title
+    title = Label(second_frame,text="Data Page",font=fontTitle)
+    title.grid(column=1)
 
-# class to make pair of true/false buttons
-class boolButtons:
-    def __init__(self,name):
-        self.name = name
+    # initialize vars
+    boolList = []
 
-    def true(self):
-        global boolList
+    # class to make pair of true/false buttons
+    class boolButtons:
+        def __init__(self,name):
+            self.name = name
 
-        bool = True
-        boolList.append(bool)
+        def true(self):
+            global boolList
 
-        self.buttonTrue.config(relief=SUNKEN,background=themeColor)
-        self.buttonFalse.config(relief=RAISED,background='SystemButtonFace')
+            bool = True
+            boolList.append(bool)
 
-    def false(self):
-        global boolList
+            self.buttonTrue.config(relief=SUNKEN,background=themeColor)
+            self.buttonFalse.config(relief=RAISED,background='SystemButtonFace')
 
-        bool = False
-        boolList.append(bool)
+        def false(self):
+            global boolList
 
-        self.buttonTrue.config(relief=RAISED,background='SystemButtonFace')
-        self.buttonFalse.config(relief=SUNKEN,background=themeColor)
+            bool = False
+            boolList.append(bool)
 
-    def label(self):
-        label = Label(second_frame,text=self.name,font=varFont,fg=varColor)
+            self.buttonTrue.config(relief=RAISED,background='SystemButtonFace')
+            self.buttonFalse.config(relief=SUNKEN,background=themeColor)
+
+        def label(self):
+            label = Label(second_frame,text=self.name,font=varFont,fg=varColor)
+            label.grid(column=1,pady=40)
+
+        def makeButton(self):
+            self.buttonTrue = Button(second_frame,text="True",width=25,height=3,font=inputFont,command=self.true,activebackground=themeColor)
+            self.buttonTrue.grid(column=1)
+
+            self.buttonFalse = Button(second_frame,text="False",width=25,height=3,font=inputFont,command=self.false,activebackground=themeColor)
+            self.buttonFalse.grid(column=1)
+
+    def makeEntry(name):
+        entryText = StringVar()
+
+        label = Label(second_frame,text=name,font=varFont,fg=varColor)
         label.grid(column=1,pady=40)
 
-    def makeButton(self):
-        self.buttonTrue = Button(second_frame,text="True",width=25,height=3,font=inputFont,command=self.true,activebackground=themeColor)
-        self.buttonTrue.grid(column=1)
+        entry = Entry(second_frame,textvariable=entryText,font=inputFont,width=25)
+        entry.grid(column=1)
+        return entryText
 
-        self.buttonFalse = Button(second_frame,text="False",width=25,height=3,font=inputFont,command=self.false,activebackground=themeColor)
-        self.buttonFalse.grid(column=1)
+    # initialize list for entryText vars
+    entryText_list = []
 
-def makeEntry(name):
-    entryText = StringVar()
+    # initialize lists for var names
+    varList_txt = []
+    varList_bool = []
 
-    label = Label(second_frame,text=name,font=varFont,fg=varColor)
-    label.grid(column=1,pady=40)
+    for var in vars:
+        var = str(var)
+        # checking if variable is a string
+        i = var.find('"')
 
-    entry = Entry(second_frame,textvariable=entryText,font=inputFont,width=25)
-    entry.grid(column=1)
-    return entryText
+        # check if string contains tuple
+        t = var.find("(")
+        t2 = var.find(")")
 
-# initialize list for entryText vars
-entryText_list = []
+        # check if string contains numbers
+        n = any(char.isdigit() for char in var)
 
-# initialize lists for var names
-varList_txt = []
-varList_bool = []
+        # Only use part of variable before equal sign
+        var = var.rsplit('=', 1)[0]
 
-for var in vars:
-    var = str(var)
-    # checking if variable is a string
-    i = var.find('"')
+        if i == -1 and t == -1 and t2 == -1 and n == False:
+            label = boolButtons(var[:-1]).label()
+            buttons = boolButtons(var[:-1]).makeButton()
+            varList_bool.append(var)
+        else:
+            entryText = makeEntry(var[:-1])
+            entryText_list.append(entryText)
+            varList_txt.append(var)
 
-    # check if string contains tuple
-    t = var.find("(")
-    t2 = var.find(")")
+    # make new list for converted tkinter objects
+    txtEntry_list = []
 
-    # check if string contains numbers
-    n = any(char.isdigit() for char in var)
+    def Continue():
+        global txtEntry_list
 
-    # Only use part of variable before equal sign
-    var = var.rsplit('=', 1)[0]
+        for entries in entryText_list:
+            txtEntry = entries.get()
+            entries.set("")
+            txtEntry_list.append(txtEntry)
 
-    if i == -1 and t == -1 and t2 == -1 and n == False:
-        label = boolButtons(var[:-1]).label()
-        buttons = boolButtons(var[:-1]).makeButton()
-        varList_bool.append(var)
-    else:
-        entryText = makeEntry(var[:-1])
-        entryText_list.append(entryText)
-        varList_txt.append(var)
+        window.quit()
 
-# make new list for converted tkinter objects
-txtEntry_list = []
+    # initialize bool
+    useDefaults = False
 
-def Continue():
-    global txtEntry_list
+    def useDefault():
+        global useDefaults
 
-    for entries in entryText_list:
-        txtEntry = entries.get()
-        entries.set("")
-        txtEntry_list.append(txtEntry)
+        useDefaults = True
+        window.quit()
 
-    window.quit()
+    # make default button
+    defaultButton = Button(second_frame,text="Use Defaults",bg=themeColor,command=useDefault,font=varFont)
+    defaultButton.grid(column=2,padx=screenWidth/1.4)
 
-# initialize bool
-useDefaults = False
+    # make continue button
+    contButton = Button(second_frame,text="Continue",bg=themeColor,command=Continue,font=varFont)
+    contButton.grid(column=2,padx=screenWidth/1.4)
 
-def useDefault():
-    global useDefaults
-
-    useDefaults = True
-    window.quit()
-
-# make default button
-defaultButton = Button(second_frame,text="Use Defaults",bg=themeColor,command=useDefault,font=varFont)
-defaultButton.grid(column=2,padx=screenWidth/1.4)
-
-# make continue button
-contButton = Button(second_frame,text="Continue",bg=themeColor,command=Continue,font=varFont)
-contButton.grid(column=2,padx=screenWidth/1.4)
-
-window.mainloop()
+    window.mainloop()
