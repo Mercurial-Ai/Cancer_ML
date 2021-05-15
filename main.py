@@ -22,7 +22,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 import random
 from tkinter import ttk
-import GUI
+import mod.GUI as GUI
 from statistics import mean
 import mod.diagnostic as diag
 import mod.clinical_model as clinical
