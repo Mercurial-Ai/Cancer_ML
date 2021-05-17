@@ -35,23 +35,17 @@ from sklearn.datasets import load_breast_cancer
 
 # un-comment to show all of numpy array
 #np.set_printoptions(threshold=sys.maxsize)
-from mod.clinical_model import clinical
 
-useDefaults = GUI.useDefaults
+useDefaults = GUI.indexPage.useDefaults
+
 if useDefaults:
-    # if true, main GUI will be used to specify other variables
-    useFront = False
-else:
-    useFront = True
-
-if useFront == False:
     # SPECIFY VARIABLES HERE - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     save_fit = False
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Team8_Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = GUI.main_data
+    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020.csv"
     sec_data = ""
     test_file = ""
 
@@ -123,15 +117,15 @@ if useFront == False:
     diagModel = False
 
     # END VARIABLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-elif useFront == True:
+else:
 
     boolList = GUI.boolList
 
     # convert every element in boolList to a proper boolean
     [bool(b) for b in boolList]
 
-    dictTxt = dict(zip(GUI.varList_txt,GUI.txtEntry_list))
-    dictBool = dict(zip(GUI.varList_bool,boolList))
+    dictTxt = dict(zip(GUI.varList_txt, GUI.txtEntry_list))
+    dictBool = dict(zip(GUI.varList_bool, boolList))
 
     save_fit = dictBool["save_fit "]
     model_save_loc = dictTxt["model_save_loc "]

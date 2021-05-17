@@ -43,6 +43,7 @@ class index:
     # choices of data
     def HNSCC(self):
         self.dataset = "HNSCC"
+        self.useDefaults = False 
         self.HNSbutton.config(relief=SUNKEN,background=themeColor)
         self.HN1button.config(relief=RAISED,background="SystemButtonFace")
         self.BRbutton.config(relief=RAISED,background="SystemButtonFace")
@@ -50,6 +51,7 @@ class index:
 
     def HN1(self):
         self.dataset = "HN1"
+        self.useDefaults = False
         self.HNSbutton.config(relief=RAISED, background="SystemButtonFace")
         self.HN1button.config(relief=SUNKEN, background=themeColor)
         self.BRbutton.config(relief=RAISED, background="SystemButtonFace")
@@ -57,6 +59,7 @@ class index:
 
     def BRIC(self):
         self.dataset = "METABRIC"
+        self.useDefaults = False 
         self.HNSbutton.config(relief=RAISED, background="SystemButtonFace")
         self.HN1button.config(relief=RAISED, background="SystemButtonFace")
         self.BRbutton.config(relief=SUNKEN, background=themeColor)
@@ -310,13 +313,9 @@ if dataset == "other":
 
         window.quit()
 
-    # initialize bool
-    useDefaults = False
-
     def useDefault():
-        global useDefaults
 
-        useDefaults = True
+        indexPage.useDefaults = True
         window.quit()
 
     # make default button
