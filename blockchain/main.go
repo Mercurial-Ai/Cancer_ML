@@ -8,10 +8,29 @@ import (
 	"io/ioutil"
 )
 
+var writeJSON bool = false
+
 type block struct {
 	previousHash []byte
 	hash         []byte
 	data         []byte
+}
+
+type DataImported struct {
+	contents []byte
+}
+
+func readJSON(file string) {
+	jsonData, err := ioutil.ReadFile(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	var imported DataImported
+	err2 := json.Unmarshal(jsonData, &imported)
+	if err2 != nil {
+		fmt.Println(err2)
+	}
+	fmt.Println(imported.contents)
 }
 
 type BlockChain struct {
@@ -45,6 +64,7 @@ func InitBlockChain() *BlockChain {
 }
 
 func main() {
+	readJSON("data.json")
 	chain := InitBlockChain()
 
 	for i := 0; i < len(chain.blocks); i++ {
@@ -56,9 +76,13 @@ func main() {
 		fmt.Printf("Data in Block: %s\n", data)
 		fmt.Printf("Hash: %x\n", hash)
 
-		file, _ := json.MarshalIndent(data, "", " ")
+		if writeJSON {
+			// write json
+			file, _ := json.MarshalIndent(data, "", " ")
 
-		_ = ioutil.WriteFile("data.json", file, 0644)
+			_ = ioutil.WriteFile("data.json", file, 0644)
+
+		}
 
 	}
 }
