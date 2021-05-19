@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 )
 
 type block struct {
@@ -53,5 +55,10 @@ func main() {
 		fmt.Printf("Previous Hash: %x\n", previousHash)
 		fmt.Printf("Data in Block: %s\n", data)
 		fmt.Printf("Hash: %x\n", hash)
+
+		file, _ := json.MarshalIndent(data, "", " ")
+
+		_ = ioutil.WriteFile("data.json", file, 0644)
+
 	}
 }
