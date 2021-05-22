@@ -46,18 +46,14 @@ class NLP:
     def stem(self):
         stemmer = WordNetLemmatizer()
         
-        stemmed_words = []
+        self.stemmed_words = []
         for word in self.filtered_list: 
             stem_word = stemmer.lemmatize(word)
-            stemmed_words.append(stem_word)
+            self.stemmed_words.append(stem_word)
 
     def run(self): 
         self.partition()
         self.filterStops()
         self.tag()
         self.stem()
-
-speech_example = "I have a patient who has been smoking for 6 years. They are 45 years old."
-s = NLP(speech_example)
-s.run()
     
