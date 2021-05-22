@@ -327,3 +327,9 @@ if dataset == "other":
     contButton.grid(column=2,padx=screenWidth/1.4)
 
     window.mainloop()
+
+else:
+
+    # data page with main data already determined 
+    class dataPage2: 
+        
