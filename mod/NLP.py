@@ -2,10 +2,6 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.stem import WordNetLemmatizer
-nltk.download("wordnet")
-nltk.download('averaged_perceptron_tagger')
-nltk.download("punkt")
-nltk.download("stopwords")
 
 class NLP: 
     def __init__(self, text):
@@ -38,10 +34,6 @@ class NLP:
                 if word.casefold() not in stops: 
                     self.filtered_list.append(word)
 
-    # function to classify different parts of the text
-    def tag(self):
-        self.tags = nltk.pos_tag(self.filtered_list)
-
     # function to extract primitive meaning of words
     def stem(self):
         stemmer = WordNetLemmatizer()
@@ -51,9 +43,25 @@ class NLP:
             stem_word = stemmer.lemmatize(word)
             self.stemmed_words.append(stem_word)
 
+    # function to classify different parts of the text
+    def tag(self):
+        self.tags = nltk.pos_tag(self.stemmed_words)
+
+        # convert list of tuples to dict
+        tag_dict = {}
+        for tup in self.tags: 
+            word = tup[0]
+            tag = tup[1]
+            tag_dict[tag] = word
+
+        self.tags = tag_dict
+
     def run(self): 
         self.partition()
         self.filterStops()
-        self.tag()
         self.stem()
+        self.tag()
+
+s = NLP("The patient has been smoking for 12 years.")
+s.run()
     
