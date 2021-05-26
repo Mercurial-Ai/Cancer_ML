@@ -1,0 +1,4 @@
+age
+smoking status
+smoking time
+chemotherapy status

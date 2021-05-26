@@ -1,7 +1,12 @@
 import nltk
-from nltk.corpus import stopwords
+from nltk.corpus import stopwords, wordnet
 from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.stem import WordNetLemmatizer
+
+import json
+
+sys = wordnet.synsets("hot")
+print(sys[1].lemmas()[1].name())
 
 class NLP: 
     def __init__(self, text):
@@ -48,20 +53,54 @@ class NLP:
         self.tags = nltk.pos_tag(self.stemmed_words)
 
         # convert list of tuples to dict
+        i = 0 
         tag_dict = {}
         for tup in self.tags: 
             word = tup[0]
             tag = tup[1]
+
+            # check if tag already in dict
+            if tag in tag_dict: 
+                tag = tag + str(i)
+            
             tag_dict[tag] = word
 
+            i = i + 1 
+
         self.tags = tag_dict
+        print(self.tags)
+
+    def get_info(self): 
+        # identify variable, value, and unit
+
+        NN_keys = []
+        for key in self.tags.keys(): 
+            if key[:2] == 'NN': 
+                NN_keys.append(key)
+
+        # read list of possible variables 
+        f = open("mod\\NLP\\data\\variables.txt")
+        var_list = f.readlines()
+        
+        # remove line breakers throughout var list
+        i = 0
+        for var in var_list: 
+            new_var = var.replace('\n','')
+            var_list[i] = new_var
+            i = i + 1 
+
+        # check if a variable name is inside of text
+        for var in var_list: 
+            if var in self.tags.values(): 
+                variable = var
 
     def run(self): 
         self.partition()
         self.filterStops()
         self.stem()
         self.tag()
+        self.get_info()
 
-s = NLP("The patient has been smoking for 12 years.")
+s = NLP("The patient is 58 years of age.")
 s.run()
     
