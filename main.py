@@ -51,7 +51,7 @@ if useDefaults:
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = "chemotherapy_given"
+    target_variables = 'chemotherapy_given'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -97,7 +97,7 @@ if useDefaults:
     target_all = False
 
     # save location for data/graphs
-    data_save_loc = "D:\\Cancer_Project\\Team8_Cancer_ML\\result_graphs"
+    data_save_loc = "D:\\Cancer_Project\\Cancer_ML\\result_graphs"
 
     # if true, graphs will be shown after training model
     show_figs = True
@@ -261,12 +261,15 @@ def encodeText(dataset):
                 data - dataset.iloc[n, i]
             
             if str(type(data)) == "<class 'str'>":
-                data = codeDict[data]
+                data = int(codeDict[data])
 
             if longestAxis == a1: 
                 dataset.iloc[i, n] = data
             else: 
                 dataset.iloc[n, i] = data
+
+    # convert all cols to numeric vals
+    dataset = dataset.astype('int64')
                 
     return dataset
 
@@ -559,7 +562,7 @@ def GUI_varConnector(dataset1, dataset2):
     window = tk.Tk()
 
     window.title("Variable Connector")
-    window.iconbitmap("D:\Cancer_Project\Team8_Cancer_ML\cancer_icon.ico")
+    window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
 
     main_frame = tk.Frame(window)
     main_frame.pack(fill=tk.BOTH,expand=1)
@@ -982,7 +985,7 @@ def ValResultPage():
     root = tk.Tk()
 
     root.title("Results - Validation")
-    root.iconbitmap("D:\Cancer_Project\Team8_Cancer_ML\cancer_icon.ico")
+    root.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
 
     # MAKE SCROLLBAR
     main_frame = tk.Frame(root)
@@ -1061,7 +1064,7 @@ def trainResultPage():
     root = tk.Tk()
 
     root.title("Results - Test")
-    root.iconbitmap("D:\Cancer_Project\Team8_Cancer_ML\cancer_icon.ico")
+    root.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
 
     # Make scrollbar
     main_frame = tk.Frame(root)
