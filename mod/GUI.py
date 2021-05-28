@@ -169,11 +169,15 @@ if main_data != "other":
     tUI.setup()
     tUI.draw()
     target = tUI.target.targetList
-
-#if dataset == "other": 
-
+ 
 with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
     vars=projectVars.readlines()
+
+print(vars)
+
+if dataset != "other": 
+    # remove main_data var if already specified 
+    vars.remove('main_data\n')
 
 window = Tk()
 
@@ -327,9 +331,3 @@ contButton = Button(second_frame,text="Continue",bg=themeColor,command=Continue,
 contButton.grid(column=2,padx=screenWidth/1.4)
 
 window.mainloop()
-
-#else:
-
-#    # data page with main data already determined 
-#    class dataPage2: 
-        
