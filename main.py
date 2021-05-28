@@ -2,6 +2,7 @@ from __future__ import print_function, division
 import tensorflow as tf
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.preprocessing.text import Tokenizer
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
@@ -43,9 +44,9 @@ if useDefaults:
 
     save_fit = False
     load_fit = False
-    model_save_loc = "D:\Cancer_Project\Team8_Cancer_ML\HNSCC-HN1\saved_model (CNN)"
+    model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020.csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020 (original).csv"
     sec_data = ""
     test_file = ""
 
@@ -74,7 +75,7 @@ if useDefaults:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = True
+    run_img_model = False
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -222,55 +223,51 @@ def encodeText(dataset):
     global codeDict
 
     if str(type(dataset)) == "<class 'str'>":
-        dataset = pd.read_csv(dataset,low_memory=False)
+        dataset = pd.read_csv(dataset, low_memory=False)
 
     dataset = cleanData(dataset)
 
     dShape = dataset.shape
-    axis1 = dShape[0]
-    axis2 = dShape[1]
+    a1 = dShape[0]
+    a2 = dShape[1]
 
-    if axis1 >= axis2:
-        longestAxis = axis1
-        shortestAxis = axis2
+    if a1 >= a2:
+        longestAxis = a1
+        shortestAxis = a2
     else:
-        longestAxis = axis2
-        shortestAxis = axis1
+        longestAxis = a2
+        shortestAxis = a1
 
-    for i in range(longestAxis):
-        for n in range(shortestAxis):
-            if longestAxis == axis1:
-                data = dataset.iloc[i,n]
-            else:
-                data = dataset.iloc[n,i]
+    wordList = []
+    for i in range(longestAxis): 
+        for n in range(shortestAxis): 
+            if longestAxis == a1: 
+                data = dataset.iloc[i, n]
+            else: 
+                data = dataset.iloc[n, i]
 
             if str(type(data)) == "<class 'str'>":
-                strData = ""
+                wordList.append(data)
 
-                for c in data:
-                    cInt = ord(c)
-                    cLen = len(str(cInt))
-                    strData = strData + str(cInt)
+    tokenizer = Tokenizer()
+    tokenizer.fit_on_texts(wordList)
+    codeDict = tokenizer.word_index
 
-                strData = int(strData)
+    for i in range(longestAxis):
+        for n in range(shortestAxis): 
+            if longestAxis == a1: 
+                data = dataset.iloc[i, n]
+            else: 
+                data - dataset.iloc[n, i]
+            
+            if str(type(data)) == "<class 'str'>":
+                data = codeDict[data]
 
-                # turn values into decimals to scale down
-                lenData = len(str(strData))
-                divisor = 10**lenData
-                strData = strData/divisor
-
-                codeDict[data] = strData
-
-                if longestAxis == axis1:
-                    dataset.iloc[i,n] = strData
-                else:
-                    dataset.iloc[n,i] = strData
-
-    for cols in list(dataset.columns):
-        colType = str(dataset[cols].dtype)
-        if colType == "object":
-            dataset[cols] = dataset[cols].astype(float)
-
+            if longestAxis == a1: 
+                dataset.iloc[i, n] = data
+            else: 
+                dataset.iloc[n, i] = data
+                
     return dataset
 
 main_data = encodeText(main_data)
@@ -974,7 +971,7 @@ def postTrain(multiple_targets,y_val,X_val,X_test,y_test,model):
 
 
 if not run_img_model: 
-    model = clinical(main_data, mainPath, target_variables, load_fit, save_fit, model_save_loc, num_epochs, "relu")
+    model = clinical.clinical(main_data, mainPath, target_variables, load_fit, save_fit, model_save_loc, num_epochs, "relu")
     model.NN()
 
 elif run_img_model: 
