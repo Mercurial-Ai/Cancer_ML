@@ -1,34 +1,20 @@
 from __future__ import print_function, division
-import tensorflow as tf
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.preprocessing.text import Tokenizer
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler,MinMaxScaler
-import keras
-import matplotlib.pyplot as plt
 import pydicom as dicom
 import shutil
 import cv2
-from keras.preprocessing.image import load_img
-from keras.preprocessing.image import img_to_array
-from keras import layers
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import psutil
-import sys
 import tkinter as tk
 import tkinter.font as tkFont
 import random
 from tkinter import ttk
 import mod.GUI as GUI
-from statistics import mean
 import mod.diagnostic as diag
 import mod.clinical_model as clinical
 from mod.image_model import image_model
-from sklearn.datasets import load_breast_cancer
 
 # un-comment to show all of pandas dataframe
 #pd.set_option('display.max_rows', None)
