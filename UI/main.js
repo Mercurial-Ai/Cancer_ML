@@ -32,6 +32,17 @@ const template = [
         }
       }
     ]
+  },
+  {
+    label: 'File'
+  },
+  {
+    label: 'Tools',
+    submenu: [
+      {
+        label: 'Import File'
+      }
+    ]
   }
 ]
 
