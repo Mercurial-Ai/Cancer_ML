@@ -70,6 +70,15 @@ class NLP:
         self.tags = tag_dict
         print(self.tags)
 
+    def remove_breaks(self, val_list):
+        i = 0
+        for var in val_list: 
+            new_var = var.replace('\n','')
+            val_list[i] = new_var
+            i = i + 1 
+        
+        return val_list
+
     def get_info(self): 
         # identify variable, value, and unit
 
@@ -81,18 +90,29 @@ class NLP:
         # read list of possible variables 
         f = open("mod\\NLP\\data\\variables.txt")
         var_list = f.readlines()
-        
-        # remove line breakers throughout var list
-        i = 0
-        for var in var_list: 
-            new_var = var.replace('\n','')
-            var_list[i] = new_var
-            i = i + 1 
 
+        # remove line breakers throughout var list
+        var_list = self.remove_breaks(var_list)
+        
         # check if a variable name is inside of text
         for var in var_list: 
             if var in self.tags.values(): 
                 variable = var
+
+        # identify numerical values in text for var value
+        for var in self.tags.values(): 
+            if var.isnumeric(): 
+                value = var
+
+        # identify unit by checking in units.txt
+        f = open("mod\\NLP\\data\\units.txt")
+        unit_list = f.readlines()
+
+        unit_list = self.remove_breaks(unit_list)
+
+        for unit in unit_list: 
+            if unit in self.tags.values():
+                val_unit = unit
 
     def run(self): 
         self.partition()
