@@ -1,33 +1,20 @@
 from __future__ import print_function, division
-import tensorflow as tf
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.preprocessing.text import Tokenizer
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler,MinMaxScaler
-import keras
-import matplotlib.pyplot as plt
 import pydicom as dicom
 import shutil
 import cv2
-from keras.preprocessing.image import load_img
-from keras.preprocessing.image import img_to_array
-from keras import layers
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import psutil
-import sys
 import tkinter as tk
 import tkinter.font as tkFont
 import random
 from tkinter import ttk
 import mod.GUI as GUI
-from statistics import mean
 import mod.diagnostic as diag
 import mod.clinical_model as clinical
 from mod.image_model import image_model
-from sklearn.datasets import load_breast_cancer
 
 # un-comment to show all of pandas dataframe
 #pd.set_option('display.max_rows', None)
@@ -43,14 +30,14 @@ if useDefaults:
 
     save_fit = False
     load_fit = False
-    model_save_loc = "D:\Cancer_Project\Team8_Cancer_ML\HNSCC-HN1\saved_model (CNN)"
+    model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020.csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020 (original).csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = "chemotherapy_given"
+    target_variables = 'chemotherapy_given'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -74,7 +61,7 @@ if useDefaults:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = True
+    run_img_model = False
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -96,7 +83,7 @@ if useDefaults:
     target_all = False
 
     # save location for data/graphs
-    data_save_loc = "D:\\Cancer_Project\\Team8_Cancer_ML\\result_graphs"
+    data_save_loc = "D:\\Cancer_Project\\Cancer_ML\\result_graphs"
 
     # if true, graphs will be shown after training model
     show_figs = True
@@ -222,55 +209,54 @@ def encodeText(dataset):
     global codeDict
 
     if str(type(dataset)) == "<class 'str'>":
-        dataset = pd.read_csv(dataset,low_memory=False)
+        dataset = pd.read_csv(dataset, low_memory=False)
 
     dataset = cleanData(dataset)
 
     dShape = dataset.shape
-    axis1 = dShape[0]
-    axis2 = dShape[1]
+    a1 = dShape[0]
+    a2 = dShape[1]
 
-    if axis1 >= axis2:
-        longestAxis = axis1
-        shortestAxis = axis2
+    if a1 >= a2:
+        longestAxis = a1
+        shortestAxis = a2
     else:
-        longestAxis = axis2
-        shortestAxis = axis1
+        longestAxis = a2
+        shortestAxis = a1
 
-    for i in range(longestAxis):
-        for n in range(shortestAxis):
-            if longestAxis == axis1:
-                data = dataset.iloc[i,n]
-            else:
-                data = dataset.iloc[n,i]
+    wordList = []
+    for i in range(longestAxis): 
+        for n in range(shortestAxis): 
+            if longestAxis == a1: 
+                data = dataset.iloc[i, n]
+            else: 
+                data = dataset.iloc[n, i]
 
             if str(type(data)) == "<class 'str'>":
-                strData = ""
+                wordList.append(data)
 
-                for c in data:
-                    cInt = ord(c)
-                    cLen = len(str(cInt))
-                    strData = strData + str(cInt)
+    tokenizer = Tokenizer()
+    tokenizer.fit_on_texts(wordList)
+    codeDict = tokenizer.word_index
 
-                strData = int(strData)
+    for i in range(longestAxis):
+        for n in range(shortestAxis): 
+            if longestAxis == a1: 
+                data = dataset.iloc[i, n]
+            else: 
+                data - dataset.iloc[n, i]
+            
+            if str(type(data)) == "<class 'str'>":
+                data = int(codeDict[data])
 
-                # turn values into decimals to scale down
-                lenData = len(str(strData))
-                divisor = 10**lenData
-                strData = strData/divisor
+            if longestAxis == a1: 
+                dataset.iloc[i, n] = data
+            else: 
+                dataset.iloc[n, i] = data
 
-                codeDict[data] = strData
-
-                if longestAxis == axis1:
-                    dataset.iloc[i,n] = strData
-                else:
-                    dataset.iloc[n,i] = strData
-
-    for cols in list(dataset.columns):
-        colType = str(dataset[cols].dtype)
-        if colType == "object":
-            dataset[cols] = dataset[cols].astype(float)
-
+    # convert all cols to numeric vals
+    dataset = dataset.astype('int64')
+                
     return dataset
 
 main_data = encodeText(main_data)
@@ -562,7 +548,7 @@ def GUI_varConnector(dataset1, dataset2):
     window = tk.Tk()
 
     window.title("Variable Connector")
-    window.iconbitmap("D:\Cancer_Project\Team8_Cancer_ML\cancer_icon.ico")
+    window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
 
     main_frame = tk.Frame(window)
     main_frame.pack(fill=tk.BOTH,expand=1)
@@ -974,7 +960,7 @@ def postTrain(multiple_targets,y_val,X_val,X_test,y_test,model):
 
 
 if not run_img_model: 
-    model = clinical(main_data, mainPath, target_variables, load_fit, save_fit, model_save_loc, num_epochs, "relu")
+    model = clinical.clinical(main_data, mainPath, target_variables, load_fit, save_fit, model_save_loc, num_epochs, "relu")
     model.NN()
 
 elif run_img_model: 
@@ -985,7 +971,7 @@ def ValResultPage():
     root = tk.Tk()
 
     root.title("Results - Validation")
-    root.iconbitmap("D:\Cancer_Project\Team8_Cancer_ML\cancer_icon.ico")
+    root.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
 
     # MAKE SCROLLBAR
     main_frame = tk.Frame(root)
@@ -1064,7 +1050,7 @@ def trainResultPage():
     root = tk.Tk()
 
     root.title("Results - Test")
-    root.iconbitmap("D:\Cancer_Project\Team8_Cancer_ML\cancer_icon.ico")
+    root.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
 
     # Make scrollbar
     main_frame = tk.Frame(root)
