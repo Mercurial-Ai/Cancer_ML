@@ -101,11 +101,11 @@ class NLP:
         
         # check if a variable name is inside of text
         for var in var_list: 
-            if var in self.tags.values(): 
+            if var in list(self.tags.values()): 
                 self.variable = var
-                
-        if 'self.variable' not in locals():
-            self.variable = "No variable found"
+                break
+            else: 
+                self.variable = "variable not found"
 
         # identify numerical values in text for var value
         for var in self.tags.values(): 
