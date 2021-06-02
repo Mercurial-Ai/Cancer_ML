@@ -111,6 +111,9 @@ class NLP:
         for var in self.tags.values(): 
             if var.isnumeric(): 
                 self.value = var
+                break
+            else: 
+                self.value = "value not found"
 
         # identify unit by checking in units.txt
         f = open("mod\\NLP\\data\\units.txt")
@@ -121,6 +124,9 @@ class NLP:
         for unit in unit_list: 
             if unit in self.tags.values():
                 self.val_unit = unit
+                break
+            else: 
+                self.val_unit = "unit could not be identified"
 
     def respond(self):
         s = txt_sph(str(self.variable), "bot_recording.mp3")
