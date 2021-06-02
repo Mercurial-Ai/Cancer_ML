@@ -5,9 +5,6 @@ from nltk.stem import WordNetLemmatizer
 
 import json
 
-sys = wordnet.synsets("hot")
-print(sys[1].lemmas()[1].name())
-
 class NLP: 
     def __init__(self, text):
         self.text = text
@@ -97,12 +94,12 @@ class NLP:
         # check if a variable name is inside of text
         for var in var_list: 
             if var in self.tags.values(): 
-                variable = var
+                self.variable = var
 
         # identify numerical values in text for var value
         for var in self.tags.values(): 
             if var.isnumeric(): 
-                value = var
+                self.value = var
 
         # identify unit by checking in units.txt
         f = open("mod\\NLP\\data\\units.txt")
@@ -112,7 +109,7 @@ class NLP:
 
         for unit in unit_list: 
             if unit in self.tags.values():
-                val_unit = unit
+                self.val_unit = unit
 
     def run(self): 
         self.partition()
