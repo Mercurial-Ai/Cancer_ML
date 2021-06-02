@@ -50,5 +50,7 @@ class txt_sph:
         # save audio file
         tts.save(self.save_loc)
 
+    def play(self): 
+
         # play file 
         playsound(self.save_loc)

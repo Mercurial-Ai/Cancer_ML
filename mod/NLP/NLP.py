@@ -5,9 +5,17 @@ from nltk.stem import WordNetLemmatizer
 
 import json
 
+from speech_txt_conv import recorder, sph_txt, txt_sph
+
 class NLP: 
-    def __init__(self, text):
-        self.text = text
+
+    def get_message(self): 
+        r = recorder(freq=44100, duration=7, file_name="user_recording.wav")
+        r.record()
+
+        conv = sph_txt(r.file_name)
+        conv.translate()
+        self.text = conv.text
 
     # function to partition text into sentences, words, etc 
     def partition(self): 
@@ -95,6 +103,9 @@ class NLP:
         for var in var_list: 
             if var in self.tags.values(): 
                 self.variable = var
+                
+        if 'self.variable' not in locals():
+            self.variable = "No variable found"
 
         # identify numerical values in text for var value
         for var in self.tags.values(): 
@@ -111,13 +122,20 @@ class NLP:
             if unit in self.tags.values():
                 self.val_unit = unit
 
+    def respond(self):
+        s = txt_sph(str(self.variable), "bot_recording.mp3")
+        s.translate()
+        s.play()
+
     def run(self): 
+        self.get_message()
         self.partition()
         self.filterStops()
         self.stem()
         self.tag()
         self.get_info()
+        self.respond()
 
-s = NLP("The patient is 58 years of age.")
+s = NLP()
 s.run()
     
