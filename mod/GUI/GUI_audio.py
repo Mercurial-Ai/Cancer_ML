@@ -7,6 +7,12 @@ import numpy as np
 from PIL import Image, ImageTk, ImageSequence
 
 import os 
+import sys
+sys.path.append('mod//NLP')
+
+if __name__ == "__main__": 
+    # do not run when imported
+    from speech_txt_conv import sph_txt, recorder
 
 class gui_audio: 
     def setup(self):
@@ -15,41 +21,20 @@ class gui_audio:
         self.root.title("Cancer ML")
         self.root.iconbitmap("cancer_icon.ico")
 
+    def start_cmd(self): 
+
+        record = recorder(44100, 5, 'user_recording.wav')
+        record.record()
+
+        translator = sph_txt('user_recording.wav')
+        translator.translate()
+        self.text = translator.text
+        print(self.text)
+
     def draw(self): 
 
-        canvas = tk.Canvas(self.root)
-        canvas.configure(bg="white")
-        canvas.pack(fill="both", expand=True)
-
-        graph_path = "mod\\GUI\\graphics"
-
-        # get list of graphic imgs avaliable
-        graph_imgs = os.listdir(graph_path)
-
-        for img in graph_imgs:
-
-            # only keep files in .png format
-            if ".png" not in img: 
-                graph_imgs.remove(img)
-
-        i = 0
-        for img in graph_imgs: 
-
-            # give entire relative path for every img
-            img = os.path.join(graph_path, img)
-
-            graph_imgs[i] = img
-
-            i = i + 1 
-
-        # start with first photo
-        tk_photo = tk.PhotoImage(file=graph_imgs[0])
-        canvas.create_image(20, 20, anchor=tk.NW, image=tk_photo)
-
-        while 'normal' == self.root.state():
-            for img in graph_imgs[1:]: 
-                self.root.update()
-                self.root.after(300, tk_photo.config(file=img))
+        self.start = tk.Button(text="Start", command=self.start_cmd)
+        self.start.place(height=80, width=100, relx=0.5, rely=0.5)
 
         self.root.mainloop()
 
