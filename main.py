@@ -32,12 +32,12 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020 (original).csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC\Patient and Treatment Characteristics (Original)(adjusted ids).csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'chemotherapy_given'
+    target_variables = 'Received Concurrent Chemoradiotherapy?'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -74,7 +74,7 @@ if useDefaults:
     img_id_name_loc = (3,6)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
-    ID_dataset_col = "id"
+    ID_dataset_col = "TCIA code"
 
     # tuple with dimension of imagery. All images must equal this dimension
     img_dimensions = (512, 512)
@@ -233,6 +233,19 @@ def encodeText(dataset):
                 data = dataset.iloc[n, i]
 
             if str(type(data)) == "<class 'str'>":
+
+                # list of chars to be removed from data
+                char_blocked = [' ', '.', '/', '-', '_', '>', '+', ',', ')', '(']
+
+                for char in char_blocked: 
+                    if char in data: 
+                        data = data.replace(char, '')
+
+                if longestAxis == a1:
+                    dataset.iloc[i, n] = data
+                else: 
+                    dataset.iloc[n, i] = data
+
                 wordList.append(data)
 
     tokenizer = Tokenizer()
@@ -247,6 +260,7 @@ def encodeText(dataset):
                 data - dataset.iloc[n, i]
             
             if str(type(data)) == "<class 'str'>":
+                data = data.lower()
                 data = int(codeDict[data])
 
             if longestAxis == a1: 
