@@ -133,7 +133,7 @@ class image_model:
                             matching_ids.remove(ids)
 
                     ## Memory optimization
-                    if psutil.virtual_memory().percent >= 50:
+                    if psutil.virtual_memory().percent >= 60:
                         break
 
                     ## loading info
@@ -149,6 +149,15 @@ class image_model:
             self.img_array = np.reshape(self.img_array,(num_usable_img,int(self.img_array.size/num_usable_img)))
 
         self.df = self.df.loc[matching_ids]
+
+        # remove ids from img_array that are not in matching_ids
+        i = 0
+        for img in self.img_array: 
+            id = img[-1]
+            if int(id) not in matching_ids:
+                self.img_array = np.delete(self.img_array, i, 0) 
+
+            i = i + 1
 
         # initialize negative_vals as false
         negative_vals = False

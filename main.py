@@ -1,4 +1,5 @@
 from __future__ import print_function, division
+from itertools import filterfalse
 from tensorflow.keras.preprocessing.text import Tokenizer
 import pandas as pd
 import pydicom as dicom
@@ -61,7 +62,7 @@ if useDefaults:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = False
+    run_img_model = True
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -71,7 +72,7 @@ if useDefaults:
 
     # where image id is located in image names (start,end)
     # only applies if using image model
-    img_id_name_loc = (3,6)
+    img_id_name_loc = (9,12)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
     ID_dataset_col = "TCIA code"
@@ -95,7 +96,7 @@ if useDefaults:
     dcmDirect = True
 
     # number of epochs in model
-    num_epochs = 20
+    num_epochs = 30
 
     # if true, CNN will be used
     useCNN = False
@@ -689,8 +690,7 @@ def convert_npy(dirs_list,save_path):
                 if not s.isdigit():
                     id = id.replace(s,'')
 
-            if id[0] == '0':
-                id = id[-4:]
+            id = int(id[-3:])
 
             if pixel_array_numpy.shape == img_dimensions:
                 pixel_array_numpy = pixel_array_numpy.flatten()
@@ -700,7 +700,7 @@ def convert_npy(dirs_list,save_path):
         print(psutil.virtual_memory().percent)
 
         # memory optimization
-        if psutil.virtual_memory().percent >= 50:
+        if psutil.virtual_memory().percent >= 60:
             break
 
         ## Loading info
