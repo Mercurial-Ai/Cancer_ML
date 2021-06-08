@@ -2,6 +2,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 from keras.layers import Dense
+from tensorflow.keras.callbacks import TensorBoard
 import keras
 import pandas as pd 
 from mod.percentage_accuracy import percentageAccuracy
@@ -331,8 +332,12 @@ class clinical:
             self.resultList.append(str(self.y_test))
             self.resultList.append(str(percentAcc))
 
+    def tensorboard(self):
+        self.tb = TensorBoard(log_dir='logs/{}'.format('Clinical-Only'))
+
     def NN(self):
         self.pre()
+        self.tensorboard()
 
         if not self.load_fit:
             if str(type(self.target_vars))=="<class 'list'>" and len(self.target_vars) > 1:
@@ -371,7 +376,7 @@ class clinical:
                               loss='mean_squared_error',
                               metrics=['accuracy'])
 
-                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32)
+                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb])
 
                 if self.save_fit == True:
                     self.model.save(self.save_location)

@@ -62,7 +62,7 @@ if useDefaults:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = True
+    run_img_model = False
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -96,10 +96,10 @@ if useDefaults:
     dcmDirect = True
 
     # number of epochs in model
-    num_epochs = 10
+    num_epochs = 20
 
     # if true, CNN will be used
-    useCNN = True
+    useCNN = False
 
     # if true, diagnosis model will run
     diagModel = False
