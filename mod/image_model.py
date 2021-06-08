@@ -46,8 +46,62 @@ class image_model:
 
         return features
 
+    def checkBinary(self, target_var):
+
+        orgPD = self.data_file
+        orgPD = orgPD.dropna()
+
+        # check if param is a list of multiple vars 
+        if str(type(target_var)) == "<class 'list'>" and len(target_var) > 1:
+
+            for vars in target_var: 
+
+                # initialize list to hold bools 
+                areBinary = []
+            
+                col = list(orgPD[vars])
+
+                # remove duplicates 
+                col = list(set(col))
+
+                # check if data is numerical 
+                for vals in col: 
+                    if str(type(vals)) == "<class 'int'>" or str(type(vals)) == "<class 'float'>": 
+                        numeric = True
+                    else: 
+                        numeric = False 
+
+                if not numeric: 
+
+                    if len(col) == 2: 
+                        isBinary = True
+                    else: 
+                        isBinary = False 
+
+                    areBinary.append(isBinary)
+                else: 
+                    areBinary = False
+
+            isBinary = areBinary 
+
+        else: 
+
+            col = list(orgPD[target_var])
+
+            # remove duplicates 
+            col = list(set(col))
+
+            if len(col) == 2: 
+                isBinary = True
+            else: 
+                isBinary = False
+
+        return isBinary
+
     def pre(self): 
         print("starting image model")
+
+        self.isBinary = self.checkBinary(self.target_vars)
 
         if str(type(self.data_file)) == "<class 'pandas.core.frame.DataFrame'>":
             self.df = self.data_file
@@ -133,7 +187,7 @@ class image_model:
                             matching_ids.remove(ids)
 
                     ## Memory optimization
-                    if psutil.virtual_memory().percent >= 50:
+                    if psutil.virtual_memory().percent >= 60:
                         break
 
                     ## loading info
@@ -149,6 +203,15 @@ class image_model:
             self.img_array = np.reshape(self.img_array,(num_usable_img,int(self.img_array.size/num_usable_img)))
 
         self.df = self.df.loc[matching_ids]
+
+        # remove ids from img_array that are not in matching_ids
+        i = 0
+        for img in self.img_array: 
+            id = img[-1]
+            if int(id) not in matching_ids:
+                self.img_array = np.delete(self.img_array, i, 0) 
+
+            i = i + 1
 
         # initialize negative_vals as false
         negative_vals = False
@@ -187,6 +250,28 @@ class image_model:
 
         X = features
         y = labels
+
+        print(self.isBinary)
+
+        if self.isBinary: 
+            y_list = list(y)
+
+            # remove duplicates to identify binary vals
+            y_list = list(set(y_list))
+            y_list.sort()
+
+            binary_dict = {y_list[0]: 0, y_list[1]: 1}
+
+            i = 0
+            new_y = pd.Series([])
+            for val in y: 
+                conv_y = binary_dict[val]
+
+                new_y[i] = conv_y
+                i = i + 1 
+
+            y = new_y
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=42)
 
         # split test data into validation and test
@@ -294,6 +379,7 @@ class image_model:
         self.y_val = y_val
 
         print(self.activation_function)
+        print(y_train)
 
         if not self.load_fit:
             if not self.useCNN:
@@ -359,17 +445,20 @@ class image_model:
 
                 self.model.add(layers.Flatten())
 
+                self.model.add(layers.Dense(128))
+                self.model.add(layers.Activation('relu'))
+
                 self.model.add(layers.Dense(64))
                 self.model.add(layers.Activation('relu'))
 
                 self.model.add(layers.Dense(1))
                 self.model.add(layers.Activation('linear'))
 
-                self.model.compile(loss='mean_squared_error',
+                self.model.compile(loss='mean_absolute_error',
                               optimizer='adam',
                               metrics=['accuracy'])
 
-                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num)
+                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32)
 
         else:
             self.model = keras.models.load_model(self.model_save_loc)

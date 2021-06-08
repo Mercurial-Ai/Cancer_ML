@@ -173,8 +173,6 @@ if main_data != "other":
 with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
     vars=projectVars.readlines()
 
-print(vars)
-
 if dataset != "other": 
     # remove main_data var if already specified 
     vars.remove('main_data\n')

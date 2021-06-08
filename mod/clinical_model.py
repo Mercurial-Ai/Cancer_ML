@@ -163,6 +163,27 @@ class clinical:
         # y data
         y = df.loc[:, self.target_vars]
 
+        if self.isBinary: 
+            y_list = list(y)
+
+            # remove duplicates to identify binary vals
+            y_list = list(set(y_list))
+
+            # sort vals in ascending order
+            y_list.sort()
+
+            binary_dict = {y_list[0]: 0, y_list[1]: 1}
+
+            i = 0
+            new_y = pd.Series([])
+            for val in y: 
+                conv_y = binary_dict[val]
+
+                new_y[i] = conv_y
+                i = i + 1 
+
+            y = new_y
+
         # partition data
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.4, random_state=42)
 
