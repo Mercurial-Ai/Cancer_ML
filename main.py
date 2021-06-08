@@ -33,12 +33,12 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC\Patient and Treatment Characteristics (Original)(adjusted ids).csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020 (adjusted chemotherapy var).csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'Received Concurrent Chemoradiotherapy?'
+    target_variables = 'chemotherapy_given'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -75,7 +75,7 @@ if useDefaults:
     img_id_name_loc = (9,12)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
-    ID_dataset_col = "TCIA code"
+    ID_dataset_col = "id"
 
     # tuple with dimension of imagery. All images must equal this dimension
     img_dimensions = (512, 512)
@@ -96,10 +96,10 @@ if useDefaults:
     dcmDirect = True
 
     # number of epochs in model
-    num_epochs = 30
+    num_epochs = 10
 
     # if true, CNN will be used
-    useCNN = False
+    useCNN = True
 
     # if true, diagnosis model will run
     diagModel = False
@@ -236,7 +236,8 @@ def encodeText(dataset):
             if str(type(data)) == "<class 'str'>":
 
                 # list of chars to be removed from data
-                char_blocked = [' ', '.', '/', '-', '_', '>', '+', ',', ')', '(']
+                char_blocked = [' ', '.', '/', '-', '_', '>', '+', ',', ')', '(', '*',
+                                '=', '?']
 
                 for char in char_blocked: 
                     if char in data: 
