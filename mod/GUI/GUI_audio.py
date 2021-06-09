@@ -12,7 +12,7 @@ sys.path.append('mod//NLP')
 
 if __name__ == "__main__": 
     # do not run when imported
-    from speech_txt_conv import sph_txt, recorder
+    from speech_txt_conv import sph_txt, txt_sph, recorder
 
 class gui_audio: 
     def setup(self):
@@ -29,7 +29,12 @@ class gui_audio:
         translator = sph_txt('user_recording.wav')
         translator.translate()
         self.text = translator.text
-        print(self.text)
+        self.respond()
+
+    def respond(self): 
+        conv = txt_sph(self.text, 'bot_recording.mp3')
+        conv.translate()
+        conv.play()
 
     def draw(self): 
 
