@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Dense
 from tensorflow.keras import Sequential
+from tensorflow.keras.callbacks import TensorBoard
 import keras
 from keras import layers
 import os 
@@ -229,7 +230,16 @@ class image_model:
         else:
             self.activation_function = 'relu'
 
+    def tensorboard(self): 
+        if self.useCNN:
+            model_name = "CNN"
+        else: 
+            model_name = "Image-Clinical"
+
+        self.tb = TensorBoard(log_dir='logs/{}'.format(model_name))
+
     def NN(self): 
+        self.tensorboard()
 
         # initialize bool as false
         self.multiple_targets = False
@@ -250,8 +260,6 @@ class image_model:
 
         X = features
         y = labels
-
-        print(self.isBinary)
 
         if self.isBinary: 
             y_list = list(y)
@@ -458,7 +466,7 @@ class image_model:
                               optimizer='adam',
                               metrics=['accuracy'])
 
-                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32)
+                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb])
 
         else:
             self.model = keras.models.load_model(self.model_save_loc)

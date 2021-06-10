@@ -255,10 +255,12 @@ class clinical:
             print("Validation Metrics")
             print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
             print(prediction)
+            np.save('logs//Clinical-Only//post//val-prediction.npy', prediction)
             print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
             print(roundedPred)
             print("- - - - - - - - - - - - - y val - - - - - - - - - - - - -")
             print(self.y_val)
+            np.save('logs//Clinical-Only//post//y_val.npy', self.y_val)
 
             if str(type(prediction)) == "<class 'list'>":
                 prediction = np.array([prediction])
@@ -314,10 +316,12 @@ class clinical:
             print("Test Metrics")
             print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
             print(prediction)
+            np.save('logs//Clinical-Only//post//test-prediction.npy', prediction)
             print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
             print(roundedPred)
             print("- - - - - - - - - - - - - y test - - - - - - - - - - - - -")
             print(self.y_test)
+            np.save('logs//Clinical-Only//post//y_test.npy', self.y_test)
 
             if str(type(prediction)) == "<class 'list'>":
                 prediction = np.array([prediction])
