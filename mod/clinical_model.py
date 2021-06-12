@@ -185,6 +185,8 @@ class clinical:
 
             y = new_y
 
+        percent_dict = self.get_y_distribution(y)
+
         # partition data
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.4, random_state=42)
 
@@ -211,6 +213,31 @@ class clinical:
 
         # check y_train for NANs
         self.hasNan(self.y_train)
+
+    def get_y_distribution(self, y):
+        y = list(y)
+
+        i = 0
+        freq_dict = {}
+        for val in y: 
+            freq_dict[val] = i
+
+            i = i + 1 
+
+        # get total num classes
+        val_list = list(freq_dict.values())
+        class_sum = sum(val_list)
+
+        # get dist in percentages
+        percent_dict = {}
+        for key in freq_dict.keys():
+            num = freq_dict[key]
+            percent_num = (num/class_sum)*100
+            percent_num = round(percent_num, 0)
+                
+            percent_dict[key] = percent_num
+
+        return percent_dict
 
     def post(self):
 
