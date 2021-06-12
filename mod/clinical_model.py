@@ -127,6 +127,22 @@ class clinical:
         else:
             print("Data does not contain nan values")
 
+    def class_weights(self, y_it):
+
+        freq = {}
+        zero_i = 0
+        one_i = 0
+        for y in y_it: 
+            if y == 0:
+                zero_i = zero_i + 1
+            elif y == 1:
+                one_i = one_i + 1
+        
+        freq[0] = zero_i
+        freq[1] = one_i 
+
+        print(freq)
+
     def pre(self):
 
         self.isBinary = self.checkBinary(self.target_vars)
@@ -184,6 +200,8 @@ class clinical:
                 i = i + 1 
 
             y = new_y
+
+        self.class_weights(y)
 
         # partition data
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.4, random_state=42)
