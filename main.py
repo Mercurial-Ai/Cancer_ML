@@ -33,12 +33,12 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020 (adjusted chemotherapy var).csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\data\Duke-Breast-Cancer-MRI\Clinical and Other Features (edited).csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'chemotherapy_given'
+    target_variables = 'Adjuvant Chemotherapy'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -62,7 +62,7 @@ if useDefaults:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = True
+    run_img_model = False
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -75,7 +75,7 @@ if useDefaults:
     img_id_name_loc = (9, 12)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
-    ID_dataset_col = "id"
+    ID_dataset_col = "Patient ID"
 
     # tuple with dimension of imagery. All images must equal this dimension
     img_dimensions = (512, 512)
@@ -96,10 +96,10 @@ if useDefaults:
     dcmDirect = True
 
     # number of epochs in model
-    num_epochs = 10
+    num_epochs = 20
 
     # if true, CNN will be used
-    useCNN = True
+    useCNN = False
 
     # if true, diagnosis model will run
     diagModel = False
@@ -237,7 +237,7 @@ def encodeText(dataset):
 
                 # list of chars to be removed from data
                 char_blocked = [' ', '.', '/', '-', '_', '>', '+', ',', ')', '(', '*',
-                                '=', '?']
+                                '=', '?', ':']
 
                 for char in char_blocked: 
                     if char in data: 
@@ -259,7 +259,7 @@ def encodeText(dataset):
             if longestAxis == a1: 
                 data = dataset.iloc[i, n]
             else: 
-                data - dataset.iloc[n, i]
+                data = dataset.iloc[n, i]
             
             if str(type(data)) == "<class 'str'>":
                 data = data.lower()
