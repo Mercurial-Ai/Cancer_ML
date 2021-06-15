@@ -153,7 +153,4 @@ class NLP:
         self.tag()
         self.get_info()
         self.respond()
-
-s = NLP()
-s.run()
     

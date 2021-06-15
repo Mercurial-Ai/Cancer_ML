@@ -10,9 +10,7 @@ import os
 import sys
 sys.path.append('mod//NLP')
 
-if __name__ == "__main__": 
-    # do not run when imported
-    from speech_txt_conv import sph_txt, txt_sph, recorder
+from mod.NLP.speech_txt_conv import sph_txt, txt_sph, recorder
 
 class gui_audio: 
     def setup(self):
@@ -40,6 +38,3 @@ class gui_audio:
     def run(self):
         self.setup()
         self.draw()
-
-ui = gui_audio()
-ui.run()

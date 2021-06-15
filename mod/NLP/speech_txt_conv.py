@@ -48,7 +48,15 @@ class txt_sph:
         tts = gtts.gTTS(self.text)
 
         # save audio file
-        tts.save(self.save_loc)
+        i = 0
+        while True:
+            try:
+                tts.save(self.save_loc)
+                break
+            except:
+                self.save_loc = self.save_loc[:-4] + str(i) + self.save_loc[-4:]
+
+                i = i + 1
 
     def play(self): 
 
