@@ -29,12 +29,6 @@ class gui_audio:
         translator = sph_txt('user_recording.wav')
         translator.translate()
         self.text = translator.text
-        self.respond()
-
-    def respond(self): 
-        conv = txt_sph(self.text, 'bot_recording.mp3')
-        conv.translate()
-        conv.play()
 
     def draw(self): 
 

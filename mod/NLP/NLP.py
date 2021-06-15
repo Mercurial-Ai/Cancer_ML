@@ -4,10 +4,16 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.stem import WordNetLemmatizer
 
 import json
+import random
 
 from speech_txt_conv import recorder, sph_txt, txt_sph
 
 class NLP: 
+
+    def play_text(self, text):
+        s = txt_sph(str(text), "bot_recording.mp3")
+        s.translate()
+        s.play()
 
     def get_message(self): 
         r = recorder(freq=44100, duration=7, file_name="user_recording.wav")
@@ -105,7 +111,8 @@ class NLP:
                 self.variable = var
                 break
             else: 
-                self.variable = "variable not found"
+                self.variable = "My apologies, what is the variable you speak of?"
+                self.play_text(self.variable)
 
         # identify numerical values in text for var value
         for var in self.tags.values(): 
@@ -113,7 +120,8 @@ class NLP:
                 self.value = var
                 break
             else: 
-                self.value = "value not found"
+                self.value = "Pardon me, what is the value for this variable?"
+                self.play_text(self.value)
 
         # identify unit by checking in units.txt
         f = open("mod\\NLP\\data\\units.txt")
@@ -126,12 +134,16 @@ class NLP:
                 self.val_unit = unit
                 break
             else: 
-                self.val_unit = "unit could not be identified"
+                self.val_unit = "I am sorry. I could not identify the unit. Please try again."
+                self.play_text(self.val_unit)
 
     def respond(self):
-        s = txt_sph(str(self.variable), "bot_recording.mp3")
-        s.translate()
-        s.play()
+
+        affirmations = ['Okay, got it!', 'Alright', 'Okay']
+        
+        aff_choice = random.choice(affirmations)
+
+        self.play_text(aff_choice)
 
     def run(self): 
         self.get_message()
