@@ -185,7 +185,7 @@ class clinical:
 
             y = new_y
 
-        percent_dict = self.get_y_distribution(y)
+        self.percent_dict = self.get_y_distribution(y)
 
         # partition data
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.4, random_state=42)
@@ -242,7 +242,7 @@ class clinical:
     def post(self):
 
         # utilize validation data
-        prediction = self.model.predict(self.X_val,batch_size=1)
+        prediction = self.model.predict(self.X_val)
 
         roundedPred = np.around(prediction, 0)
 
@@ -407,7 +407,7 @@ class clinical:
                               loss='mean_squared_error',
                               metrics=['accuracy'])
 
-                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb])
+                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight={1: 0.87, 0: 0.13})
 
                 if self.save_fit == True:
                     self.model.save(self.save_location)

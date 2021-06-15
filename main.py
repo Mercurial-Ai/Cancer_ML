@@ -62,7 +62,7 @@ if useDefaults:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = False
+    run_img_model = True
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -72,7 +72,7 @@ if useDefaults:
 
     # where image id is located in image names (start,end)
     # only applies if using image model
-    img_id_name_loc = (9,12)
+    img_id_name_loc = (9, 12)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
     ID_dataset_col = "id"
@@ -96,10 +96,10 @@ if useDefaults:
     dcmDirect = True
 
     # number of epochs in model
-    num_epochs = 20
+    num_epochs = 10
 
     # if true, CNN will be used
-    useCNN = False
+    useCNN = True
 
     # if true, diagnosis model will run
     diagModel = False

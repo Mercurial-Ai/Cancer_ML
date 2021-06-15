@@ -99,7 +99,32 @@ class image_model:
 
         return isBinary
 
-    def pre(self): 
+    def get_y_distribution(self, y):
+        y = list(y)
+
+        i = 0 
+        freq_dict = {}
+        for val in y: 
+            freq_dict[val] = i
+
+            i = i + 1 
+
+        # get total num classes
+        val_list = list(freq_dict.values())
+        class_sum = sum(val_list)
+
+        # get dist in percentages 
+        percent_dict = {}
+        for key in freq_dict.keys():
+            num = freq_dict[key]
+            percent_num = (num/class_sum)*100
+            percent_num = round(percent_num, 0)
+
+            percent_dict[key] = percent_num
+
+        return percent_dict
+
+    def pre(self):
         print("starting image model")
 
         self.isBinary = self.checkBinary(self.target_vars)
@@ -113,7 +138,7 @@ class image_model:
         try: 
             self.df = self.df.set_index(self.ID_dataset_col)
         except: 
-            pass   
+            pass
 
         features = list(self.feature_selection(self.df, self.target_vars, 10))
 
@@ -280,6 +305,9 @@ class image_model:
 
             y = new_y
 
+        self.percent_dict = self.get_y_distribution(y)
+        print(self.percent_dict)
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=42)
 
         # split test data into validation and test
@@ -389,6 +417,15 @@ class image_model:
         print(self.activation_function)
         print(y_train)
 
+        # invert distribution dict to insert in class_weights
+        val_list = list(self.percent_dict.values())
+        val_list.reverse()
+
+        key_list = list(self.percent_dict.keys())
+
+        self.percent_dict = dict(zip(key_list, val_list))
+        print(self.percent_dict)
+
         if not self.load_fit:
             if not self.useCNN:
                 if str(type(self.target_vars))!="<class 'list'>" or len(self.target_vars) == 1:
@@ -438,7 +475,7 @@ class image_model:
                                   loss='mean_squared_error',
                                   metrics=['accuracy'])
 
-                    self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=5)
+                    self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=5, class_weight={1: 0.87, 0: 0.13})
 
             else:
                 self.model = Sequential()
@@ -466,7 +503,7 @@ class image_model:
                               optimizer='adam',
                               metrics=['accuracy'])
 
-                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb])
+                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight={1: 0.87, 0: 0.13})
 
         else:
             self.model = keras.models.load_model(self.model_save_loc)
