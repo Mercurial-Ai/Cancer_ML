@@ -30,7 +30,7 @@ from mod.NLP.speech_txt_conv import sph_txt, txt_sph, recorder
 
 useDefaults = GUI.indexPage.useDefaults
 
-use_audio = True
+use_audio = False
 
 if useDefaults:
     # SPECIFY VARIABLES HERE - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,7 +44,7 @@ if useDefaults:
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'Adjuvant Chemotherapy'
+    target_variables = 'Adjuvant Radiation Therapy'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -252,7 +252,7 @@ def encodeText(dataset):
 
                 # list of chars to be removed from data
                 char_blocked = [' ', '.', '/', '-', '_', '>', '+', ',', ')', '(', '*',
-                                '=', '?', ':']
+                                '=', '?', ':', '[', ']', '#', '!']
 
                 for char in char_blocked: 
                     if char in data: 

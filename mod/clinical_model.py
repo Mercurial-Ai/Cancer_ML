@@ -187,6 +187,15 @@ class clinical:
 
         self.percent_dict = self.get_y_distribution(y)
 
+        # invert distribution dict to insert in class_weights
+        val_list = list(self.percent_dict.values())
+        val_list.reverse()
+
+        key_list = list(self.percent_dict.keys())
+
+        self.percent_dict = dict(zip(key_list, val_list))
+        print(self.percent_dict)
+
         # partition data
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.4, random_state=42)
 
@@ -407,7 +416,7 @@ class clinical:
                               loss='mean_squared_error',
                               metrics=['accuracy'])
 
-                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight={1: 0.87, 0: 0.13})
+                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight=self.percent_dict)
 
                 if self.save_fit == True:
                     self.model.save(self.save_location)
