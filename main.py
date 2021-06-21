@@ -39,18 +39,18 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020 (adjusted chemotherapy var).csv"
+    main_data = "data\Duke-Breast-Cancer-MRI\Clinical and Other Features (edited).csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'chemotherapy_given'
+    target_variables = 'Adjuvant Radiation Therapy'
 
     # if true, converted images will be in png format instead of jpg
     png = False
 
     # folder containing Cancer Imagery
-    load_dir = "D:\Cancer_Project\Cancer Imagery\HEAD-NECK-RADIOMICS-HN1\HEAD-NECK-RADIOMICS-HN1"
+    load_dir = "/scratch/Duke-Breast-Cancer-MRI_v120201203/Duke-Breast-Cancer-MRI"
 
     # directory to save data such as converted images
     save_dir = "D:\\Cancer_Project\\converted_img"
@@ -59,16 +59,16 @@ if useDefaults:
     img_array_save = "D:\Cancer_Project\converted_img"
 
     # if true, numpy image array will be searched for in img_array_save
-    load_numpy_img = True
+    load_numpy_img = False
 
     # if true, attempt will be made to convert dicom files to npy
-    convert_imgs = False
+    convert_imgs = True
 
     #if true, converted dicom images will be deleted after use
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = False
+    run_img_model = True
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -81,7 +81,7 @@ if useDefaults:
     img_id_name_loc = (9, 12)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
-    ID_dataset_col = "id"
+    ID_dataset_col = "Patient ID"
 
     # tuple with dimension of imagery. All images must equal this dimension
     img_dimensions = (512, 512)
