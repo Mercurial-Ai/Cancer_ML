@@ -175,6 +175,8 @@ class clinical:
 
             binary_dict = {y_list[0]: 0, y_list[1]: 1}
 
+            print(binary_dict)
+
             i = 0
             new_y = pd.Series([])
             for val in y: 
@@ -224,27 +226,20 @@ class clinical:
         self.hasNan(self.y_train)
 
     def get_y_distribution(self, y):
-        y = list(y)
 
-        i = 0
-        freq_dict = {}
-        for val in y: 
-            freq_dict[val] = i
+        y_len = len(y)
+        
+        counts_dict = y.value_counts().to_dict()
+        
+        percent_list = []
+        for count in list(counts_dict.values()):
+            percent = (count/y_len)*100
+            percent = round(percent, 0)
+            percent_list.append(percent)
 
-            i = i + 1 
+        count_keys = list(counts_dict.keys())
 
-        # get total num classes
-        val_list = list(freq_dict.values())
-        class_sum = sum(val_list)
-
-        # get dist in percentages
-        percent_dict = {}
-        for key in freq_dict.keys():
-            num = freq_dict[key]
-            percent_num = (num/class_sum)*100
-            percent_num = round(percent_num, 0)
-                
-            percent_dict[key] = percent_num
+        percent_dict = dict(zip(count_keys, percent_list))
 
         return percent_dict
 

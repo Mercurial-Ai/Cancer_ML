@@ -39,12 +39,12 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\data\Duke-Breast-Cancer-MRI\Clinical and Other Features (edited).csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC-HN1\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020 (adjusted chemotherapy var).csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'Adjuvant Radiation Therapy'
+    target_variables = 'chemotherapy_given'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -81,7 +81,7 @@ if useDefaults:
     img_id_name_loc = (9, 12)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
-    ID_dataset_col = "Patient ID"
+    ID_dataset_col = "id"
 
     # tuple with dimension of imagery. All images must equal this dimension
     img_dimensions = (512, 512)
@@ -268,6 +268,8 @@ def encodeText(dataset):
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(wordList)
     codeDict = tokenizer.word_index
+
+    print(codeDict)
 
     for i in range(longestAxis):
         for n in range(shortestAxis): 
