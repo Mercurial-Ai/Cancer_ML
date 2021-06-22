@@ -39,12 +39,12 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "data\Duke-Breast-Cancer-MRI\Clinical and Other Features (edited).csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\data\METABRIC_RNA_Mutation\METABRIC_RNA_Mutation.csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'Adjuvant Radiation Therapy'
+    target_variables = 'chemotherapy'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -68,7 +68,7 @@ if useDefaults:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = True
+    run_img_model = False
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -81,7 +81,7 @@ if useDefaults:
     img_id_name_loc = (9, 12)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
-    ID_dataset_col = "Patient ID"
+    ID_dataset_col = "patient_id"
 
     # tuple with dimension of imagery. All images must equal this dimension
     img_dimensions = (512, 512)

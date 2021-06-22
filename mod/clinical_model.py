@@ -195,6 +195,12 @@ class clinical:
 
         key_list = list(self.percent_dict.keys())
 
+        i = 0
+        for val in val_list:
+            val = val/100
+            val_list[i] = val
+            i = i + 1 
+
         self.percent_dict = dict(zip(key_list, val_list))
         print(self.percent_dict)
 
