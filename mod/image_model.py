@@ -100,27 +100,20 @@ class image_model:
         return isBinary
 
     def get_y_distribution(self, y):
-        y = list(y)
+        
+        y_len = len(y)
 
-        i = 0 
-        freq_dict = {}
-        for val in y: 
-            freq_dict[val] = i
+        counts_dict = y.value_counts().to_dict()
+        
+        percent_list = []
+        for count in list(counts_dict.values()):
+            percent = (count/y_len)*100
+            percent = round(percent, 0)
+            percent_list.append(percent)
+        
+        count_keys = list(counts_dict.keys())
 
-            i = i + 1 
-
-        # get total num classes
-        val_list = list(freq_dict.values())
-        class_sum = sum(val_list)
-
-        # get dist in percentages 
-        percent_dict = {}
-        for key in freq_dict.keys():
-            num = freq_dict[key]
-            percent_num = (num/class_sum)*100
-            percent_num = round(percent_num, 0)
-
-            percent_dict[key] = percent_num
+        percent_dict = dict(zip(count_keys, percent_list))
 
         return percent_dict
 
@@ -421,6 +414,12 @@ class image_model:
         val_list.reverse()
 
         key_list = list(self.percent_dict.keys())
+
+        i = 0
+        for val in val_list:
+            val = val/100
+            val_list[i] = val
+            i = i + 1 
 
         self.percent_dict = dict(zip(key_list, val_list))
         print(self.percent_dict)
