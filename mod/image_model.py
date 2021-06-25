@@ -16,10 +16,9 @@ from sklearn.preprocessing import MinMaxScaler
 import psutil
 import matplotlib.pyplot as plt
 from mod.percentage_accuracy import percentageAccuracy
-from main import collect_img_dirs
 
 class image_model: 
-    def __init__(self, model_save_loc, data_file, target_vars, epochs_num, load_numpy_img, img_array_save, load_fit, save_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs): 
+    def __init__(self, model_save_loc, data_file, target_vars, epochs_num, load_numpy_img, img_array_save, load_fit, save_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs, load_dir): 
         self.model_save_loc = model_save_loc
         self.data_file = data_file 
         self.target_vars = target_vars
@@ -35,6 +34,7 @@ class image_model:
         self.data_save_loc = data_save_loc
         self.save_figs = save_figs
         self.show_figs = show_figs
+        self.load_dir = load_dir
 
     def feature_selection(self, dataset, target_vars, num_features):
         if self.multiple_targets == False:
@@ -119,6 +119,16 @@ class image_model:
 
         return percent_dict
 
+    def collect_img_dirs(self, data_folder):
+        img_directories = []
+
+        for root, dirs, files, in os.walk(data_folder):
+            for name in files:
+                dir = os.path.join(root,name)
+                img_directories.append(dir)
+
+        return img_directories
+
     def pre(self):
         print("starting image model")
 
@@ -182,17 +192,27 @@ class image_model:
 
         elif self.load_numpy_img == False:
 
+            img_list = self.collect_img_dirs(self.load_dir)
+
+            # find matching ids
+            index_id_list = []
+            img_id_list = []
+            for ids in self.df.index:
+                index_id_list.append(ids)
+
             for imgs in img_list:
 
-                # find matching ids
-                for ids in self.df.index:
-                    ids = int(ids)
-                    if ids == int(imgs[self.img_id_name_loc[0]:self.img_id_name_loc[1]]):
-                        matching_ids.append(ids)
-                        matching_ids = list(dict.fromkeys(matching_ids))
+                img_id = int(imgs[self.img_id_name_loc[0]:self.img_id_name_loc[1]])
+                img_id_list.append(img_id)
 
-                # Collect/convert corresponding imagery
-                print("starting data preparation process")
+                set_index = set(index_id_list)
+                matching_ids = list(set_index.intersection(img_id_list))
+
+            print(index_id_list)
+            print(img_id_list)
+
+            for imgs in img_list:
+
                 for ids in matching_ids:
                     if ids == int(imgs[self.img_id_name_loc[0]:self.img_id_name_loc[1]]):
                         img = load_img(os.path.join(self.data_save_loc, imgs))
@@ -214,14 +234,14 @@ class image_model:
                     ## loading info
                     total_img = len(img_list)
                     percent_conv = (imgs_processed / total_img) * 100
-                    print(str(round(percent_conv,2)) + " percent converted")
+                    print(str(round(percent_conv, 2)) + " percent converted")
                     print(str(psutil.virtual_memory()))
 
             # save the array
             np.save(os.path.join(self.img_array_save, "img_array"), self.img_array)
 
             # reshape into legal dimensions
-            self.img_array = np.reshape(self.img_array,(num_usable_img,int(self.img_array.size/num_usable_img)))
+            self.img_array = np.reshape(self.img_array,(num_usable_img, int(self.img_array.size/num_usable_img)))
 
         self.df = self.df.loc[matching_ids]
 

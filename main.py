@@ -36,18 +36,18 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC\Patient and Treatment Characteristics (Original)(adjusted ids).csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\data\Duke-Breast-Cancer-MRI\Clinical and Other Features (edited).csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'Received Concurrent Chemoradiotherapy?'
+    target_variables = 'Adjuvant Radiation Therapy'
 
     # if true, converted images will be in png format instead of jpg
     png = False
 
     # folder containing Cancer Imagery
-    load_dir = "/scratch/Duke-Breast-Cancer-MRI_v120201203/Duke-Breast-Cancer-MRI"
+    load_dir = "D:\Cancer_Project\Cancer Imagery\manifest-1621548522717\Duke-Breast-Cancer-MRI"
 
     # directory to save data such as converted images
     save_dir = "D:\\Cancer_Project\\converted_img"
@@ -65,15 +65,12 @@ if useDefaults:
     # if true, image model will be ran instead of clinical only model
     run_img_model = True
 
-    # if true, two data files will be expected for input
-    two_datasets = False
-
     # if true, an additional file will be expected for testing
     use_additional_test_file = False
 
-    # where image id is located in image names (start,end)
+    # where image id is located in image names (start, end)
     # only applies if using image model
-    img_id_name_loc = (3, 6)
+    img_id_name_loc = (90, 93)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
     ID_dataset_col = "TCIA code"
@@ -146,17 +143,11 @@ else:
     # if true, numpy image array will be searched for in img_array_save
     load_numpy_img = dictBool["load_numpy_img "]
 
-    # if true, attempt will be made to convert dicom files to jpg or png
-    convert_imgs = dictBool["convert_imgs "]
-
     #if true, converted dicom images will be deleted after use
     del_converted_imgs = dictBool["del_converted_imgs "]
 
     # if true, image model will be ran instead of clinical only model
     run_img_model = dictBool["run_img_model "]
-
-    # if true, two data files will be expected for input
-    two_datasets = dictBool["two_datasets "]
 
     # if true, an additional file will be expected for testing
     use_additional_test_file = dictBool["use_additional_test_file "]
@@ -183,9 +174,6 @@ else:
     # if true, graphs will be saved after training model
     save_figs = dictBool["save_figs "]
 
-    # if true, convert dicom to standard format before put into numpy
-    dcmDirect = dictBool["dcmDirect"]
-
     # number of epochs in model
     num_epochs = int(dictTxt["num_epochs "])
 
@@ -194,7 +182,7 @@ else:
     diagModel = dictBool["diagModel "]
 
 if diagModel:
-    diag = diag.diagnostic(main_data,target_variables,20)
+    diag = diag.diagnostic(main_data, target_variables, 20)
     diag.model()
 
 mainPath = main_data
@@ -260,8 +248,6 @@ def encodeText(dataset):
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(wordList)
     codeDict = tokenizer.word_index
-
-    print(codeDict)
 
     for i in range(longestAxis):
         for n in range(shortestAxis): 
@@ -642,75 +628,6 @@ def GUI_varConnector(dataset1, dataset2):
     pressedVars_dict = Convert(pressedVars)
     return pressedVars_dict
 
-if two_datasets == True:
-    varMatches = GUI_varConnector(main_data,sec_data)
-    print(varMatches)
-
-def collect_img_dirs(data_folder):
-    img_directories = []
-
-    for root, dirs, files, in os.walk(data_folder):
-        for name in files:
-            dir = os.path.join(root,name)
-            img_directories.append(dir)
-
-    return img_directories
-
-def prep_data(data_file_1,data_file_2):
-    if str(type(data_file_1)) != "<class 'pandas.core.frame.DataFrame'>":
-        file_1 = pd.read_csv(data_file_1)
-    else:
-        file_1 = data_file_1
-
-    common_ids = []
-
-    if ID_dataset_col != "index":
-        file_1 = file_1.set_index(ID_dataset_col)
-
-    ids_1 = file_1.index
-
-    if two_datasets == True:
-        if str(type(data_file_2)) != "<class 'pandas.core.frame.DataFrame'>":
-            file_2 = pd.read_csv(data_file_2)
-        else:
-            file_2 = data_file_2
-
-        file_2 = file_2.set_index(ID_dataset_col)
-        ids_2 = file_2.index
-        # determine the largest dataset to put first in the for statement
-        if ids_1.shape[0] > ids_2.shape[0]:
-            longest_ids = ids_1.values.tolist()
-            shortest_ids = ids_2.values.tolist()
-        elif ids_1.shape[0] < ids_2.shape[0]:
-            longest_ids = ids_2.values.tolist()
-            shortest_ids = ids_1.values.tolist()
-        elif ids_1.shape[0] == ids_2.shape[0]:
-            longest_ids = ids_1.values.tolist()
-            shortest_ids = ids_2.values.tolist()
-
-        for i in longest_ids:
-            for z in shortest_ids:
-                if int(i) == int(z):
-                    common_ids.append(i)
-
-        adapted_1 = file_1.loc[common_ids]
-        adapted_2 = file_2.loc[common_ids]
-        combined_dataset = adapted_1.join(adapted_2)
-
-        # eliminate duplicate variables
-        for i in varMatches.values():
-            combined_dataset = combined_dataset.drop(i,axis=1)
-        data = combined_dataset
-    else:
-        data = file_1
-
-    return data
-
-if two_datasets == True:
-    main_data = prep_data(main_data,sec_data)
-elif two_datasets == False:
-    main_data = prep_data(main_data,None)
-
 resultList = []
 prediction = []
 
@@ -918,7 +835,7 @@ if not run_img_model:
     model.NN()
 
 elif run_img_model: 
-    model = image_model(save_dir, main_data, target_variables, num_epochs, load_numpy_img, img_array_save, load_fit, save_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs)
+    model = image_model(save_dir, main_data, target_variables, num_epochs, load_numpy_img, img_array_save, load_fit, save_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs, load_dir)
     model.NN()
 
 def ValResultPage():
