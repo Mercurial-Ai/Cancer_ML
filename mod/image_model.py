@@ -503,7 +503,7 @@ class image_model:
                               optimizer='sgd',
                               metrics=['accuracy', MeanIoU(num_classes=2)])
 
-                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb])
+                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight=self.percent_dict)
 
         else:
             self.model = keras.models.load_model(self.model_save_loc)
