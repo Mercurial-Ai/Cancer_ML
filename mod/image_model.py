@@ -10,11 +10,13 @@ from keras import layers
 import os 
 from keras.preprocessing.image import img_to_array
 from keras.preprocessing.image import load_img
+from keras.metrics import MeanIoU
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import psutil
 import matplotlib.pyplot as plt
 from mod.percentage_accuracy import percentageAccuracy
+from main import collect_img_dirs
 
 class image_model: 
     def __init__(self, model_save_loc, data_file, target_vars, epochs_num, load_numpy_img, img_array_save, load_fit, save_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs): 
@@ -446,9 +448,9 @@ class image_model:
                     output = Dense(1, activation='linear')(x)
                     self.model = keras.Model(input, output)
 
-                    self.model.compile(optimizer='adam',
+                    self.model.compile(optimizer='sgd',
                                       loss='mean_squared_error',
-                                      metrics=['accuracy'])
+                                      metrics=['accuracy', MeanIoU(num_classes=2)])
 
                     self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=64)
 
@@ -469,11 +471,11 @@ class image_model:
 
                     self.model = keras.Model(inputs=input, outputs=output)
 
-                    self.model.compile(optimizer='adam',
+                    self.model.compile(optimizer='sgd',
                                   loss='mean_squared_error',
                                   metrics=['accuracy'])
 
-                    self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=5, class_weight={1: 0.87, 0: 0.13})
+                    self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=5, class_weight=self.percent_dict)
 
             else:
                 self.model = Sequential()
@@ -498,10 +500,10 @@ class image_model:
                 self.model.add(layers.Activation('linear'))
 
                 self.model.compile(loss='mean_absolute_error',
-                              optimizer='adam',
-                              metrics=['accuracy'])
+                              optimizer='sgd',
+                              metrics=['accuracy', MeanIoU(num_classes=2)])
 
-                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight={1: 0.87, 0: 0.13})
+                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb])
 
         else:
             self.model = keras.models.load_model(self.model_save_loc)
@@ -509,6 +511,9 @@ class image_model:
         self.post()
 
     def post(self): 
+
+        iou_eval = MeanIoU(num_classes=2)
+
         #plotting
         history = self.fit
 
@@ -519,20 +524,11 @@ class image_model:
             plt.ylabel(metric)
             plt.xlabel('epoch')
 
-            save_path = os.path.join(self.data_save_loc, str(self.target_vars) + " " + metric + ".jpg")
-
-            if "?" in save_path:
-                save_path = save_path.replace("?", "")
-
-            if self.save_figs == True:
-                plt.savefig(save_path)
-
-            if self.show_figs == True:
-                plt.show()
-            else:
-                plt.clf()
+            plt.show()
 
         plot(history, 'loss', 'model loss')
+        plot(history, 'accuracy', 'accuracy')
+        plot(history, 'mean_io_u', 'mean_iou')
 
         def save_fitted_model(model, save_location):
             model.save(save_location)
@@ -592,6 +588,12 @@ class image_model:
         print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
         print(percentAcc)
 
+        iou_eval.update_state(prediction, self.y_val)
+        print('mean iou: ' + str(iou_eval.result().numpy()))
+
+        iou_eval.update_state(roundedPred, self.y_val)
+        print('rounded pred mean iou: ' + str(iou_eval.result().numpy()))
+
         self.resultList = []
 
         self.resultList.append(str(prediction))
@@ -650,6 +652,12 @@ class image_model:
         
         print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
         print(percentAcc)
+
+        iou_eval.update_state(prediction, self.y_test)
+        print('mean iou: ' + str(iou_eval.result().numpy()))
+
+        iou_eval.update_state(roundedPred, self.y_test)
+        print('rounded pred mean iou: ' + str(iou_eval.result().numpy()))
 
         self.resultList.append(str(prediction))
         self.resultList.append(str(roundedPred))

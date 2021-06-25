@@ -3,12 +3,9 @@ from itertools import filterfalse
 from re import A
 from tensorflow.keras.preprocessing.text import Tokenizer
 import pandas as pd
-import pydicom as dicom
 import shutil
-import cv2
 import numpy as np
 import os
-import psutil
 import tkinter as tk
 import tkinter.font as tkFont
 import random
@@ -39,12 +36,12 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\data\METABRIC_RNA_Mutation\METABRIC_RNA_Mutation.csv"
+    main_data = "D:\Cancer_Project\Cancer_ML\data\HNSCC\Patient and Treatment Characteristics (Original)(adjusted ids).csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'chemotherapy'
+    target_variables = 'Received Concurrent Chemoradiotherapy?'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -59,16 +56,14 @@ if useDefaults:
     img_array_save = "D:\Cancer_Project\converted_img"
 
     # if true, numpy image array will be searched for in img_array_save
+    # if false, images in dir will be converted to npy
     load_numpy_img = False
-
-    # if true, attempt will be made to convert dicom files to npy
-    convert_imgs = True
 
     #if true, converted dicom images will be deleted after use
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = False
+    run_img_model = True
 
     # if true, two data files will be expected for input
     two_datasets = False
@@ -78,10 +73,10 @@ if useDefaults:
 
     # where image id is located in image names (start,end)
     # only applies if using image model
-    img_id_name_loc = (9, 12)
+    img_id_name_loc = (3, 6)
 
     # Column of IDs in dataset. Acceptable values include "index" or a column name.
-    ID_dataset_col = "patient_id"
+    ID_dataset_col = "TCIA code"
 
     # tuple with dimension of imagery. All images must equal this dimension
     img_dimensions = (512, 512)
@@ -98,14 +93,11 @@ if useDefaults:
     # if true, graphs will be saved after training model
     save_figs = False
 
-    # if true, convert dicom directly to numpy. Otherwise, convert to jpg or png first in save_dir
-    dcmDirect = True
-
     # number of epochs in model
-    num_epochs = 20
+    num_epochs = 10
 
     # if true, CNN will be used
-    useCNN = False
+    useCNN = True
 
     # if true, diagnosis model will run
     diagModel = False
@@ -663,76 +655,6 @@ def collect_img_dirs(data_folder):
             img_directories.append(dir)
 
     return img_directories
-
-if convert_imgs == True:
-    load_dirs = collect_img_dirs(load_dir)
-
-def convert_img(png_boolean,dirs_list,save_path):
-    png = png_boolean
-
-    print("starting image conversion process")
-    num_converted_img = 0
-    for image in dirs_list:
-
-        # filter out incompatible images
-        if os.path.basename(image) != "1-1.dcm":
-            ds = dicom.dcmread(image)
-            pixel_array_numpy = ds.pixel_array
-
-            if png == False:
-                image = image.replace(".dcm",".jpg")
-            elif png == True:
-                image = image.replace(".dcm",".png")
-
-            cv2.imwrite(os.path.join(save_path,ds.PatientID+"_"+os.path.basename(image)),pixel_array_numpy)
-
-            ## Loading info
-            num_imgs = len(dirs_list)
-            num_converted_img = num_converted_img + 1
-            percentage_done = (num_converted_img/num_imgs) * 100
-            print(str(round(percentage_done,2)) + " percent completed")
-
-def convert_npy(dirs_list,save_path):
-    print("appending dicom files directly to numpy array")
-    img_array = np.array([])
-    img_conv = 0
-    for f in dirs_list:
-
-        # filter incompatible images
-        if os.path.basename(f) != "1-1.dcm":
-            ds = dicom.dcmread(f)
-            pixel_array_numpy = ds.pixel_array
-            id = ds.PatientID
-
-            for s in id:
-                if not s.isdigit():
-                    id = id.replace(s,'')
-
-            id = int(id[-3:])
-
-            if pixel_array_numpy.shape == img_dimensions:
-                pixel_array_numpy = pixel_array_numpy.flatten()
-                pixel_array_numpy = np.insert(pixel_array_numpy,len(pixel_array_numpy),id)
-                img_array = np.append(img_array,pixel_array_numpy)
-
-        print(psutil.virtual_memory().percent)
-
-        # memory optimization
-        if psutil.virtual_memory().percent >= 60:
-            break
-
-        ## Loading info
-        num_imgs = len(dirs_list)
-        img_conv = img_conv + 1
-        percentage_done = (img_conv / num_imgs) * 100
-        print(str(round(percentage_done, 2)) + " percent completed")
-
-    np.save(os.path.join(save_path, "img_array"), img_array)
-
-if convert_imgs == True and dcmDirect == False:
-    convert_img(png, load_dirs,save_dir)
-elif convert_imgs == True and load_numpy_img == False and dcmDirect == True:
-    convert_npy(load_dirs,save_dir)
 
 def prep_data(data_file_1,data_file_2):
     if str(type(data_file_1)) != "<class 'pandas.core.frame.DataFrame'>":

@@ -2,10 +2,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 from keras.layers import Dense
+from keras.metrics import MeanIoU
 from tensorflow.keras.callbacks import TensorBoard
 import keras
 import pandas as pd 
 from mod.percentage_accuracy import percentageAccuracy
+import matplotlib.pyplot as plt
 
 class clinical:
     def __init__(self, data_file, mainPath, target_vars, load_fit, save_fit, save_location, epochs_num, activation_function):
@@ -251,6 +253,8 @@ class clinical:
 
     def post(self):
 
+        iou_eval = MeanIoU(num_classes=2)
+
         # utilize validation data
         prediction = self.model.predict(self.X_val)
 
@@ -306,6 +310,12 @@ class clinical:
 
             print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
             print(percentAcc)
+
+            iou_eval.update_state(prediction, self.y_val)
+            print('mean iou: ' + str(iou_eval.result().numpy()))
+
+            iou_eval.update_state(roundedPred, self.y_val)
+            print('rounded pred mean iou: ' + str(iou_eval.result().numpy()))
 
             self.resultList = []
 
@@ -368,6 +378,12 @@ class clinical:
             print("- - - - - - - - - - - - - Percentage Accuracy - - - - - - - - - - - - -")
             print(percentAcc)
 
+            iou_eval.update_state(prediction, self.y_test)
+            print('mean iou: ' + str(iou_eval.result().numpy()))
+
+            iou_eval.update_state(roundedPred, self.y_test)
+            print('rounded pred mean iou: ' + str(iou_eval.result().numpy()))
+
             self.resultList.append(str(prediction))
             self.resultList.append(str(roundedPred))
             self.resultList.append(str(self.y_test))
@@ -415,13 +431,28 @@ class clinical:
 
                 self.model.compile(optimizer='SGD',
                               loss='mean_squared_error',
-                              metrics=['accuracy'])
+                              metrics=['accuracy', MeanIoU(num_classes=2)])
 
-                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight=self.percent_dict)
+                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb])
 
                 if self.save_fit == True:
                     self.model.save(self.save_location)
         else:
             self.model = keras.models.load_model(self.save_location)
+
+        # plot train metrics 
+        plt.plot(fit.history['accuracy'], label="accuracy")
+        plt.plot(fit.history['mean_io_u'], label="mean_iou")
+        plt.title('model accuracy')
+        plt.xlabel('epoch')
+        plt.ylabel('accuracy')
+        plt.legend(loc="upper left")
+        plt.show()
+
+        plt.plot(fit.history['loss'])
+        plt.title('model loss')
+        plt.xlabel('epoch')
+        plt.ylabel('loss')
+        plt.show()
 
         self.post()
