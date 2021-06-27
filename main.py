@@ -41,7 +41,7 @@ if useDefaults:
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'Adjuvant Radiation Therapy'
+    target_variables = 'Definitive Surgery Type'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -57,7 +57,7 @@ if useDefaults:
 
     # if true, numpy image array will be searched for in img_array_save
     # if false, images in dir will be converted to npy
-    load_numpy_img = False
+    load_numpy_img = True
 
     #if true, converted dicom images will be deleted after use
     del_converted_imgs = False
@@ -197,7 +197,8 @@ if use_audio:
     print(engine.variable)
 
 def cleanData(pd_dataset):
-    df = pd_dataset.dropna()
+    # replace missing spots with a string then after dataset is encoded, replace with mean of column
+    df = pd_dataset.fillna('empty')
     return df
 
 codeDict = {}
@@ -271,6 +272,19 @@ def encodeText(dataset):
     return dataset
 
 main_data = encodeText(main_data)
+
+# replace spots previously denoted as 'empty' with mean of column
+for column in list(main_data.columns):
+    col = main_data[column]
+
+    i = 0
+    for val in col: 
+        if val == codeDict['empty']:
+            col[i] = main_data[column].mean()
+
+        i = i + 1
+
+    main_data[column] = col
 
 col = None
 # function for determining if target variable(s) are binary val

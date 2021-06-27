@@ -16,6 +16,7 @@ from sklearn.preprocessing import MinMaxScaler
 import psutil
 import matplotlib.pyplot as plt
 from mod.percentage_accuracy import percentageAccuracy
+import pydicom as dicom
 
 class image_model: 
     def __init__(self, model_save_loc, data_file, target_vars, epochs_num, load_numpy_img, img_array_save, load_fit, save_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs, load_dir): 
@@ -124,7 +125,7 @@ class image_model:
 
         for root, dirs, files, in os.walk(data_folder):
             for name in files:
-                dir = os.path.join(root,name)
+                dir = os.path.join(root, name)
                 img_directories.append(dir)
 
         return img_directories
@@ -208,28 +209,27 @@ class image_model:
                 set_index = set(index_id_list)
                 matching_ids = list(set_index.intersection(img_id_list))
 
-            print(index_id_list)
-            print(img_id_list)
+            print(len(img_list))
+            print(len(matching_ids))
 
             for imgs in img_list:
 
-                for ids in matching_ids:
-                    if ids == int(imgs[self.img_id_name_loc[0]:self.img_id_name_loc[1]]):
-                        img = load_img(os.path.join(self.data_save_loc, imgs))
-                        img_numpy_array = img_to_array(img)
-                        if img_numpy_array.shape == self.img_dimensions:
-                            img_numpy_array = img_numpy_array.flatten()
-                            img_numpy_array = np.insert(img_numpy_array, len(img_numpy_array), ids)
-                            num_usable_img = num_usable_img + 1
-                            self.img_array = np.append(self.img_array, img_numpy_array, axis=0)
-                            imgs_processed = imgs_processed + 1
+                img = dicom.dcmread(imgs)
+                img_id = img.PatientID
 
-                        else:
-                            matching_ids.remove(ids)
+                for c in img_id:
+                    if not c.isdigit():
+                        img_id = img_id.replace(c,'')
 
-                    ## Memory optimization
-                    if psutil.virtual_memory().percent >= 60:
-                        break
+                img_id = int(img_id)
+
+                img_numpy_array = img.pixel_array
+                if img_numpy_array.shape == self.img_dimensions and img_id in matching_ids:
+                    img_numpy_array = img_numpy_array.flatten()
+                    img_numpy_array = np.insert(img_numpy_array, len(img_numpy_array), img_id)
+                    num_usable_img = num_usable_img + 1
+                    self.img_array = np.append(self.img_array, img_numpy_array, axis=0)
+                    imgs_processed = imgs_processed + 1
 
                     ## loading info
                     total_img = len(img_list)
@@ -237,22 +237,17 @@ class image_model:
                     print(str(round(percent_conv, 2)) + " percent converted")
                     print(str(psutil.virtual_memory()))
 
-            # save the array
-            np.save(os.path.join(self.img_array_save, "img_array"), self.img_array)
+                ## Memory optimization
+                if psutil.virtual_memory().percent >= 60:
+                    break
 
             # reshape into legal dimensions
             self.img_array = np.reshape(self.img_array,(num_usable_img, int(self.img_array.size/num_usable_img)))
 
+            # save the array
+            np.save(os.path.join(self.img_array_save, "img_array"), self.img_array)
+
         self.df = self.df.loc[matching_ids]
-
-        # remove ids from img_array that are not in matching_ids
-        i = 0
-        for img in self.img_array: 
-            id = img[-1]
-            if int(id) not in matching_ids:
-                self.img_array = np.delete(self.img_array, i, 0) 
-
-            i = i + 1
 
         # initialize negative_vals as false
         negative_vals = False
