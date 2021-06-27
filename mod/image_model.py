@@ -95,7 +95,7 @@ class image_model:
             # remove duplicates 
             col = list(set(col))
 
-            if len(col) == 2: 
+            if len(col) == 2:
                 isBinary = True
             else: 
                 isBinary = False
@@ -165,12 +165,6 @@ class image_model:
 
         if self.load_numpy_img == True:
             self.img_array = np.load(os.path.join(self.img_array_save, os.listdir(self.img_array_save)[0]))
-            if len(self.img_dimensions) == 3:
-                flat_res = int((self.img_dimensions[0]*self.img_dimensions[1]*self.img_dimensions[2])+1)
-            elif len(self.img_dimensions) == 2:
-                flat_res = int((self.img_dimensions[0]*self.img_dimensions[1])+1)
-            num_img = int(self.img_array.shape[0]/flat_res)
-            self.img_array = np.reshape(self.img_array, (num_img, flat_res))
 
             ## retrieving ids
             img_df = pd.DataFrame(data=self.img_array)
@@ -296,24 +290,29 @@ class image_model:
         X = features
         y = labels
 
-        if self.isBinary: 
-            y_list = list(y)
+        # change y vals to 1, 2, 3, ...
+        y_list = list(y)
 
-            # remove duplicates to identify binary vals
-            y_list = list(set(y_list))
-            y_list.sort()
+        # remove duplicates to identify binary vals
+        y_list = list(set(y_list))
+        y_list.sort()
 
-            binary_dict = {y_list[0]: 0, y_list[1]: 1}
+        i = 0
+        binary_dict = {}
+        for val in y_list:
+            binary_dict[val] = i
 
-            i = 0
-            new_y = pd.Series([])
-            for val in y: 
-                conv_y = binary_dict[val]
+            i = i + 1 
 
-                new_y[i] = conv_y
-                i = i + 1 
+        i = 0
+        new_y = pd.Series([])
+        for val in y: 
+            conv_y = binary_dict[val]
 
-            y = new_y
+            new_y[i] = conv_y
+            i = i + 1 
+
+        y = new_y
 
         self.percent_dict = self.get_y_distribution(y)
 
@@ -424,7 +423,6 @@ class image_model:
         self.y_val = y_val
 
         print(self.activation_function)
-        print(y_train)
 
         # invert distribution dict to insert in class_weights
         val_list = list(self.percent_dict.values())
