@@ -10,7 +10,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 import random
 from tkinter import ttk
-import mod.GUI.GUI as GUI
+#import mod.GUI.GUI as GUI
 import mod.diagnostic as diag
 import mod.clinical_model as clinical
 from mod.image_model import image_model
