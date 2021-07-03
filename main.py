@@ -50,10 +50,10 @@ if useDefaults:
     load_dir = "D:\Cancer_Project\Cancer Imagery\manifest-1621548522717\Duke-Breast-Cancer-MRI"
 
     # directory to save data such as converted images
-    save_dir = "D:\\Cancer_Project\\converted_img"
+    save_dir = "converted_imgs"
 
     # directory to save imagery array
-    img_array_save = "D:\Cancer_Project\converted_img"
+    img_array_save = "converted_imgs"
 
     # if true, numpy image array will be searched for in img_array_save
     # if false, images in dir will be converted to npy

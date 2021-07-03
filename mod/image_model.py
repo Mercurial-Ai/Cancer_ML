@@ -166,10 +166,13 @@ class image_model:
         if self.load_numpy_img == True:
             self.img_array = np.load(os.path.join(self.img_array_save, os.listdir(self.img_array_save)[0]))
 
+            print(self.img_array.shape)
+
             ## retrieving ids
-            img_df = pd.DataFrame(data=self.img_array)
-            cols = list(img_df.columns)
-            id_col = img_df[cols[-1]].tolist()
+            id_col = []
+            for imgs in self.img_array:
+                id = imgs[-1]
+                id_col.append(id)
             dataset_id = self.df.index.tolist()
 
             # determine what to put first in loop
@@ -356,18 +359,17 @@ class image_model:
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        def remove_ids(dataset):
-            # initialize empty array
-            newImg = np.empty((0, self.img_dimensions[0] * self.img_dimensions[1]))
+        def remove_ids(img_array):
 
-            # remove ids from img data
-            i = 0
-            for arr in dataset:
-                arr = np.delete(arr, -1)
-                newImg = np.insert(newImg, i, arr, axis=0)
-                i = i + 1
+            new_shape = (img_array.shape[0], img_array.shape[1]-1)
+            new_array = np.empty(shape=new_shape)
+            i = 0 
+            for img in img_array:
+                img = np.delete(img, -1)
+                new_array[i] = img
+                i = i + 1 
 
-            return newImg
+            return new_array
 
         if self.useCNN:
             X_train_img = remove_ids(X_train_img)
@@ -378,9 +380,36 @@ class image_model:
 
             # normalize data
             min_max_scaler = MinMaxScaler()
-            X_train_img = min_max_scaler.fit_transform(X_train_img)
-            X_test_img = min_max_scaler.fit_transform(X_test_img)
-            X_val_img = min_max_scaler.fit_transform(X_val_img)
+            
+            i = 0
+            new_array = np.empty(shape=(X_train_img.shape[0], self.img_dimensions[0], self.img_dimensions[1]))
+            for img in X_train_img:
+                img = np.reshape(img, (self.img_dimensions[0], self.img_dimensions[1]))
+                img = min_max_scaler.fit_transform(img)
+                new_array[i] = img
+                i = i + 1
+
+            X_train_img = new_array
+            
+            i = 0
+            new_array = np.empty(shape=(X_test_img.shape[0], self.img_dimensions[0], self.img_dimensions[1]))
+            for img in X_test_img:
+                img = np.reshape(img, (self.img_dimensions[0], self.img_dimensions[1]))
+                img = min_max_scaler.fit_transform(img)
+                new_array[i] = img
+                i = i + 1 
+
+            X_test_img = new_array
+
+            i = 0
+            new_array = np.empty(shape=(X_val_img.shape[0], self.img_dimensions[0], self.img_dimensions[1]))
+            for img in X_val_img:
+                img = np.reshape(img, (self.img_dimensions[0], self.img_dimensions[1]))
+                img = min_max_scaler.fit_transform(img)
+                new_array[i] = img
+                i = i + 1 
+
+            X_val_img = new_array
 
             X_train_img = np.reshape(X_train_img, (X_train_img.shape[0], self.img_dimensions[0], self.img_dimensions[1], 1))
             X_test_img = np.reshape(X_test_img, (X_test_img.shape[0], self.img_dimensions[0], self.img_dimensions[1], 1))
