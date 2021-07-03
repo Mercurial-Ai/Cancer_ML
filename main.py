@@ -14,9 +14,9 @@ import mod.GUI.GUI as GUI
 import mod.diagnostic as diag
 import mod.clinical_model as clinical
 from mod.image_model import image_model
-from mod.GUI.GUI_audio import gui_audio
-from mod.NLP.NLP import NLP
-from mod.NLP.speech_txt_conv import sph_txt, txt_sph, recorder
+#from mod.GUI.GUI_audio import gui_audio
+#from mod.NLP.NLP import NLP
+#from mod.NLP.speech_txt_conv import sph_txt, txt_sph, recorder
 
 # un-comment to show all of pandas dataframe
 #pd.set_option('display.max_rows', None)
@@ -25,7 +25,7 @@ from mod.NLP.speech_txt_conv import sph_txt, txt_sph, recorder
 # un-comment to show all of numpy array
 #np.set_printoptions(threshold=sys.maxsize)
 
-useDefaults = GUI.indexPage.useDefaults
+useDefaults = True
 
 use_audio = False
 
@@ -36,7 +36,7 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "D:\Cancer_Project\Cancer_ML\data\Duke-Breast-Cancer-MRI\Clinical and Other Features (edited).csv"
+    main_data = "data\Duke-Breast-Cancer-MRI\Clinical and Other Features (edited).csv"
     sec_data = ""
     test_file = ""
 
