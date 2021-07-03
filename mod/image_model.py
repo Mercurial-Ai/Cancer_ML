@@ -382,7 +382,7 @@ class image_model:
             min_max_scaler = MinMaxScaler()
             
             i = 0
-            new_array = np.empty(shape=(X_train_img.shape[0], self.img_dimensions[0], self.img_dimensions[1]))
+            new_array = np.empty(shape=(X_train_img.shape[0], self.img_dimensions[0], self.img_dimensions[1]), dtype=np.int8)
             for img in X_train_img:
                 img = np.reshape(img, (self.img_dimensions[0], self.img_dimensions[1]))
                 img = min_max_scaler.fit_transform(img)
@@ -392,7 +392,7 @@ class image_model:
             X_train_img = new_array
             
             i = 0
-            new_array = np.empty(shape=(X_test_img.shape[0], self.img_dimensions[0], self.img_dimensions[1]))
+            new_array = np.empty(shape=(X_test_img.shape[0], self.img_dimensions[0], self.img_dimensions[1]), dtype=np.int8)
             for img in X_test_img:
                 img = np.reshape(img, (self.img_dimensions[0], self.img_dimensions[1]))
                 img = min_max_scaler.fit_transform(img)
@@ -402,7 +402,7 @@ class image_model:
             X_test_img = new_array
 
             i = 0
-            new_array = np.empty(shape=(X_val_img.shape[0], self.img_dimensions[0], self.img_dimensions[1]))
+            new_array = np.empty(shape=(X_val_img.shape[0], self.img_dimensions[0], self.img_dimensions[1]), dtype=np.int8)
             for img in X_val_img:
                 img = np.reshape(img, (self.img_dimensions[0], self.img_dimensions[1]))
                 img = min_max_scaler.fit_transform(img)
