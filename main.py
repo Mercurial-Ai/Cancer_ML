@@ -36,7 +36,7 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "data\Duke-Breast-Cancer-MRI\Clinical and Other Features (edited).csv"
+    main_data = "data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv"
     sec_data = ""
     test_file = ""
 
