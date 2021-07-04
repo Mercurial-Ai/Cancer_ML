@@ -189,9 +189,9 @@ class image_model:
                     if int(id) == int(id2):
                         matching_ids.append(id)
 
-            for ids in id_col:
-                if ids not in matching_ids:
-                    matching_ids.remove(ids)
+            for ids in matching_ids:
+                if ids not in id_col:
+                    id_col.remove(ids)
 
         elif self.load_numpy_img == False:
 
