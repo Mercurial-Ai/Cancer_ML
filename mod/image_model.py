@@ -473,6 +473,8 @@ class image_model:
         self.percent_dict = dict(zip(key_list, val_list))
         print(self.percent_dict)
 
+        X_train = np.delete(X_train, -1, axis=0)
+
         if not self.load_fit:
             if not self.useCNN:
                 if str(type(self.target_vars))!="<class 'list'>" or len(self.target_vars) == 1:
