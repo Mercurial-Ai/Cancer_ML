@@ -554,6 +554,8 @@ class image_model:
 
                 self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight=self.percent_dict)
 
+                self.model.save('saved_model.h5')
+
         else:
             self.model = keras.models.load_model(self.model_save_loc)
 
