@@ -169,6 +169,7 @@ class image_model:
             print(self.img_array.shape)
 
             ## retrieving ids
+            iter_list = []
             id_col = []
             for imgs in self.img_array:
                 id = imgs[-1]
@@ -187,6 +188,10 @@ class image_model:
                 for id2 in shortest:
                     if int(id) == int(id2):
                         matching_ids.append(id)
+
+            for ids in id_col:
+                if ids not in matching_ids:
+                    matching_ids.remove(ids)
 
         elif self.load_numpy_img == False:
 
@@ -296,7 +301,7 @@ class image_model:
         # change y vals to 1, 2, 3, ...
         y_list = list(y)
 
-        # remove duplicates to identify binary vals
+        # remove duplicates to identify vals
         y_list = list(set(y_list))
         y_list.sort()
 
