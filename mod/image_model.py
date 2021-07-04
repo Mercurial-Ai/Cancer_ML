@@ -362,7 +362,7 @@ class image_model:
         def remove_ids(img_array):
 
             new_shape = (img_array.shape[0], img_array.shape[1]-1)
-            new_array = np.empty(shape=new_shape)
+            new_array = np.empty(shape=new_shape, dtype=np.int8)
             i = 0 
             for img in img_array:
                 img = np.delete(img, -1)
