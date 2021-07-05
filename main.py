@@ -14,9 +14,6 @@ import mod.GUI.GUI as GUI
 import mod.diagnostic as diag
 import mod.clinical_model as clinical
 from mod.image_model import image_model
-from mod.GUI.GUI_audio import gui_audio
-from mod.NLP.NLP import NLP
-from mod.NLP.speech_txt_conv import sph_txt, txt_sph, recorder
 
 # un-comment to show all of pandas dataframe
 #pd.set_option('display.max_rows', None)
@@ -26,8 +23,6 @@ from mod.NLP.speech_txt_conv import sph_txt, txt_sph, recorder
 #np.set_printoptions(threshold=sys.maxsize)
 
 useDefaults = GUI.indexPage.useDefaults
-
-use_audio = False
 
 if useDefaults:
     # SPECIFY VARIABLES HERE - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -186,15 +181,6 @@ if diagModel:
     diag.model()
 
 mainPath = main_data
-
-if use_audio:
-    audio_ui = gui_audio()
-    audio_ui.run()
-
-    engine = NLP()
-    engine.run()
-
-    print(engine.variable)
 
 def cleanData(pd_dataset):
     # replace missing spots with a string then after dataset is encoded, replace with mean of column
