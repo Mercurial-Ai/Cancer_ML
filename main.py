@@ -36,12 +36,12 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv"
+    main_data = "data/Duke-Breast-Cancer-MRI/Clinical_and_Other_Features.csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'Field Strength (Tesla)'
+    target_variables = 'Adjuvant Chemotherapy'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -233,9 +233,10 @@ def encodeText(dataset):
 
                 # list of chars to be removed from data
                 char_blocked = [' ', '.', '/', '-', '_', '>', '+', ',', ')', '(', '*',
-                                '=', '?', ':', '[', ']', '#', '!']
+                                '=', '?', ':', '[', ']', '#', '!', '\n', '\\', '}', '{',
+                                ';', '%', '"']
 
-                for char in char_blocked: 
+                for char in char_blocked:
                     if char in data: 
                         data = data.replace(char, '')
 
@@ -291,70 +292,33 @@ col = None
 # returns bool if single var 
 # returns list of bools in corresponding order to target variables list if multiple vars   
 def isBinary(target_var): 
-    global col 
 
-    orgPD = pd.read_csv(mainPath)
-    orgPD = orgPD.dropna()
+    print(main_data.columns)
+    col = list(main_data[target_var])
 
-    # check if param is a list of multiple vars 
-    if str(type(target_var)) == "<class 'list'>" and len(target_var) > 1:
+    # remove duplicates 
+    col = list(set(col))
 
-        for vars in target_var: 
-
-            # initialize list to hold bools 
-            areBinary = []
-        
-            col = list(orgPD[vars])
-
-            # remove duplicates 
-            col = list(set(col))
-
-            # check if data is numerical 
-            for vals in col: 
-                if str(type(vals)) == "<class 'int'>" or str(type(vals)) == "<class 'float'>": 
-                    numeric = True
-                else: 
-                    numeric = False 
-
-            if not numeric: 
-
-                if len(col) == 2: 
-                    isBinary = True
-                else: 
-                    isBinary = False 
-
-                areBinary.append(isBinary)
-            else: 
-                areBinary = False
-
-        isBinary = areBinary 
+    # check if original data is numerical
+    for vals in col: 
+        if str(type(vals)) == "<class 'int'>" or str(type(vals)) == "<class 'float'>": 
+            numeric = True
+        else: 
+            numeric = False 
+    
+    if not numeric: 
+        if len(col) == 2: 
+            isBinary = True
+        else: 
+            isBinary = False 
 
     else: 
-
-        col = list(orgPD[target_var])
-
-        # remove duplicates 
-        col = list(set(col))
-
-        # check if original data is numerical
-        for vals in col: 
-            if str(type(vals)) == "<class 'int'>" or str(type(vals)) == "<class 'float'>": 
-                numeric = True
-            else: 
-                numeric = False 
-        
-        if not numeric: 
-            if len(col) == 2: 
-                isBinary = True
-            else: 
-                isBinary = False 
-
-        else: 
-            isBinary = False
+        isBinary = False
 
     return isBinary
 
 isBinary = isBinary(target_variables)
+print(isBinary)
 
 # make dictionary with definitions for only target var 
 convCol = main_data.loc[:,target_variables]
