@@ -233,7 +233,8 @@ def encodeText(dataset):
 
                 # list of chars to be removed from data
                 char_blocked = [' ', '.', '/', '-', '_', '>', '+', ',', ')', '(', '*',
-                                '=', '?', ':', '[', ']', '#', '!']
+                                '=', '?', ':', '[', ']', '#', '!', '\n', '\\', '}',
+                                '{', ';', '%', '"']
 
                 for char in char_blocked: 
                     if char in data: 
@@ -304,7 +305,7 @@ def isBinary(target_var):
             # initialize list to hold bools 
             areBinary = []
         
-            col = list(orgPD[vars])
+            col = list(main_data[vars])
 
             # remove duplicates 
             col = list(set(col))
@@ -331,7 +332,7 @@ def isBinary(target_var):
 
     else: 
 
-        col = list(orgPD[target_var])
+        col = list(main_data[target_var])
 
         # remove duplicates 
         col = list(set(col))
