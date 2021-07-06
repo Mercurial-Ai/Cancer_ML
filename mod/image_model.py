@@ -300,6 +300,8 @@ class image_model:
 
         # change y vals to 1, 2, 3, ...
         y_list = list(y)
+
+        print(y_list)
         
         # remove duplicates to identify vals
         y_list = list(set(y_list))

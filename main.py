@@ -41,7 +41,7 @@ if useDefaults:
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'Field Strength (Tesla)'
+    target_variables = 'Adjuvant Radiation Therapy'
 
     # if true, converted images will be in png format instead of jpg
     png = False
