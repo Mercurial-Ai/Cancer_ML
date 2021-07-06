@@ -169,11 +169,11 @@ class image_model:
             print(self.img_array.shape)
 
             ## retrieving ids
-            iter_list = []
             id_col = []
             for imgs in self.img_array:
-                id = imgs[-1]
-                id_col.append(id)
+                if imgs.size != 0:
+                    id = imgs[-1]
+                    id_col.append(id)
             dataset_id = self.df.index.tolist()
 
             # determine what to put first in loop
@@ -472,8 +472,6 @@ class image_model:
 
         self.percent_dict = dict(zip(key_list, val_list))
         print(self.percent_dict)
-
-        X_train = np.delete(X_train, -1, axis=0)
 
         if not self.load_fit:
             if not self.useCNN:
