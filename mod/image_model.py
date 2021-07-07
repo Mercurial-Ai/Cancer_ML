@@ -249,6 +249,7 @@ class image_model:
             # save the array
             np.save(os.path.join(self.img_array_save, "img_array"), self.img_array)
 
+        print(matching_ids)
         self.df = self.df.loc[matching_ids]
 
         # initialize negative_vals as false
@@ -300,8 +301,6 @@ class image_model:
 
         # change y vals to 1, 2, 3, ...
         y_list = list(y)
-
-        print(y_list)
         
         # remove duplicates to identify vals
         y_list = list(set(y_list))
