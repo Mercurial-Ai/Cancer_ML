@@ -175,6 +175,8 @@ class image_model:
                 id_col.append(id)
             dataset_id = self.df.index.tolist()
 
+            print(len(id_col))
+
             # determine what to put first in loop
             if len(id_col) >= len(dataset_id):
                 longest = id_col
@@ -187,10 +189,6 @@ class image_model:
                 for id2 in shortest:
                     if int(id) == int(id2):
                         matching_ids.append(id)
-
-            for ids in matching_ids:
-                if ids not in id_col:
-                    matching_ids.remove(ids)
 
         elif self.load_numpy_img == False:
 
