@@ -246,8 +246,8 @@ class image_model:
             # save the array
             np.save(os.path.join(self.img_array_save, "img_array"), self.img_array)
 
-        print(matching_ids)
         self.df = self.df.loc[matching_ids]
+        print(self.df.shape)
 
         # initialize negative_vals as false
         negative_vals = False
