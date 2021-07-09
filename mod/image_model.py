@@ -171,9 +171,8 @@ class image_model:
             ## retrieving ids
             id_col = []
             for imgs in self.img_array:
-                if imgs.size != 0:
-                    id = imgs[-1]
-                    id_col.append(id)
+                id = imgs[-1]
+                id_col.append(id)
             dataset_id = self.df.index.tolist()
 
             # determine what to put first in loop
@@ -191,7 +190,7 @@ class image_model:
 
             for ids in matching_ids:
                 if ids not in id_col:
-                    id_col.remove(ids)
+                    matching_ids.remove(ids)
 
         elif self.load_numpy_img == False:
 
