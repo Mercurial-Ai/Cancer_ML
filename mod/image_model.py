@@ -190,6 +190,13 @@ class image_model:
                     if int(id) == int(id2):
                         matching_ids.append(id)
 
+            i = 0
+            for img in self.img_array: 
+                id = img[-1]
+                if id not in matching_ids: 
+                    self.img_array = np.delete(self.img_array, i, axis=0)
+                i = i + 1 
+
         elif self.load_numpy_img == False:
 
             img_list = self.collect_img_dirs(self.load_dir)
@@ -247,7 +254,6 @@ class image_model:
             np.save(os.path.join(self.img_array_save, "img_array"), self.img_array)
 
         self.df = self.df.loc[matching_ids]
-        print(self.df.shape)
 
         # initialize negative_vals as false
         negative_vals = False
