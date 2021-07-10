@@ -195,6 +195,7 @@ class image_model:
                 id = img[-1]
                 if id not in matching_ids: 
                     self.img_array = np.delete(self.img_array, i, axis=0)
+                print(i)
                 i = i + 1 
 
         elif self.load_numpy_img == False:
