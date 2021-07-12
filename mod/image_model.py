@@ -168,34 +168,18 @@ class image_model:
 
             print(self.img_array.shape)
 
+            clinical_id = self.df.index.tolist()
+
             ## retrieving ids
-            id_col = []
+            i = 0
             for imgs in self.img_array:
                 id = imgs[-1]
-                id_col.append(id)
-            dataset_id = self.df.index.tolist()
-
-            print(len(id_col))
-
-            # determine what to put first in loop
-            if len(id_col) >= len(dataset_id):
-                longest = id_col
-                shortest = dataset_id
-            elif len(dataset_id) > len(id_col):
-                longest = dataset_id
-                shortest = id_col
-
-            for id in longest:
-                for id2 in shortest:
-                    if int(id) == int(id2):
-                        matching_ids.append(id)
-
-            i = 0
-            for img in self.img_array: 
-                id = img[-1]
-                if id not in matching_ids: 
+                if id in clinical_id: 
+                    matching_ids.append(id)
+                elif id not in clinical_id: 
                     self.img_array = np.delete(self.img_array, i, axis=0)
-                i = i + 1 
+
+                i = i + 1
 
         elif self.load_numpy_img == False:
 
