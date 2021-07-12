@@ -170,16 +170,19 @@ class image_model:
 
             clinical_id = self.df.index.tolist()
 
-            ## retrieving ids
+            # list of array indices that need to be deleted
+            del_indices = []
             i = 0
             for imgs in self.img_array:
                 id = imgs[-1]
                 if id in clinical_id: 
                     matching_ids.append(id)
                 elif id not in clinical_id: 
-                    self.img_array = np.delete(self.img_array, i, axis=0)
+                    del_indices.append(i)
 
                 i = i + 1
+
+            self.img_array = np.delete(self.img_array, del_indices, axis=0)
 
         elif self.load_numpy_img == False:
 
