@@ -182,6 +182,8 @@ class image_model:
 
                 i = i + 1
 
+            print("del indices determined")
+
             self.img_array = np.delete(self.img_array, del_indices, axis=0)
 
         elif self.load_numpy_img == False:
