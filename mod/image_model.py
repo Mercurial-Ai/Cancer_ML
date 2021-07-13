@@ -168,25 +168,23 @@ class image_model:
 
             print(self.img_array.shape)
 
-            ## retrieving ids
-            id_col = []
+            clinical_id = self.df.index.tolist()
+
+            # list of array indices that need to be deleted
+            del_indices = []
+            i = 0
             for imgs in self.img_array:
                 id = imgs[-1]
-                id_col.append(id)
-            dataset_id = self.df.index.tolist()
+                if id in clinical_id:
+                    matching_ids.append(id)
+                elif id not in clinical_id:
+                    del_indices.append(i)
 
-            # determine what to put first in loop
-            if len(id_col) >= len(dataset_id):
-                longest = id_col
-                shortest = dataset_id
-            elif len(dataset_id) > len(id_col):
-                longest = dataset_id
-                shortest = id_col
+                i = i + 1
 
-            for id in longest:
-                for id2 in shortest:
-                    if int(id) == int(id2):
-                        matching_ids.append(id)
+            print("del indices determined")
+
+            self.img_array = np.delete(self.img_array, del_indices, axis=0)
 
         elif self.load_numpy_img == False:
 
@@ -296,7 +294,7 @@ class image_model:
         # change y vals to 1, 2, 3, ...
         y_list = list(y)
 
-        # remove duplicates to identify binary vals
+        # remove duplicates to identify vals
         y_list = list(set(y_list))
         y_list.sort()
 
