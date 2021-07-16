@@ -317,7 +317,7 @@ class image_model:
 
         self.percent_dict = self.get_y_distribution(y)
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
 
         # split test data into validation and test
         X_test, X_val = train_test_split(X_test, test_size=0.5, random_state=53)
@@ -351,7 +351,7 @@ class image_model:
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Image
 
-        X_train_img, X_test_img = train_test_split(self.img_array, test_size=0.4, random_state=42)
+        X_train_img, X_test_img = train_test_split(self.img_array, test_size=0.1, random_state=42)
 
         X_test_img, X_val_img = train_test_split(X_test_img, test_size=0.5, random_state=34)
 
