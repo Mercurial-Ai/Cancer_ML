@@ -107,6 +107,8 @@ class image_model:
         y_len = len(y)
 
         counts_dict = y.value_counts().to_dict()
+
+        self.num_classes = len(counts_dict)
         
         percent_list = []
         for count in list(counts_dict.values()):
@@ -490,7 +492,7 @@ class image_model:
 
                     self.model.compile(optimizer='sgd',
                                       loss='mean_squared_error',
-                                      metrics=['accuracy', MeanIoU(num_classes=2)])
+                                      metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
 
                     self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=64)
 
@@ -541,7 +543,7 @@ class image_model:
 
                 self.model.compile(loss='mean_absolute_error',
                               optimizer='sgd',
-                              metrics=['accuracy', MeanIoU(num_classes=2)])
+                              metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
 
                 self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight=self.percent_dict)
 
