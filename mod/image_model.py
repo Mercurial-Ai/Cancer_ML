@@ -15,8 +15,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import psutil
 import matplotlib.pyplot as plt
-from mod.percentage_accuracy import percentageAccuracy
 import pydicom as dicom
+
+from mod.percentage_accuracy import percentageAccuracy
+from mod.grid_search import grid_search
 
 class image_model: 
     def __init__(self, model_save_loc, data_file, target_vars, epochs_num, load_numpy_img, img_array_save, load_fit, save_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs, load_dir): 
@@ -469,83 +471,94 @@ class image_model:
         print(self.percent_dict)
 
         if not self.load_fit:
-            if not self.useCNN:
-                if str(type(self.target_vars))!="<class 'list'>" or len(self.target_vars) == 1:
+            search = grid_search('grid_search.csv')
+            grid_combs = search.read_grid()
 
-                    print(X_train.shape)
+            i = 0
+            for hyp_dict in grid_combs:
 
-                    # set input shape to dimension of data
-                    input = keras.layers.Input(shape=(X_train.shape[1],))
+                if not self.useCNN:
+                    if str(type(self.target_vars))!="<class 'list'>" or len(self.target_vars) == 1:
 
-                    x = Dense(150, activation=self.activation_function)(input)
-                    x = Dense(150, activation=self.activation_function)(x)
-                    x = Dense(150, activation=self.activation_function)(x)
-                    x = Dense(120, activation=self.activation_function)(x)
-                    x = Dense(120, activation=self.activation_function)(x)
-                    x = Dense(100, activation=self.activation_function)(x)
-                    x = Dense(100, activation=self.activation_function)(x)
-                    x = Dense(80, activation=self.activation_function)(x)
-                    x = Dense(80, activation=self.activation_function)(x)
-                    x = Dense(45, activation=self.activation_function)(x)
-                    output = Dense(1, activation='linear')(x)
-                    self.model = keras.Model(input, output)
+                        print(X_train.shape)
 
-                    self.model.compile(optimizer='sgd',
-                                      loss='mean_squared_error',
-                                      metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
+                        # set input shape to dimension of data
+                        input = keras.layers.Input(shape=(X_train.shape[1],))
 
-                    self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=64)
+                        x = Dense(150, activation=self.activation_function)(input)
+                        x = Dense(150, activation=self.activation_function)(x)
+                        x = Dense(150, activation=self.activation_function)(x)
+                        x = Dense(120, activation=self.activation_function)(x)
+                        x = Dense(120, activation=self.activation_function)(x)
+                        x = Dense(100, activation=self.activation_function)(x)
+                        x = Dense(100, activation=self.activation_function)(x)
+                        x = Dense(80, activation=self.activation_function)(x)
+                        x = Dense(80, activation=self.activation_function)(x)
+                        x = Dense(45, activation=self.activation_function)(x)
+                        output = Dense(1, activation='linear')(x)
+                        self.model = keras.Model(input, output)
+
+                        self.model.compile(optimizer='sgd',
+                                        loss='mean_squared_error',
+                                        metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
+
+                        self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'])
+
+                    else:
+                        input = keras.layers.Input(shape=(X_train.shape[1],))
+
+                        x = Dense(150, activation=self.activation_function)(input)
+                        x = Dense(150, activation=self.activation_function)(x)
+                        x = Dense(150, activation=self.activation_function)(x)
+                        x = Dense(120, activation=self.activation_function)(x)
+                        x = Dense(120, activation=self.activation_function)(x)
+                        x = Dense(100, activation=self.activation_function)(x)
+                        x = Dense(100, activation=self.activation_function)(x)
+                        x = Dense(80, activation=self.activation_function)(x)
+                        x = Dense(80, activation=self.activation_function)(x)
+                        x = Dense(45, activation=self.activation_function)(x)
+                        output = Dense(len(self.target_vars), activation='linear')(x)
+
+                        self.model = keras.Model(inputs=input, outputs=output)
+
+                        self.model.compile(optimizer='sgd',
+                                    loss='mean_squared_error',
+                                    metrics=['accuracy'])
+
+                        self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=5, class_weight=self.percent_dict)
 
                 else:
-                    input = keras.layers.Input(shape=(X_train.shape[1],))
+                    self.model = Sequential()
 
-                    x = Dense(150, activation=self.activation_function)(input)
-                    x = Dense(150, activation=self.activation_function)(x)
-                    x = Dense(150, activation=self.activation_function)(x)
-                    x = Dense(120, activation=self.activation_function)(x)
-                    x = Dense(120, activation=self.activation_function)(x)
-                    x = Dense(100, activation=self.activation_function)(x)
-                    x = Dense(100, activation=self.activation_function)(x)
-                    x = Dense(80, activation=self.activation_function)(x)
-                    x = Dense(80, activation=self.activation_function)(x)
-                    x = Dense(45, activation=self.activation_function)(x)
-                    output = Dense(len(self.target_vars), activation='linear')(x)
+                    self.model.add(layers.Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
+                    self.model.add(layers.Activation('relu'))
+                    self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
-                    self.model = keras.Model(inputs=input, outputs=output)
+                    self.model.add(layers.Conv2D(64, (3, 3)))
+                    self.model.add(layers.Activation('relu'))
+                    self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
-                    self.model.compile(optimizer='sgd',
-                                  loss='mean_squared_error',
-                                  metrics=['accuracy'])
+                    self.model.add(layers.Flatten())
 
-                    self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=5, class_weight=self.percent_dict)
+                    self.model.add(layers.Dense(128))
+                    self.model.add(layers.Activation('relu'))
 
-            else:
-                self.model = Sequential()
+                    self.model.add(layers.Dense(64))
+                    self.model.add(layers.Activation('relu'))
 
-                self.model.add(layers.Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
-                self.model.add(layers.Activation('relu'))
-                self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+                    self.model.add(layers.Dense(1))
+                    self.model.add(layers.Activation('linear'))
 
-                self.model.add(layers.Conv2D(64, (3, 3)))
-                self.model.add(layers.Activation('relu'))
-                self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+                    self.model.compile(loss='mean_absolute_error',
+                                optimizer='sgd',
+                                metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
 
-                self.model.add(layers.Flatten())
+                    self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight=self.percent_dict)
 
-                self.model.add(layers.Dense(128))
-                self.model.add(layers.Activation('relu'))
-
-                self.model.add(layers.Dense(64))
-                self.model.add(layers.Activation('relu'))
-
-                self.model.add(layers.Dense(1))
-                self.model.add(layers.Activation('linear'))
-
-                self.model.compile(loss='mean_absolute_error',
-                              optimizer='sgd',
-                              metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
-
-                self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight=self.percent_dict)
+                i = i + 1
+                # loading info.
+                percent_done = (i/len(grid_combs))*100
+                print(str(percent_done), 'percent done')
 
         else:
             self.model = keras.models.load_model(self.model_save_loc)

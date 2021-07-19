@@ -1,8 +1,26 @@
+import pandas as pd
+from itertools import product
 
-# dict of all hyperparamaters to be optimized with their type (numerical or categorical)
-# if categorical, then a list will be inserted with ['categorical', list of classes]
-# if numerical, then a list will be inserted with ['numerical', (tuple with range of classes)]
-hyps = {'learning rate': ['numerical', (0.01, 0.1)], 'batch_size': ['numerical', (8, 128)], 
-        'epochs': ['numerical', (5, 30)], 'loss function': ['categorical', ['adam', 'mean_squared_error', 'mean_absolute_error']], 
-        'optimizer': ['categorical', []]}
+class grid_search:
+    def __init__(self, grid_path):
+        self.grid_path = grid_path
+    
+    def read_grid(self):
+        grid = pd.read_csv(self.grid_path)
 
+        grid_cols = list(grid.columns)
+
+        grid_combs = list(product(grid['batch size'], grid['epochs']))
+
+        comb_dict_list = []
+        for comb in grid_combs:
+            comb = list(comb)
+
+            comb_dict = dict(zip(grid_cols, comb))
+
+            comb_dict_list.append(comb_dict)
+
+        return comb_dict_list
+
+search = grid_search('C:\\Users\\trist\cs_projects\\Cancer_Project\\grid_search.csv')
+search.read_grid()
