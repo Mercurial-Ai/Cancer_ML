@@ -6,8 +6,10 @@ from keras.metrics import MeanIoU
 from tensorflow.keras.callbacks import TensorBoard
 import keras
 import pandas as pd 
-from mod.percentage_accuracy import percentageAccuracy
 import matplotlib.pyplot as plt
+
+from mod.percentage_accuracy import percentageAccuracy
+from mod.grid_search import grid_search
 
 class clinical:
     def __init__(self, data_file, mainPath, target_vars, load_fit, save_fit, save_location, epochs_num, activation_function):
@@ -397,46 +399,54 @@ class clinical:
         self.tensorboard()
 
         if not self.load_fit:
-            if str(type(self.target_vars))=="<class 'list'>" and len(self.target_vars) > 1:
-                input = keras.Input(shape=self.X_train.shape[1],)
 
-                x = Dense(10, activation=self.activation_function)(input)
-                x = Dense(10, activation=self.activation_function)(x)
-                x = Dense(6, activation=self.activation_function)(x)
-                x = Dense(4, activation=self.activation_function)(x)
-                x = Dense(4, activation=self.activation_function)(x)
-                output = Dense(len(self.target_vars), activation=self.activation_function)(x)
+            search = grid_search('grid_search.csv')
+            grid_combs = search.read_grid()
 
-                self.model = keras.Model(inputs=input, outputs=output)
+            i = 0
+            for hyp_dict in grid_combs:
+                if str(type(self.target_vars))=="<class 'list'>" and len(self.target_vars) > 1:
+                    input = keras.Input(shape=self.X_train.shape[1],)
 
-                self.model.compile(optimizer='SGD',
-                              loss='mean_absolute_error',
-                              metrics=['accuracy'])
+                    x = Dense(10, activation=self.activation_function)(input)
+                    x = Dense(10, activation=self.activation_function)(x)
+                    x = Dense(6, activation=self.activation_function)(x)
+                    x = Dense(4, activation=self.activation_function)(x)
+                    x = Dense(4, activation=self.activation_function)(x)
+                    output = Dense(len(self.target_vars), activation=self.activation_function)(x)
 
-                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=5)
+                    self.model = keras.Model(inputs=input, outputs=output)
 
-            else:
-                print(self.X_train.shape[1])
+                    self.model.compile(optimizer='SGD',
+                                loss='mean_absolute_error',
+                                metrics=['accuracy'])
 
-                # set input shape to dimension of data
-                input = keras.layers.Input(shape=(self.X_train.shape[1],))
+                    fit = self.model.fit(self.X_train, self.y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'])
 
-                x = Dense(9, activation=self.activation_function)(input)
-                x = Dense(9, activation=self.activation_function)(x)
-                x = Dense(6, activation=self.activation_function)(x)
-                x = Dense(4, activation=self.activation_function)(x)
-                x = Dense(2, activation=self.activation_function)(x)
-                output = Dense(1, activation='linear')(x)
-                self.model = keras.Model(input, output)
+                else:
+                    print(self.X_train.shape[1])
 
-                self.model.compile(optimizer='SGD',
-                              loss='mean_squared_error',
-                              metrics=['accuracy', MeanIoU(num_classes=2)])
+                    # set input shape to dimension of data
+                    input = keras.layers.Input(shape=(self.X_train.shape[1],))
 
-                fit = self.model.fit(self.X_train, self.y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb])
+                    x = Dense(9, activation=self.activation_function)(input)
+                    x = Dense(9, activation=self.activation_function)(x)
+                    x = Dense(6, activation=self.activation_function)(x)
+                    x = Dense(4, activation=self.activation_function)(x)
+                    x = Dense(2, activation=self.activation_function)(x)
+                    output = Dense(1, activation='linear')(x)
+                    self.model = keras.Model(input, output)
 
-                if self.save_fit == True:
-                    self.model.save(self.save_location)
+                    self.model.compile(optimizer='SGD',
+                                loss='mean_squared_error',
+                                metrics=['accuracy', MeanIoU(num_classes=2)])
+
+                    fit = self.model.fit(self.X_train, self.y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], callbacks=[self.tb])
+
+                    if self.save_fit == True:
+                        self.model.save(self.save_location)
+
+                i = i + 1 
         else:
             self.model = keras.models.load_model(self.save_location)
 
