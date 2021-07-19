@@ -21,6 +21,3 @@ class grid_search:
             comb_dict_list.append(comb_dict)
 
         return comb_dict_list
-
-search = grid_search('C:\\Users\\trist\cs_projects\\Cancer_Project\\grid_search.csv')
-search.read_grid()
