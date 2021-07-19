@@ -525,7 +525,7 @@ class image_model:
                                     loss='mean_squared_error',
                                     metrics=['accuracy'])
 
-                        self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=5, class_weight=self.percent_dict)
+                        self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], class_weight=self.percent_dict)
 
                 else:
                     self.model = Sequential()
@@ -553,7 +553,7 @@ class image_model:
                                 optimizer='sgd',
                                 metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
 
-                    self.fit = self.model.fit(X_train, y_train, epochs=self.epochs_num, batch_size=32, callbacks=[self.tb], class_weight=self.percent_dict)
+                    self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], callbacks=[self.tb], class_weight=self.percent_dict)
 
                 i = i + 1
                 # loading info.
