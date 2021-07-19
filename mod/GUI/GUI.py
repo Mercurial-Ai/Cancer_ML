@@ -35,7 +35,7 @@ class index:
     def setup(self):
         self.window = Tk()
         self.window.title("Cancer ML")
-        self.window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
+        self.window.iconbitmap("cancer_icon.ico")
 
         # font used for page elements
         self.font = tkFont.Font(family="Georgia",size=12)
@@ -170,7 +170,7 @@ if main_data != "other":
     tUI.draw()
     target = tUI.target.targetList
  
-with open("D:\Cancer_Project\Cancer_ML\project_variables.txt","r") as projectVars:
+with open("project_variables.txt","r") as projectVars:
     vars=projectVars.readlines()
 
 if dataset != "other": 
@@ -181,7 +181,7 @@ window = Tk()
 
 window.title("Cancer ML")
 
-window.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
+window.iconbitmap("cancer_icon.ico")
 
 main_frame = Frame(window)
 main_frame.pack(fill=BOTH,expand=1)
