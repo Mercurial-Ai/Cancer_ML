@@ -248,21 +248,7 @@ class image_model:
 
         self.df = self.df.loc[matching_ids]
 
-        # initialize negative_vals as false
-        negative_vals = False
-
-        # determine activation function (relu or tanh) from if there are negative numbers in target variable
-        df_values = self.df.values
-        df_values = df_values.flatten()
-        for val in df_values:
-            val = float(val)
-            if val < 0:
-                negative_vals = True
-
-        if negative_vals == True:
-            self.activation_function = "tanh"
-        else:
-            self.activation_function = 'relu'
+        self.activation_function = 'relu'
 
     def tensorboard(self): 
         if self.useCNN:
