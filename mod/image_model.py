@@ -460,58 +460,36 @@ class image_model:
             search = grid_search('grid_search.csv')
             grid_combs = search.read_grid()
 
+            # list to store hyperparameter-accuracy data
+            hyp_acc_list = []
             i = 0
             for hyp_dict in grid_combs:
 
                 if not self.useCNN:
-                    if str(type(self.target_vars))!="<class 'list'>" or len(self.target_vars) == 1:
 
-                        print(X_train.shape)
+                    print(X_train.shape)
 
-                        # set input shape to dimension of data
-                        input = keras.layers.Input(shape=(X_train.shape[1],))
+                    # set input shape to dimension of data
+                    input = keras.layers.Input(shape=(X_train.shape[1],))
 
-                        x = Dense(150, activation=self.activation_function)(input)
-                        x = Dense(150, activation=self.activation_function)(x)
-                        x = Dense(150, activation=self.activation_function)(x)
-                        x = Dense(120, activation=self.activation_function)(x)
-                        x = Dense(120, activation=self.activation_function)(x)
-                        x = Dense(100, activation=self.activation_function)(x)
-                        x = Dense(100, activation=self.activation_function)(x)
-                        x = Dense(80, activation=self.activation_function)(x)
-                        x = Dense(80, activation=self.activation_function)(x)
-                        x = Dense(45, activation=self.activation_function)(x)
-                        output = Dense(1, activation='linear')(x)
-                        self.model = keras.Model(input, output)
+                    x = Dense(150, activation=self.activation_function)(input)
+                    x = Dense(150, activation=self.activation_function)(x)
+                    x = Dense(150, activation=self.activation_function)(x)
+                    x = Dense(120, activation=self.activation_function)(x)
+                    x = Dense(120, activation=self.activation_function)(x)
+                    x = Dense(100, activation=self.activation_function)(x)
+                    x = Dense(100, activation=self.activation_function)(x)
+                    x = Dense(80, activation=self.activation_function)(x)
+                    x = Dense(80, activation=self.activation_function)(x)
+                    x = Dense(45, activation=self.activation_function)(x)
+                    output = Dense(1, activation='linear')(x)
+                    self.model = keras.Model(input, output)
 
-                        self.model.compile(optimizer='sgd',
-                                        loss='mean_squared_error',
-                                        metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
-
-                        self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'])
-
-                    else:
-                        input = keras.layers.Input(shape=(X_train.shape[1],))
-
-                        x = Dense(150, activation=self.activation_function)(input)
-                        x = Dense(150, activation=self.activation_function)(x)
-                        x = Dense(150, activation=self.activation_function)(x)
-                        x = Dense(120, activation=self.activation_function)(x)
-                        x = Dense(120, activation=self.activation_function)(x)
-                        x = Dense(100, activation=self.activation_function)(x)
-                        x = Dense(100, activation=self.activation_function)(x)
-                        x = Dense(80, activation=self.activation_function)(x)
-                        x = Dense(80, activation=self.activation_function)(x)
-                        x = Dense(45, activation=self.activation_function)(x)
-                        output = Dense(len(self.target_vars), activation='linear')(x)
-
-                        self.model = keras.Model(inputs=input, outputs=output)
-
-                        self.model.compile(optimizer='sgd',
+                    self.model.compile(optimizer='sgd',
                                     loss='mean_squared_error',
-                                    metrics=['accuracy'])
+                                    metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
 
-                        self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], class_weight=self.percent_dict)
+                    self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'])
 
                 else:
                     self.model = Sequential()
@@ -546,30 +524,24 @@ class image_model:
                 percent_done = (i/len(grid_combs))*100
                 print(str(percent_done), 'percent done')
 
+                self.post()
+
+                percentAcc = self.resultList[-1]
+
+                hyp_acc_pair = (hyp_dict, percentAcc)
+
+                hyp_acc_list.append(hyp_acc_pair)
+
+            print(hyp_acc_list)
+
         else:
             self.model = keras.models.load_model(self.model_save_loc)
 
-        self.post()
+            self.post()
 
     def post(self): 
 
-        iou_eval = MeanIoU(num_classes=2)
-
-        #plotting
-        history = self.fit
-
-        def plot(model_history, metric, graph_title):
-            history = model_history
-            plt.plot(history.history[metric])
-            plt.title(graph_title)
-            plt.ylabel(metric)
-            plt.xlabel('epoch')
-
-            plt.show()
-
-        plot(history, 'loss', 'model loss')
-        plot(history, 'accuracy', 'accuracy')
-        plot(history, 'mean_io_u', 'mean_iou')
+        iou_eval = MeanIoU(num_classes=self.num_classes)
 
         def save_fitted_model(model, save_location):
             model.save(save_location)

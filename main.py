@@ -843,7 +843,7 @@ def ValResultPage():
     root = tk.Tk()
 
     root.title("Results - Validation")
-    root.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
+    root.iconbitmap("cancer_icon.ico")
 
     # MAKE SCROLLBAR
     main_frame = tk.Frame(root)
@@ -922,7 +922,7 @@ def trainResultPage():
     root = tk.Tk()
 
     root.title("Results - Test")
-    root.iconbitmap("D:\Cancer_Project\Cancer_ML\cancer_icon.ico")
+    root.iconbitmap("cancer_icon.ico")
 
     # Make scrollbar
     main_frame = tk.Frame(root)
