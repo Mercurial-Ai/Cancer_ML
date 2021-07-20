@@ -89,7 +89,7 @@ if useDefaults:
     num_epochs = 10
 
     # if true, CNN will be used
-    useCNN = False
+    useCNN = True
 
     # if true, diagnosis model will run
     diagModel = False

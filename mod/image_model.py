@@ -513,8 +513,8 @@ class image_model:
                     self.model.add(layers.Dense(1))
                     self.model.add(layers.Activation('linear'))
 
-                    self.model.compile(loss='mean_absolute_error',
-                                optimizer='sgd',
+                    self.model.compile(loss=hyp_dict['loss'],
+                                optimizer=hyp_dict['optimizer'],
                                 metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
 
                     self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], callbacks=[self.tb], class_weight=self.percent_dict)
