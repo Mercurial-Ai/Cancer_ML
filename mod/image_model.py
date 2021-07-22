@@ -460,6 +460,8 @@ class image_model:
             search = grid_search('grid_search.csv')
             grid_combs = search.read_grid()
 
+            print(str(len(grid_combs)), "possible combinations")
+
             # list to store hyperparameter-accuracy data
             hyp_acc_list = []
             i = 0
@@ -532,7 +534,9 @@ class image_model:
 
                 hyp_acc_list.append(hyp_acc_pair)
 
-            print(hyp_acc_list)
+                print(hyp_acc_list) # print stats every iteration
+
+            print(hyp_acc_list) # print completed stats at the end
 
         else:
             self.model = keras.models.load_model(self.model_save_loc)
