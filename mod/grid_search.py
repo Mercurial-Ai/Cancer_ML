@@ -1,5 +1,6 @@
 import pandas as pd
 from itertools import product
+import math
 
 class grid_search:
     def __init__(self, grid_path):
@@ -15,9 +16,21 @@ class grid_search:
         comb_dict_list = []
         for comb in grid_combs:
             comb = list(comb)
+            
+            # check for nans
+            for hyp in comb:
+                if str(type(hyp)) != "<class 'str'>":
+                    if math.isnan(hyp):
+                        nan_val = True
+                    else:
+                        nan_val = False
+                else:
+                    nan_val = False
 
-            comb_dict = dict(zip(grid_cols, comb))
+            if not nan_val:
 
-            comb_dict_list.append(comb_dict)
+                comb_dict = dict(zip(grid_cols, comb))
+
+                comb_dict_list.append(comb_dict)
 
         return comb_dict_list
