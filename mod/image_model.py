@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import pydicom as dicom
 
 from mod.percentage_accuracy import percentageAccuracy
-from mod.grid_search import grid_search
+from mod.grid_search import grid_search, write_excel
 
 class image_model: 
     def __init__(self, model_save_loc, data_file, target_vars, epochs_num, load_numpy_img, img_array_save, load_fit, save_fit, img_dimensions, img_id_name_loc, ID_dataset_col, useCNN, data_save_loc, save_figs, show_figs, load_dir): 
@@ -537,6 +537,9 @@ class image_model:
                 print(hyp_acc_list) # print stats every iteration
 
             print(hyp_acc_list) # print completed stats at the end
+
+            writer = write_excel('hyp_book.xls', hyp_acc_list)
+            writer.run()
 
         else:
             self.model = keras.models.load_model(self.model_save_loc)
