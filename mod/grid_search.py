@@ -1,3 +1,4 @@
+from os import terminal_size
 import pandas as pd
 from itertools import product
 import math
@@ -19,19 +20,13 @@ class grid_search:
         for comb in grid_combs:
             comb = list(comb)
             
+            # default nan_val to false
+            nan_val = False
+
             # check for nans
             for hyp in comb:
-                if str(type(hyp)) != "<class 'str'>":
-                    if math.isnan(hyp):
-                        nan_val = True
-                    else:
-                        nan_val = False
-                else:
-                    # check if string is nan
-                    if hyp != hyp:
-                        nan_val = True
-                    else:
-                        nan_val = False
+                if pd.isnull(hyp):
+                    nan_val = True
 
             if not nan_val:
 
