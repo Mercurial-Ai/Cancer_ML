@@ -14,7 +14,7 @@ class grid_search:
 
         grid_cols = list(grid.columns)
 
-        grid_combs = list(product(grid['batch size'], grid['epochs'], grid['loss'], grid['optimizer']))
+        grid_combs = list(product(grid['batch size'], grid['epochs'], grid['loss'], grid['optimizer'], grid['lr']))
 
         comb_dict_list = []
         for comb in grid_combs:

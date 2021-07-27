@@ -467,6 +467,11 @@ class image_model:
             i = 0
             for hyp_dict in grid_combs:
 
+                if hyp_dict['optimizer'] == 'sgd':
+                    opt = keras.optimizers.SGD(learning_rate=hyp_dict['lr'])
+                elif hyp_dict['optimizer'] == 'adam':
+                    opt = keras.optimizers.Adam(learning_rate=hyp_dict['lr'])
+
                 if not self.useCNN:
 
                     print(X_train.shape)
@@ -487,8 +492,8 @@ class image_model:
                     output = Dense(1, activation='linear')(x)
                     self.model = keras.Model(input, output)
 
-                    self.model.compile(optimizer='sgd',
-                                    loss='mean_squared_error',
+                    self.model.compile(optimizer=opt,
+                                    loss=hyp_dict['loss'],
                                     metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
 
                     self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'])
@@ -516,7 +521,7 @@ class image_model:
                     self.model.add(layers.Activation('linear'))
 
                     self.model.compile(loss=hyp_dict['loss'],
-                                optimizer=hyp_dict['optimizer'],
+                                optimizer=opt,
                                 metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
 
                     self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], callbacks=[self.tb], class_weight=self.percent_dict)
