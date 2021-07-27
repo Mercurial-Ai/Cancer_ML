@@ -27,7 +27,11 @@ class grid_search:
                     else:
                         nan_val = False
                 else:
-                    nan_val = False
+                    # check if string is nan
+                    if hyp != hyp:
+                        nan_val = True
+                    else:
+                        nan_val = False
 
             if not nan_val:
 
