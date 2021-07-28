@@ -14,7 +14,7 @@ class grid_search:
 
         grid_cols = list(grid.columns)
 
-        grid_combs = list(product(grid['batch size'], grid['epochs'], grid['loss'], grid['optimizer'], grid['lr']))
+        grid_combs = list(product(grid['batch size'], grid['epochs'], grid['loss'], grid['lr'], grid['optimizer']))
 
         comb_dict_list = []
         for comb in grid_combs:
@@ -57,12 +57,15 @@ class write_excel:
             i = i + 1
 
         sheet.write(0, i, 'accuracy')
+        sheet.write(0, i+1, 'iou score')
 
         # add corresponding hyperparameters and performance data to each column
         i = 1
         for perf_tuple in self.hyps:
             hyp_dict = perf_tuple[0]
-            accuracy = perf_tuple[-1]
+            accuracy_iou = perf_tuple[-1]
+            accuracy = accuracy_iou[0]
+            iou_score = accuracy_iou[1]
             j = 0
             for label in labels:
                 sheet.write(i, j, hyp_dict[label])
@@ -70,6 +73,7 @@ class write_excel:
                 j = j + 1
 
             sheet.write(i, j, accuracy)
+            sheet.write(i, j+1, iou_score)
 
             i = i + 1
 

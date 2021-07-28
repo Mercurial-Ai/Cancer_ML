@@ -58,7 +58,7 @@ if useDefaults:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = True
+    run_img_model = False
 
     # if true, an additional file will be expected for testing
     use_additional_test_file = False

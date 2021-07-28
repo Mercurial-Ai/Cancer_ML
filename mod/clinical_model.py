@@ -7,9 +7,11 @@ from tensorflow.keras.callbacks import TensorBoard
 import keras
 import pandas as pd 
 import matplotlib.pyplot as plt
+import gc
+import tensorflow as tf
 
 from mod.percentage_accuracy import percentageAccuracy
-from mod.grid_search import grid_search
+from mod.grid_search import grid_search, write_excel
 
 class clinical:
     def __init__(self, data_file, mainPath, target_vars, load_fit, save_fit, save_location, epochs_num, activation_function):
@@ -168,28 +170,29 @@ class clinical:
         # y data
         y = df.loc[:, self.target_vars]
 
-        if self.isBinary: 
-            y_list = list(y)
+        # change y vals to 1, 2, 3, ...
+        y_list = list(y)
 
-            # remove duplicates to identify binary vals
-            y_list = list(set(y_list))
+        # remove duplicates to identify vals
+        y_list = list(set(y_list))
+        y_list.sort()
 
-            # sort vals in ascending order
-            y_list.sort()
+        i = 0
+        binary_dict = {}
+        for val in y_list:
+            binary_dict[val] = i
 
-            binary_dict = {y_list[0]: 0, y_list[1]: 1}
+            i = i + 1
 
-            print(binary_dict)
+        i = 0
+        new_y = pd.Series([])
+        for val in y:
+            conv_y = binary_dict[val]
 
-            i = 0
-            new_y = pd.Series([])
-            for val in y: 
-                conv_y = binary_dict[val]
+            new_y[i] = conv_y
+            i = i + 1
 
-                new_y[i] = conv_y
-                i = i + 1 
-
-            y = new_y
+        y = new_y
 
         self.percent_dict = self.get_y_distribution(y)
 
@@ -240,6 +243,8 @@ class clinical:
         y_len = len(y)
         
         counts_dict = y.value_counts().to_dict()
+
+        self.num_classes = len(counts_dict)
         
         percent_list = []
         for count in list(counts_dict.values()):
@@ -255,7 +260,7 @@ class clinical:
 
     def post(self):
 
-        iou_eval = MeanIoU(num_classes=2)
+        iou_eval = MeanIoU(num_classes=self.num_classes)
 
         # utilize validation data
         prediction = self.model.predict(self.X_val)
@@ -298,12 +303,10 @@ class clinical:
             print("Validation Metrics")
             print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
             print(prediction)
-            np.save('logs//Clinical-Only//post//val-prediction.npy', prediction)
             print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
             print(roundedPred)
             print("- - - - - - - - - - - - - y val - - - - - - - - - - - - -")
             print(self.y_val)
-            np.save('logs//Clinical-Only//post//y_val.npy', self.y_val)
 
             if str(type(prediction)) == "<class 'list'>":
                 prediction = np.array([prediction])
@@ -321,6 +324,7 @@ class clinical:
 
             self.resultList = []
 
+            self.resultList.append(str(iou_eval.result().numpy()))
             self.resultList.append(str(prediction))
             self.resultList.append(str(roundedPred))
             self.resultList.append(str(self.y_val))
@@ -365,12 +369,10 @@ class clinical:
             print("Test Metrics")
             print("- - - - - - - - - - - - - Unrounded Prediction - - - - - - - - - - - - -")
             print(prediction)
-            np.save('logs//Clinical-Only//post//test-prediction.npy', prediction)
             print("- - - - - - - - - - - - - Rounded Prediction - - - - - - - - - - - - -")
             print(roundedPred)
             print("- - - - - - - - - - - - - y test - - - - - - - - - - - - -")
             print(self.y_test)
-            np.save('logs//Clinical-Only//post//y_test.npy', self.y_test)
 
             if str(type(prediction)) == "<class 'list'>":
                 prediction = np.array([prediction])
@@ -386,83 +388,101 @@ class clinical:
             iou_eval.update_state(roundedPred, self.y_test)
             print('rounded pred mean iou: ' + str(iou_eval.result().numpy()))
 
+            self.resultList.append(str(iou_eval.result().numpy()))
             self.resultList.append(str(prediction))
             self.resultList.append(str(roundedPred))
             self.resultList.append(str(self.y_test))
             self.resultList.append(str(percentAcc))
 
-    def tensorboard(self):
-        self.tb = TensorBoard(log_dir='logs/{}'.format('Clinical-Only'))
-
     def NN(self):
         self.pre()
-        self.tensorboard()
 
         if not self.load_fit:
 
             search = grid_search('grid_search.csv')
             grid_combs = search.read_grid()
 
+            hyp_acc_list = []
             i = 0
             for hyp_dict in grid_combs:
-                if str(type(self.target_vars))=="<class 'list'>" and len(self.target_vars) > 1:
-                    input = keras.Input(shape=self.X_train.shape[1],)
 
-                    x = Dense(10, activation=self.activation_function)(input)
-                    x = Dense(10, activation=self.activation_function)(x)
-                    x = Dense(6, activation=self.activation_function)(x)
-                    x = Dense(4, activation=self.activation_function)(x)
-                    x = Dense(4, activation=self.activation_function)(x)
-                    output = Dense(len(self.target_vars), activation=self.activation_function)(x)
+                try:
 
-                    self.model = keras.Model(inputs=input, outputs=output)
+                    if hyp_dict['optimizer'] == 'sgd':
+                        opt = keras.optimizers.SGD(learning_rate=hyp_dict['lr'])
+                    elif hyp_dict['optimizer'] == 'adam':
+                        opt = keras.optimizers.Adam(learning_rate=hyp_dict['lr'])
 
-                    self.model.compile(optimizer='SGD',
-                                loss='mean_absolute_error',
-                                metrics=['accuracy'])
+                    if str(type(self.target_vars))=="<class 'list'>" and len(self.target_vars) > 1:
+                        input = keras.Input(shape=self.X_train.shape[1],)
 
-                    fit = self.model.fit(self.X_train, self.y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'])
+                        x = Dense(10, activation=self.activation_function)(input)
+                        x = Dense(10, activation=self.activation_function)(x)
+                        x = Dense(6, activation=self.activation_function)(x)
+                        x = Dense(4, activation=self.activation_function)(x)
+                        x = Dense(4, activation=self.activation_function)(x)
+                        output = Dense(len(self.target_vars), activation=self.activation_function)(x)
 
-                else:
-                    print(self.X_train.shape[1])
+                        self.model = keras.Model(inputs=input, outputs=output)
 
-                    # set input shape to dimension of data
-                    input = keras.layers.Input(shape=(self.X_train.shape[1],))
+                        self.model.compile(optimizer=opt,
+                                    loss=hyp_dict['loss'],
+                                    metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
 
-                    x = Dense(9, activation=self.activation_function)(input)
-                    x = Dense(9, activation=self.activation_function)(x)
-                    x = Dense(6, activation=self.activation_function)(x)
-                    x = Dense(4, activation=self.activation_function)(x)
-                    x = Dense(2, activation=self.activation_function)(x)
-                    output = Dense(1, activation='linear')(x)
-                    self.model = keras.Model(input, output)
+                        self.fit = self.model.fit(self.X_train, self.y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], class_weight=self.percent_dict)
 
-                    self.model.compile(optimizer='SGD',
-                                loss='mean_squared_error',
-                                metrics=['accuracy', MeanIoU(num_classes=2)])
+                    else:
+                        print(self.X_train.shape[1])
 
-                    fit = self.model.fit(self.X_train, self.y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], callbacks=[self.tb])
+                        # set input shape to dimension of data
+                        input = keras.layers.Input(shape=(self.X_train.shape[1],))
 
-                    if self.save_fit == True:
-                        self.model.save(self.save_location)
+                        x = Dense(9, activation=self.activation_function)(input)
+                        x = Dense(9, activation=self.activation_function)(x)
+                        x = Dense(6, activation=self.activation_function)(x)
+                        x = Dense(4, activation=self.activation_function)(x)
+                        x = Dense(2, activation=self.activation_function)(x)
+                        output = Dense(1, activation='linear')(x)
+                        self.model = keras.Model(input, output)
 
-                i = i + 1 
+                        self.model.compile(optimizer=opt,
+                                    loss=hyp_dict['loss'],
+                                    metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
+
+                        self.fit = self.model.fit(self.X_train, self.y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], class_weight=self.percent_dict)
+
+                        if self.save_fit == True:
+                            self.model.save(self.save_location)
+
+                    i = i + 1 
+                    # loading info.
+                    percent_done = (i/len(grid_combs))*100
+                    print(str(percent_done), 'percent done')
+
+                    self.post()
+
+                    percentAcc = self.resultList[-1]
+                    iou_score = self.resultList[0]
+
+                    hyp_acc_pair = (hyp_dict, (percentAcc, iou_score))
+
+                    hyp_acc_list.append(hyp_acc_pair)
+
+                    print(hyp_acc_list)
+
+                    keras.backend.clear_session()
+                    gc.collect()
+
+                except Exception as e:
+                    print('Config', str(hyp_dict), 'failed')
+                    hyp_acc_pair = (hyp_dict, ('failed', 'failed'))
+                    hyp_acc_list.append(hyp_acc_pair)
+                    print(e)
+            
+            print(hyp_acc_list)
+
+            writer = write_excel('hyp_book.xls', hyp_acc_list)
+            writer.run()
+
         else:
             self.model = keras.models.load_model(self.save_location)
-
-        # plot train metrics 
-        plt.plot(fit.history['accuracy'], label="accuracy")
-        plt.plot(fit.history['mean_io_u'], label="mean_iou")
-        plt.title('model accuracy')
-        plt.xlabel('epoch')
-        plt.ylabel('accuracy')
-        plt.legend(loc="upper left")
-        plt.show()
-
-        plt.plot(fit.history['loss'])
-        plt.title('model loss')
-        plt.xlabel('epoch')
-        plt.ylabel('loss')
-        plt.show()
-
-        self.post()
