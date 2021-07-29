@@ -16,6 +16,7 @@ from sklearn.preprocessing import MinMaxScaler
 import psutil
 import matplotlib.pyplot as plt
 import pydicom as dicom
+import gc
 
 from mod.percentage_accuracy import percentageAccuracy
 from mod.grid_search import grid_search, write_excel
@@ -466,80 +467,92 @@ class image_model:
             hyp_acc_list = []
             i = 0
             for hyp_dict in grid_combs:
+                
+                try:
 
-                if hyp_dict['optimizer'] == 'sgd':
-                    opt = keras.optimizers.SGD(learning_rate=hyp_dict['lr'])
-                elif hyp_dict['optimizer'] == 'adam':
-                    opt = keras.optimizers.Adam(learning_rate=hyp_dict['lr'])
+                    if hyp_dict['optimizer'] == 'sgd':
+                        opt = keras.optimizers.SGD(learning_rate=hyp_dict['lr'])
+                    elif hyp_dict['optimizer'] == 'adam':
+                        opt = keras.optimizers.Adam(learning_rate=hyp_dict['lr'])
 
-                if not self.useCNN:
+                    if not self.useCNN:
 
-                    print(X_train.shape)
+                        print(X_train.shape)
 
-                    # set input shape to dimension of data
-                    input = keras.layers.Input(shape=(X_train.shape[1],))
+                        # set input shape to dimension of data
+                        input = keras.layers.Input(shape=(X_train.shape[1],))
 
-                    x = Dense(150, activation=self.activation_function)(input)
-                    x = Dense(150, activation=self.activation_function)(x)
-                    x = Dense(150, activation=self.activation_function)(x)
-                    x = Dense(120, activation=self.activation_function)(x)
-                    x = Dense(120, activation=self.activation_function)(x)
-                    x = Dense(100, activation=self.activation_function)(x)
-                    x = Dense(100, activation=self.activation_function)(x)
-                    x = Dense(80, activation=self.activation_function)(x)
-                    x = Dense(80, activation=self.activation_function)(x)
-                    x = Dense(45, activation=self.activation_function)(x)
-                    output = Dense(1, activation='linear')(x)
-                    self.model = keras.Model(input, output)
+                        x = Dense(150, activation=self.activation_function)(input)
+                        x = Dense(150, activation=self.activation_function)(x)
+                        x = Dense(150, activation=self.activation_function)(x)
+                        x = Dense(120, activation=self.activation_function)(x)
+                        x = Dense(120, activation=self.activation_function)(x)
+                        x = Dense(100, activation=self.activation_function)(x)
+                        x = Dense(100, activation=self.activation_function)(x)
+                        x = Dense(80, activation=self.activation_function)(x)
+                        x = Dense(80, activation=self.activation_function)(x)
+                        x = Dense(45, activation=self.activation_function)(x)
+                        output = Dense(1, activation='linear')(x)
+                        self.model = keras.Model(input, output)
 
-                    self.model.compile(optimizer=opt,
-                                    loss=hyp_dict['loss'],
+                        self.model.compile(optimizer=opt,
+                                        loss=hyp_dict['loss'],
+                                        metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
+
+                        self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'])
+
+                    else:
+                        self.model = Sequential()
+
+                        self.model.add(layers.Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
+                        self.model.add(layers.Activation('relu'))
+                        self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+
+                        self.model.add(layers.Conv2D(64, (3, 3)))
+                        self.model.add(layers.Activation('relu'))
+                        self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+
+                        self.model.add(layers.Flatten())
+
+                        self.model.add(layers.Dense(128))
+                        self.model.add(layers.Activation('relu'))
+
+                        self.model.add(layers.Dense(64))
+                        self.model.add(layers.Activation('relu'))
+
+                        self.model.add(layers.Dense(1))
+                        self.model.add(layers.Activation('linear'))
+
+                        self.model.compile(loss=hyp_dict['loss'],
+                                    optimizer=opt,
                                     metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
 
-                    self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'])
+                        self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], callbacks=[self.tb], class_weight=self.percent_dict)
 
-                else:
-                    self.model = Sequential()
+                    i = i + 1
+                    # loading info.
+                    percent_done = (i/len(grid_combs))*100
+                    print(str(percent_done), 'percent done')
 
-                    self.model.add(layers.Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
-                    self.model.add(layers.Activation('relu'))
-                    self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+                    self.post()
 
-                    self.model.add(layers.Conv2D(64, (3, 3)))
-                    self.model.add(layers.Activation('relu'))
-                    self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+                    percentAcc = self.resultList[-1]
+                    iou_score = self.resultList[0]
 
-                    self.model.add(layers.Flatten())
+                    hyp_acc_pair = (hyp_dict, (percentAcc, iou_score))
 
-                    self.model.add(layers.Dense(128))
-                    self.model.add(layers.Activation('relu'))
+                    hyp_acc_list.append(hyp_acc_pair)
 
-                    self.model.add(layers.Dense(64))
-                    self.model.add(layers.Activation('relu'))
+                    print(hyp_acc_list) # print stats every iteration
 
-                    self.model.add(layers.Dense(1))
-                    self.model.add(layers.Activation('linear'))
+                    keras.backend.clear_session()
+                    gc.collect()
 
-                    self.model.compile(loss=hyp_dict['loss'],
-                                optimizer=opt,
-                                metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
-
-                    self.fit = self.model.fit(X_train, y_train, epochs=hyp_dict['epochs'], batch_size=hyp_dict['batch size'], callbacks=[self.tb], class_weight=self.percent_dict)
-
-                i = i + 1
-                # loading info.
-                percent_done = (i/len(grid_combs))*100
-                print(str(percent_done), 'percent done')
-
-                self.post()
-
-                percentAcc = self.resultList[-1]
-
-                hyp_acc_pair = (hyp_dict, percentAcc)
-
-                hyp_acc_list.append(hyp_acc_pair)
-
-                print(hyp_acc_list) # print stats every iteration
+                except Exception as e:
+                    print('Config', str(hyp_dict), 'failed')
+                    hyp_acc_pair = (hyp_dict, ('failed', 'failed'))
+                    hyp_acc_list.append(hyp_acc_pair)
+                    print(e)
 
             print(hyp_acc_list) # print completed stats at the end
 
@@ -621,6 +634,7 @@ class image_model:
 
         self.resultList = []
 
+        self.resultList.append(str(iou_eval.result().numpy()))
         self.resultList.append(str(prediction))
         self.resultList.append(str(roundedPred))
         self.resultList.append(str(self.y_val))
@@ -684,6 +698,7 @@ class image_model:
         iou_eval.update_state(roundedPred, self.y_test)
         print('rounded pred mean iou: ' + str(iou_eval.result().numpy()))
 
+        self.resultList.append(str(iou_eval.result().numpy()))
         self.resultList.append(str(prediction))
         self.resultList.append(str(roundedPred))
         self.resultList.append(str(self.y_test))

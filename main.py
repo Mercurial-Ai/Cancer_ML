@@ -31,12 +31,12 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "data\Duke-Breast-Cancer-MRI\Clinical and Other Features (edited).csv"
+    main_data = "data\METABRIC_RNA_Mutation\METABRIC_RNA_Mutation.csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'Definitive Surgery Type'
+    target_variables = 'chemotherapy'
 
     # if true, converted images will be in png format instead of jpg
     png = False
