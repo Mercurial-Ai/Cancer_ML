@@ -1,14 +1,12 @@
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
-from keras.layers import Dense
-from keras.metrics import MeanIoU
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.metrics import MeanIoU
 from tensorflow.keras.callbacks import TensorBoard
-import keras
 import pandas as pd 
 import matplotlib.pyplot as plt
 import gc
-import tensorflow as tf
 
 from mod.percentage_accuracy import percentageAccuracy
 from mod.grid_search import grid_search, write_excel

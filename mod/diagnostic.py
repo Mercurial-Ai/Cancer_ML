@@ -70,3 +70,4 @@ class diagnostic:
 
         self.post(self.x_val, self.y_val, model)
         self.post(self.x_test,self.y_test,model)
+        

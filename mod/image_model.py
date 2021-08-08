@@ -5,12 +5,12 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense
 from tensorflow.keras import Sequential
 from tensorflow.keras.callbacks import TensorBoard
-import keras
-from keras import layers
+from tensorflow import keras
+from tensorflow.keras import layers
 import os 
-from keras.preprocessing.image import img_to_array
-from keras.preprocessing.image import load_img
-from keras.metrics import MeanIoU
+from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras.metrics import MeanIoU
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import psutil

@@ -11,7 +11,6 @@ import tkinter.font as tkFont
 import random
 from tkinter import ttk
 import mod.GUI.GUI as GUI
-import mod.diagnostic as diag
 import mod.clinical_model as clinical
 from mod.image_model import image_model
 
@@ -36,7 +35,7 @@ if useDefaults:
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'chemotherapy'
+    target_variables = 'radio_therapy'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -90,9 +89,6 @@ if useDefaults:
 
     # if true, CNN will be used
     useCNN = False
-
-    # if true, diagnosis model will run
-    diagModel = False
 
     # END VARIABLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 else:
@@ -175,10 +171,6 @@ else:
     useCNN = dictBool["useCNN "]
 
     diagModel = dictBool["diagModel "]
-
-if diagModel:
-    diag = diag.diagnostic(main_data, target_variables, 20)
-    diag.model()
 
 mainPath = main_data
 
