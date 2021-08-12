@@ -5,6 +5,7 @@ from tensorflow import keras
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.metrics import MeanIoU
 from tensorflow.keras.callbacks import TensorBoard
+import sklearn
 import pandas as pd 
 import matplotlib.pyplot as plt
 import gc
@@ -257,6 +258,12 @@ class clinical:
 
         return percent_dict
 
+    def plot_confusion_matrix(self, confusion):
+        print(confusion)
+        plot = plt.imshow(confusion)
+        plt.colorbar(plot)
+        plt.show()
+
     def post(self):
 
         iou_eval = MeanIoU(num_classes=self.num_classes)
@@ -265,6 +272,9 @@ class clinical:
         prediction = self.model.predict(self.X_val)
 
         roundedPred = np.around(prediction, 0)
+
+        confusion_matrix = sklearn.metrics.confusion_matrix(self.y_val, roundedPred)
+        self.plot_confusion_matrix(confusion_matrix)
 
         if self.multiple_targets == False and roundedPred.ndim == 1:
             i = 0
@@ -333,6 +343,9 @@ class clinical:
             prediction = self.model.predict(self.X_test, batch_size=1)
 
             roundedPred = np.around(prediction, 0)
+
+            confusion_matrix = sklearn.metrics.confusion_matrix(self.y_test, roundedPred)
+            self.plot_confusion_matrix(confusion_matrix)
 
             if self.multiple_targets == False and roundedPred.ndim == 1:
                 i = 0
