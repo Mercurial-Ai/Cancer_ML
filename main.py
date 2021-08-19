@@ -30,12 +30,12 @@ if useDefaults:
     load_fit = False
     model_save_loc = "D:\Cancer_Project\Cancer_ML\HNSCC-HN1\saved_model (CNN)"
 
-    main_data = "data\METABRIC_RNA_Mutation\METABRIC_RNA_Mutation.csv"
+    main_data = "data\Duke-Breast-Cancer-MRI\Clinical and Other Features (edited).csv"
     sec_data = ""
     test_file = ""
 
     # list with strings or a single string may be inputted
-    target_variables = 'radio_therapy'
+    target_variables = 'Adjuvant Chemotherapy'
 
     # if true, converted images will be in png format instead of jpg
     png = False
@@ -57,7 +57,7 @@ if useDefaults:
     del_converted_imgs = False
 
     # if true, image model will be ran instead of clinical only model
-    run_img_model = False
+    run_img_model = True
 
     # if true, an additional file will be expected for testing
     use_additional_test_file = False
@@ -70,7 +70,7 @@ if useDefaults:
     ID_dataset_col = "TCIA code"
 
     # tuple with dimension of imagery. All images must equal this dimension
-    img_dimensions = (512, 512)
+    img_dimensions = (128, 128)
 
     # if true, every column in data will be inputted for target variable
     target_all = False
@@ -88,7 +88,7 @@ if useDefaults:
     num_epochs = 10
 
     # if true, CNN will be used
-    useCNN = False
+    useCNN = True
 
     # END VARIABLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 else:

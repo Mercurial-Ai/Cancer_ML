@@ -135,6 +135,26 @@ class image_model:
 
         return img_directories
 
+    def remove_ids(self, img_array):
+
+        try:
+            new_shape = (img_array.shape[0], img_array.shape[1]-1)
+            new_array = np.empty(shape=new_shape, dtype=np.int8)
+
+            i = 0 
+            for img in img_array:
+                img = np.delete(img, -1)
+                new_array[i] = img
+                i = i + 1 
+        except IndexError:
+            new_shape = img_array.shape
+
+            img_array = np.delete(img_array, -1)
+
+            new_array = img_array
+
+        return new_array
+
     def pre(self):
         print("starting image model")
 
@@ -190,6 +210,36 @@ class image_model:
             print("del indices determined")
 
             self.img_array = np.delete(self.img_array, del_indices, axis=0)
+
+            # crop images 
+            crop_size = (64, 64)
+            
+            cropped_array = np.empty(shape=(self.img_array.shape[0], crop_size[0]*crop_size[1]+1), dtype=np.int8)
+
+            i = 0
+            for image in self.img_array:
+
+                id = image[-1]
+
+                image = self.remove_ids(image)
+
+                image = np.reshape(image, (self.img_dimensions[0], self.img_dimensions[1]))
+                
+                image = tf.image.random_crop(value=image, size=(crop_size[0], crop_size[1]))
+
+                image = image.numpy()
+
+                image = image.flatten()
+
+                image = np.append(image, id)
+
+                cropped_array[i] = image
+
+                i = i + 1
+
+            self.img_array = cropped_array
+
+            self.img_dimensions = crop_size
 
         elif self.load_numpy_img == False:
 
@@ -348,24 +398,12 @@ class image_model:
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        def remove_ids(img_array):
-
-            new_shape = (img_array.shape[0], img_array.shape[1]-1)
-            new_array = np.empty(shape=new_shape, dtype=np.int8)
-            i = 0 
-            for img in img_array:
-                img = np.delete(img, -1)
-                new_array[i] = img
-                i = i + 1 
-
-            return new_array
-
         if self.useCNN:
-            X_train_img = remove_ids(X_train_img)
+            X_train_img = self.remove_ids(X_train_img)
 
-            X_test_img = remove_ids(X_test_img)
+            X_test_img = self.remove_ids(X_test_img)
 
-            X_val_img = remove_ids(X_val_img)
+            X_val_img = self.remove_ids(X_val_img)
 
             # normalize data
             min_max_scaler = MinMaxScaler()
@@ -409,11 +447,11 @@ class image_model:
             X_val = X_val_img
 
         if not self.useCNN:
-            X_train_img = remove_ids(X_train_img)
+            X_train_img = self.remove_ids(X_train_img)
 
-            X_test_img = remove_ids(X_test_img)
+            X_test_img = self.remove_ids(X_test_img)
 
-            X_val_img = remove_ids(X_val_img)
+            X_val_img = self.remove_ids(X_val_img)
 
             print(X_train.shape)
             print(X_train_img.shape)
