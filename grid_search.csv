@@ -1,5 +1,0 @@
-﻿batch size,epochs,loss,lr,optimizer
-16,10,mean_absolute_error,0.01,sgd
-32,20,mean_squared_error,0.001
-64,30,binary_crossentropy
-128,40
