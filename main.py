@@ -37,7 +37,7 @@ class cancer_ml:
         self.data_pipe.load_data()
 
     def collect_METABRIC(self):
-        self.data_pipe = data_pipeline("C:\\Users\\trist\\cs_projects\\Cancer_Project\\Cancer_ML\\data\\METABRIC_RNA_Mutation\\METABRIC_RNA_Mutation.csv", None, self.target)
+        self.data_pipe = data_pipeline("data\\METABRIC_RNA_Mutation\\METABRIC_RNA_Mutation.csv", None, self.target)
         self.data_pipe.load_data()
 
     def run_model(self):
