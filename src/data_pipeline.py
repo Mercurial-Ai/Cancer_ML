@@ -3,8 +3,8 @@ from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
 
-from image_tools.import_numpy import import_numpy
-from tokenize_dataset import tokenize_dataset
+from src.image_tools.import_numpy import import_numpy
+from src.tokenize_dataset import tokenize_dataset
 
 class data_pod:
     def __init__(self):

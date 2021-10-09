@@ -38,7 +38,7 @@ class image_model:
 
         return results
 
-    def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=None, batch_size=None):
+    def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=32):
         
         if self.load_model:
             self.model = keras.models.load_model('data\\saved_models\\text_prediction\\keras_image_clinical_model.h5')

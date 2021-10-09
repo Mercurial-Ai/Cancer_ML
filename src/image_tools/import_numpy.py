@@ -2,8 +2,8 @@ import numpy as np
 from math import sqrt
 import tensorflow as tf
 
-from models.cancer_ml.image_tools.filter_ids import filter_ids
-from models.cancer_ml.image_tools.remove_ids import remove_ids
+from src.image_tools.filter_ids import filter_ids
+from src.image_tools.remove_ids import remove_ids
 
 def import_numpy(path, clinical_ids, random_crop=True, crop_size=(128, 128)):
     img_array = np.load(path)
