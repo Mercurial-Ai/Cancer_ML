@@ -7,6 +7,7 @@ import math
 from src.image_tools.import_numpy import import_numpy
 from src.image_tools.remove_ids import remove_ids
 from src.tokenize_dataset import tokenize_dataset
+from src.PeakCluster import PeakCluster
 
 class data_pod:
     def __init__(self):
@@ -115,6 +116,8 @@ class data_pipeline:
         y = self.filtered_df[self.target]
 
         x = remove_ids(x)
+
+        PeakCluster(x)
 
         # expand flatten images back into multi-dim
         x = np.reshape(x, (x.shape[0], int(math.sqrt(x.shape[1])), int(math.sqrt(x.shape[1]))))
