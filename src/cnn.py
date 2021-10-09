@@ -1,6 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import Sequential
+from src.get_weight_dict import get_weight_dict
 
 class cnn:
 
@@ -33,7 +34,7 @@ class cnn:
                     optimizer='sgd',
                     metrics=['accuracy'])
 
-        self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+        self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         model.save('data\\saved_models\\text_prediction\\keras_image_clinical_model.h5')
 

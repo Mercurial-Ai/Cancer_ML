@@ -1,6 +1,6 @@
 from tensorflow import keras
 from tensorflow.keras.layers import Dense
-from tensorflow.keras.metrics import MeanIoU
+from src.get_weight_dict import get_weight_dict
 
 class clinical_only:
 
@@ -22,7 +22,7 @@ class clinical_only:
                             loss='mean_squared_error',
                             metrics=['accuracy'])
 
-        model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+        model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weights=get_weight_dict(y_train))
 
         model.save('data\\saved_models\\text_prediction\\keras_clinical_only_model.h5')
 
