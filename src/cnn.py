@@ -1,7 +1,6 @@
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import Sequential
-from tensorflow.keras.metrics import MeanIoU
 
 class cnn:
 
@@ -32,9 +31,9 @@ class cnn:
 
         model.compile(loss='mse',
                     optimizer='sgd',
-                    metrics=['accuracy', MeanIoU(num_classes=self.num_classes)])
+                    metrics=['accuracy'])
 
-        self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=self.percent_dict)
+        self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
 
         model.save('data\\saved_models\\text_prediction\\keras_image_clinical_model.h5')
 
@@ -53,4 +52,3 @@ class cnn:
             self.model = self.train_model(X_train, y_train, X_val, y_val, epochs, batch_size)
 
         return self.model
-        

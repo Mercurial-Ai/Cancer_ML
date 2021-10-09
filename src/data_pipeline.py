@@ -2,8 +2,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
+import math
 
 from src.image_tools.import_numpy import import_numpy
+from src.image_tools.remove_ids import remove_ids
 from src.tokenize_dataset import tokenize_dataset
 
 class data_pod:
@@ -112,13 +114,41 @@ class data_pipeline:
         x = self.img_array
         y = self.filtered_df[self.target]
 
+        x = remove_ids(x)
+
+        # expand flatten images back into multi-dim
+        x = np.reshape(x, (x.shape[0], int(math.sqrt(x.shape[1])), int(math.sqrt(x.shape[1]))))
+
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
         # normalize data
         min_max_scaler = MinMaxScaler()
-        X_train = min_max_scaler.fit_transform(X_train)
-        X_test = min_max_scaler.fit_transform(X_test)
-        X_val = min_max_scaler.fit_transform(X_val)
+
+        i = 0
+        for image in X_train:
+            image = min_max_scaler.fit_transform(image)
+            X_train[i] = image
+
+            i = i + 1
+
+        i = 0
+        for image in X_test:
+            image = min_max_scaler.fit_transform(image)
+            X_test[i] = image
+
+            i = i + 1
+
+        i = 0
+        for image in X_val:
+            image = min_max_scaler.fit_transform(image)
+            X_val[i] = image
+
+            i = i + 1
+
+        # add additional dimension at the end of the shape to each partition
+        X_train = np.expand_dims(X_train, axis=-1)
+        X_test = np.expand_dims(X_test, axis=-1)
+        X_val = np.expand_dims(X_val, axis=-1)
 
         self.image_only.X_train = X_train
         self.image_only.X_test = X_test
