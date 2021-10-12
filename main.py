@@ -56,14 +56,14 @@ class cancer_ml:
             self.model = cnn(load_model=False)
             self.model = self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
 
-    def make_class_inference(self):
+    def make_class_inference(self, image_path):
 
         X = self.data_pipe.image_only.X_train
 
         X = np.reshape(X, (450, 262144))
         model = PeakCluster(X)
 
-        sample_image1 = Image.open('sample_image1.png')
+        sample_image1 = Image.open(image_path)
         sample_image1 = np.asarray(sample_image1)
         sample_image1 = sample_image1.flatten()
         sample_image1 = np.expand_dims(sample_image1, axis=0)
@@ -75,4 +75,6 @@ class cancer_ml:
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 ml.run_model()
 
-print(ml.make_class_inference())
+print(ml.make_class_inference('sample_image1.png'))
+print(ml.make_class_inference('sample_image2.png'))
+print(ml.make_class_inference('sample_image3.png'))
