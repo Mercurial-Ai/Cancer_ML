@@ -117,8 +117,6 @@ class data_pipeline:
 
         x = remove_ids(x)
 
-        PeakCluster(x)
-
         # expand flatten images back into multi-dim
         x = np.reshape(x, (x.shape[0], int(math.sqrt(x.shape[1])), int(math.sqrt(x.shape[1]))))
 

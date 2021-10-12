@@ -5,7 +5,7 @@ import tensorflow as tf
 from src.image_tools.filter_ids import filter_ids
 from src.image_tools.remove_ids import remove_ids
 
-def import_numpy(path, clinical_ids, random_crop=True, crop_size=(128, 128)):
+def import_numpy(path, clinical_ids, random_crop=True, crop_size=(512, 512)):
     img_array = np.load(path)
 
     img_array = filter_ids(img_array, clinical_ids)

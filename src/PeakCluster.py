@@ -13,7 +13,7 @@ from scipy.interpolate import UnivariateSpline
 from torchvision import datasets, models, transforms, utils
 from sklearn.preprocessing import StandardScaler
 
-def PeakCluster(images, crop_size=128):
+def PeakCluster(images, crop_size=512):
 
     clusters=range(3,20) 
 
@@ -115,3 +115,5 @@ def PeakCluster(images, crop_size=128):
         
     # display the figure
     fig.savefig("centroid_img.png")
+
+    return model
