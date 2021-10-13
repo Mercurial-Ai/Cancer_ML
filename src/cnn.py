@@ -30,7 +30,7 @@ class cnn:
         model.add(layers.Dense(1))
         model.add(layers.Activation('linear'))
 
-        model.compile(loss='mse',
+        model.compile(loss='mae',
                     optimizer='sgd',
                     metrics=['accuracy'])
 
