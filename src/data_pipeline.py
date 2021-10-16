@@ -94,6 +94,8 @@ class data_pipeline:
 
         target_index = self.df.columns.get_loc(self.target)
 
+        self.concatenated_array = self.concatenated_array.astype(np.int8)
+
         x = np.delete(self.concatenated_array, target_index, axis=1)
         y = self.concatenated_array[:, target_index]
 
