@@ -5,6 +5,7 @@ from src.image_model import image_model
 from src.cnn import cnn
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 class cancer_ml:
 
@@ -47,13 +48,21 @@ class cancer_ml:
 
         if self.clinical:
             self.model = clinical_only(load_model=False)
-            self.model = self.model.get_model(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train, self.data_pipe.only_clinical.X_val, self.data_pipe.only_clinical.y_val)
+            model = self.model.get_model(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train, self.data_pipe.only_clinical.X_val, self.data_pipe.only_clinical.y_val)
         elif self.image_clinical:
             self.model = image_model(load_model=False)
-            self.model = self.model.get_model(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train, self.data_pipe.image_clinical.X_val, self.data_pipe.image_clinical.y_val)
+            model = self.model.get_model(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train, self.data_pipe.image_clinical.X_val, self.data_pipe.image_clinical.y_val)
         elif self.cnn:
             self.model = cnn(load_model=False)
-            self.model = self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
+            model = self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
+
+    def test_model(self):
+        if self.clinical:
+            print(self.model.test_model(self.data_pipe.only_clinical.X_test, self.data_pipe.only_clinical.y_test))
+        elif self.image_clinical:
+            print(self.model.test_model(self.data_pipe.image_clinical.X_test, self.data_pipe.image_clinical.y_test))
+        elif self.cnn:
+            print(self.model.test_model(self.data_pipe.image_only.X_test, self.data_pipe.image_only.y_test))
 
     def make_class_inference(self, image_array):
 
@@ -70,14 +79,5 @@ class cancer_ml:
         return inference
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
-#ml.run_model()
-
-array = ml.data_pipe.image_only.X_val
-
-image1 = array[0]
-image2 = array[1]
-image3 = array[2]
-
-print(ml.make_class_inference(image1))
-print(ml.make_class_inference(image2))
-print(ml.make_class_inference(image3))
+ml.run_model()
+ml.test_model()

@@ -9,6 +9,9 @@ class cnn:
         self.load_model=load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=32):
+
+        opt = keras.optimizers.SGD(learning_rate=0.01)
+
         model = Sequential()
 
         model.add(layers.Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
@@ -31,7 +34,7 @@ class cnn:
         model.add(layers.Activation('linear'))
 
         model.compile(loss='mae',
-                    optimizer='sgd',
+                    optimizer=opt,
                     metrics=['accuracy'])
 
         self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))

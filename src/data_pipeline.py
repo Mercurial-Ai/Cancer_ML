@@ -9,6 +9,8 @@ from src.image_tools.remove_ids import remove_ids
 from src.tokenize_dataset import tokenize_dataset
 from src.PeakCluster import PeakCluster
 
+from matplotlib import pyplot as plt
+
 class data_pod:
     def __init__(self):
         self.X_train = None
@@ -121,30 +123,6 @@ class data_pipeline:
         x = np.reshape(x, (x.shape[0], int(math.sqrt(x.shape[1])), int(math.sqrt(x.shape[1]))))
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
-
-        # normalize data
-        min_max_scaler = MinMaxScaler()
-
-        i = 0
-        for image in X_train:
-            image = min_max_scaler.fit_transform(image)
-            X_train[i] = image
-
-            i = i + 1
-
-        i = 0
-        for image in X_test:
-            image = min_max_scaler.fit_transform(image)
-            X_test[i] = image
-
-            i = i + 1
-
-        i = 0
-        for image in X_val:
-            image = min_max_scaler.fit_transform(image)
-            X_val[i] = image
-
-            i = i + 1
 
         # add additional dimension at the end of the shape to each partition
         X_train = np.expand_dims(X_train, axis=-1)
