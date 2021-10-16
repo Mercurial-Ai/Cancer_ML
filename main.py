@@ -33,15 +33,15 @@ class cancer_ml:
             self.collect_METABRIC()
 
     def collect_duke(self):
-        self.data_pipe = data_pipeline("data\\Duke-Breast-Cancer-MRI\\Clinical and Other Features (edited).csv", "data\Duke-Breast-Cancer-MRI\img_array_duke.npy", self.target)
+        self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", "data/Duke-Breast-Cancer-MRI/img_array_duke.npy", self.target)
         self.data_pipe.load_data()
     
     def collect_HN1(self):
-        self.data_pipe = data_pipeline("data\\HNSCC-HN1\\Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020 (adjusted chemotherapy var).csv", "data\\HNSCC-HN1\\img_array.npy", self.target)
+        self.data_pipe = data_pipeline("data/HNSCC-HN1/Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020 (adjusted chemotherapy var).csv", "data/HNSCC-HN1/img_array.npy", self.target)
         self.data_pipe.load_data()
 
     def collect_METABRIC(self):
-        self.data_pipe = data_pipeline("data\\METABRIC_RNA_Mutation\\METABRIC_RNA_Mutation.csv", None, self.target)
+        self.data_pipe = data_pipeline("data/METABRIC_RNA_Mutation/METABRIC_RNA_Mutation.csv", None, self.target)
         self.data_pipe.load_data()
 
     def run_model(self):
