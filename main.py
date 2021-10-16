@@ -5,7 +5,6 @@ from src.image_model import image_model
 from src.cnn import cnn
 
 import numpy as np
-from PIL import Image
 
 class cancer_ml:
 
@@ -56,25 +55,29 @@ class cancer_ml:
             self.model = cnn(load_model=False)
             self.model = self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
 
-    def make_class_inference(self, image_path):
+    def make_class_inference(self, image_array):
 
         X = self.data_pipe.image_only.X_train
 
         X = np.reshape(X, (450, 262144))
         model = PeakCluster(X)
 
-        sample_image1 = Image.open(image_path)
-        sample_image1 = np.asarray(sample_image1)
-        sample_image1 = sample_image1.flatten()
-        sample_image1 = np.expand_dims(sample_image1, axis=0)
+        image_array = image_array.flatten()
+        image_array = np.expand_dims(image_array, axis=0)
 
-        inference = model.predict(sample_image1)
+        inference = model.predict(image_array)
 
         return inference
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
-ml.run_model()
+#ml.run_model()
 
-print(ml.make_class_inference('sample_image1.png'))
-print(ml.make_class_inference('sample_image2.png'))
-print(ml.make_class_inference('sample_image3.png'))
+array = ml.data_pipe.image_only.X_val
+
+image1 = array[0]
+image2 = array[1]
+image3 = array[2]
+
+print(ml.make_class_inference(image1))
+print(ml.make_class_inference(image2))
+print(ml.make_class_inference(image3))
