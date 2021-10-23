@@ -64,17 +64,18 @@ class cancer_ml:
         elif self.cnn:
             print(self.model.test_model(self.data_pipe.image_only.X_test, self.data_pipe.image_only.y_test))
 
-    def make_class_inference(self, image_array):
-
+    def setup_cluster(self):
         X = self.data_pipe.image_only.X_train
 
         X = np.reshape(X, (450, 262144))
-        model = PeakCluster(X)
+        self.model = PeakCluster(X)
+
+    def make_class_inference(self, image_array):
 
         image_array = image_array.flatten()
         image_array = np.expand_dims(image_array, axis=0)
 
-        inference = model.predict(image_array)
+        inference = self.model.predict(image_array)
 
         return inference
 
