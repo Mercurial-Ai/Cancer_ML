@@ -6,6 +6,7 @@ from src.cnn import cnn
 
 import numpy as np
 from matplotlib import pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
 
 class cancer_ml:
 
@@ -79,6 +80,31 @@ class cancer_ml:
 
         return inference
 
+    def k_neighbors(self):
+
+        X = self.data_pipe.image_only.X_train
+
+        X = np.reshape(X, (450, 262144))
+
+        neigh = KNeighborsClassifier(n_neighbors=3)
+        neigh.fit(X, self.model.labels_)
+
+        example_image = X[2]
+
+        example_image = np.reshape(example_image, (1, -1))
+
+        print(example_image.shape)
+
+        print(neigh.predict(example_image))
+
+    def get_classes(self):
+        return self.model.labels_
+
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 ml.run_model()
 ml.test_model()
+
+ml.setup_cluster()
+print(ml.get_classes())
+
+ml.k_neighbors()
