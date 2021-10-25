@@ -5,7 +5,7 @@ from src.image_model import image_model
 from src.cnn import cnn
 
 import numpy as np
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 from sklearn.neighbors import KNeighborsClassifier
 
 class cancer_ml:
@@ -89,20 +89,38 @@ class cancer_ml:
         neigh = KNeighborsClassifier(n_neighbors=3)
         neigh.fit(X, self.model.labels_)
 
-        example_image = X[2]
+        # identify label index with class 2
+        i = 0
+        for label in self.model.labels_:
+            
+            if label == 2:
+                class_index = i
+
+            i = i + 1
+
+        example_image = X[class_index]
 
         example_image = np.reshape(example_image, (1, -1))
 
-        print(example_image.shape)
+        prediction = neigh.predict(example_image)[0]
 
-        print(neigh.predict(example_image))
+        example_image = np.reshape(example_image, (512, 512))
+
+        plt.show()
+
+        plt.imshow(example_image)
+        plt.title("Class " + str(prediction))
+        plt.savefig("class_" + str(prediction) + "_example")
+        plt.show()
+
+        print(prediction)
 
     def get_classes(self):
         return self.model.labels_
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
-ml.run_model()
-ml.test_model()
+#ml.run_model()
+#ml.test_model()
 
 ml.setup_cluster()
 print(ml.get_classes())
