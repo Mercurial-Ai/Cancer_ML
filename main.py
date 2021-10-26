@@ -3,6 +3,7 @@ from src.data_pipeline import data_pipeline
 from src.clinical_only import clinical_only
 from src.image_model import image_model
 from src.cnn import cnn
+from src.get_distribution import get_distribution
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -86,8 +87,12 @@ class cancer_ml:
 
         X = np.reshape(X, (450, 262144))
 
+        print(len(self.model.labels_))
+
         neigh = KNeighborsClassifier(n_neighbors=3)
         neigh.fit(X, self.model.labels_)
+        
+        print(get_distribution(self.model.labels_))
 
         # identify label index with class 2
         i = 0
@@ -103,15 +108,6 @@ class cancer_ml:
         example_image = np.reshape(example_image, (1, -1))
 
         prediction = neigh.predict(example_image)[0]
-
-        example_image = np.reshape(example_image, (512, 512))
-
-        plt.show()
-
-        plt.imshow(example_image)
-        plt.title("Class " + str(prediction))
-        plt.savefig("class_" + str(prediction) + "_example")
-        plt.show()
 
         print(prediction)
 
