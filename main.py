@@ -85,7 +85,7 @@ class cancer_ml:
 
         X = self.data_pipe.image_only.X_train
 
-        X = np.reshape(X, (450, 262144))
+        X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2]))
 
         print(len(self.model.labels_))
 
