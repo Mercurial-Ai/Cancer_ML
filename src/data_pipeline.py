@@ -131,9 +131,9 @@ class data_pipeline:
         X_test = np.expand_dims(X_test, axis=-1)
         X_val = np.expand_dims(X_val, axis=-1)
 
-        self.image_only.X_train = X_train
-        self.image_only.X_test = X_test
-        self.image_only.y_train = y_train
-        self.image_only.y_test = y_test
-        self.image_only.X_val = X_val
-        self.image_only.y_val = y_val
+        self.image_only.X_train = X_train[0:int(round(X_train.shape[0]*0.75, 0))]
+        self.image_only.X_test = X_test[0:int(round(X_test.shape[0]*0.75, 0))]
+        self.image_only.y_train = y_train[0:int(round(y_train.shape[0]*0.75, 0))]
+        self.image_only.y_test = y_test[0:int(round(y_test.shape[0]*0.75, 0))]
+        self.image_only.X_val = X_val[0:int(round(X_val.shape[0]*0.75, 0))]
+        self.image_only.y_val = y_val[0:int(round(y_val.shape[0]*0.75, 0))]
