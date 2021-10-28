@@ -69,7 +69,7 @@ class cancer_ml:
     def setup_cluster(self):
         X = self.data_pipe.image_only.X_train
 
-        X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2]))
+        X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2])).astype('int8')
         self.model = PeakCluster(X)
 
     def make_class_inference(self, image_array):
@@ -85,7 +85,7 @@ class cancer_ml:
 
         X = self.data_pipe.image_only.X_train
 
-        X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2]))
+        X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2])).astype('int8')
 
         print(len(self.model.labels_))
 
