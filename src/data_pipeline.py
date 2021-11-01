@@ -131,7 +131,7 @@ class data_pipeline:
         X_test = np.expand_dims(X_test, axis=-1)
         X_val = np.expand_dims(X_val, axis=-1)
 
-        slice_size = 0.1
+        slice_size = 0.2
 
         self.image_only.X_train = X_train[0:int(round(X_train.shape[0]*slice_size, 0))]
         self.image_only.X_test = X_test[0:int(round(X_test.shape[0]*slice_size, 0))]
