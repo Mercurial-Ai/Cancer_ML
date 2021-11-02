@@ -7,7 +7,7 @@ import seaborn as sns
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 from matplotlib import colors
-from sklearn.cluster import KMeans
+from sklearn.cluster import MiniBatchKMeans
 from sklearn.metrics import calinski_harabasz_score 
 from scipy.interpolate import UnivariateSpline
 from torchvision import datasets, models, transforms, utils
@@ -21,7 +21,7 @@ def PeakCluster(images, crop_size=512):
     calinski_score=[]
 
     for i in clusters: 
-        kmeans=KMeans(n_clusters=i,init='random',random_state=1)
+        kmeans=MiniBatchKMeans(n_clusters=3,init='random',random_state=1)
         kmeans=kmeans.fit(images)
         summed_square_distance.append(kmeans.inertia_)
         calinski_score.append(calinski_harabasz_score(images,kmeans.labels_))
@@ -39,7 +39,7 @@ def PeakCluster(images, crop_size=512):
     plt.savefig('d2_ssd.png') 
 
     print(n_clusters)
-    model = KMeans(n_clusters=n_clusters, random_state=0)
+    model = MiniBatchKMeans(n_clusters=3, random_state=0)
     model.fit(images)
     Y = model.labels_ 
 
