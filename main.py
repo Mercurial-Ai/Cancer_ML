@@ -8,6 +8,7 @@ from src.get_distribution import get_distribution
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.neighbors import KNeighborsClassifier
+from src.random_crop import random_crop
 
 class cancer_ml:
 
@@ -69,8 +70,9 @@ class cancer_ml:
     def setup_cluster(self):
         X = self.data_pipe.image_only.X_train
 
+        X = random_crop(X, (128, 128, 1))   
+
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2]))
-        X = np.array(X, dtype=np.int8)
         self.model = PeakCluster(X)
 
     def make_class_inference(self, image_array):

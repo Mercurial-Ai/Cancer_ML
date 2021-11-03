@@ -1,19 +1,13 @@
-import os 
-import torch 
-import matplotlib 
 import numpy as np  
 import pandas as pd 
-import seaborn as sns 
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 from matplotlib import colors
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.metrics import calinski_harabasz_score 
 from scipy.interpolate import UnivariateSpline
-from torchvision import datasets, models, transforms, utils
-from sklearn.preprocessing import StandardScaler
 
-def PeakCluster(images, crop_size=512):
+def PeakCluster(images, crop_size=128):
 
     clusters=range(3,20) 
 
