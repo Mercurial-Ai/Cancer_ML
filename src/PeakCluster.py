@@ -6,8 +6,11 @@ from matplotlib import colors
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.metrics import calinski_harabasz_score 
 from scipy.interpolate import UnivariateSpline
+import math
 
 def PeakCluster(images, crop_size=128):
+
+    print(images.shape)
 
     clusters=range(3,20) 
 
@@ -84,7 +87,8 @@ def PeakCluster(images, crop_size=128):
         return inferred_labels
 
     centroids = model.cluster_centers_
-    images = centroids.reshape(n_clusters, crop_size, crop_size)
+
+    images = centroids.reshape(centroids.shape[0], int(math.sqrt(centroids.shape[1])), int(math.sqrt(centroids.shape[1])))
     images *= 255
     images = images.astype(np.uint8)
 

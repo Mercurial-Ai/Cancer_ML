@@ -88,6 +88,9 @@ class cancer_ml:
 
         X = self.data_pipe.image_only.X_train
 
+        X = random_crop(X, (128, 128, 1))   
+
+        # flatten X as float32
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2])).astype('float32')
 
         print(len(self.model.labels_))
@@ -110,7 +113,7 @@ class cancer_ml:
 
         example_image = np.reshape(example_image, (1, -1))
 
-        prediction = neigh.predict(example_image)[0]
+        prediction = neigh.predict(example_image)
 
         print(prediction)
 
