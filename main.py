@@ -103,7 +103,10 @@ class cancer_ml:
         # determine number of each label
         label_counts = dict(Counter(self.model.labels_))
 
+        # find lowest count of labels
         print(label_counts)
+        counts_list = list(label_counts.values())
+        lowest_label = min(counts_list)
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 #ml.run_model()
