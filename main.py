@@ -3,7 +3,7 @@ from src.data_pipeline import data_pipeline
 from src.clinical_only import clinical_only
 from src.image_model import image_model
 from src.cnn import cnn
-from src.get_distribution import get_distribution
+from collections import Counter
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -51,13 +51,13 @@ class cancer_ml:
 
         if self.clinical:
             self.model = clinical_only(load_model=False)
-            model = self.model.get_model(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train, self.data_pipe.only_clinical.X_val, self.data_pipe.only_clinical.y_val)
+            self.model.get_model(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train, self.data_pipe.only_clinical.X_val, self.data_pipe.only_clinical.y_val)
         elif self.image_clinical:
             self.model = image_model(load_model=False)
-            model = self.model.get_model(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train, self.data_pipe.image_clinical.X_val, self.data_pipe.image_clinical.y_val)
+            self.model.get_model(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train, self.data_pipe.image_clinical.X_val, self.data_pipe.image_clinical.y_val)
         elif self.cnn:
             self.model = cnn(load_model=False)
-            model = self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
+            self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
 
     def test_model(self):
         if self.clinical:
@@ -77,10 +77,7 @@ class cancer_ml:
 
     def make_class_inference(self, image_array):
 
-        image_array = image_array.flatten()
-        image_array = np.expand_dims(image_array, axis=0)
-
-        inference = self.model.predict(image_array)
+        inference = self.neigh.predict(image_array)
 
         return inference
 
@@ -93,32 +90,20 @@ class cancer_ml:
         # flatten X as float32
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2])).astype('float32')
 
-        print(len(self.model.labels_))
+        self.neigh = KNeighborsClassifier(n_neighbors=3)
+        self.neigh.fit(X, self.model.labels_)
 
-        neigh = KNeighborsClassifier(n_neighbors=3)
-        neigh.fit(X, self.model.labels_)
-        
-        print(get_distribution(self.model.labels_))
-
-        # identify label index with class 2
-        i = 0
-        for label in self.model.labels_:
-            
-            if label == 2:
-                class_index = i
-
-            i = i + 1
-
-        example_image = X[class_index]
-
-        example_image = np.reshape(example_image, (1, -1))
-
-        prediction = neigh.predict(example_image)
-
-        print(prediction)
+        self.equalize_classes()
 
     def get_classes(self):
         return self.model.labels_
+
+    def equalize_classes(self):
+        
+        # determine number of each label
+        label_counts = dict(Counter(self.model.labels_))
+
+        print(label_counts)
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 #ml.run_model()

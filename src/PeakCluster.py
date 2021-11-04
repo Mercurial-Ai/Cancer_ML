@@ -8,7 +8,7 @@ from sklearn.metrics import calinski_harabasz_score
 from scipy.interpolate import UnivariateSpline
 import math
 
-def PeakCluster(images, crop_size=128):
+def PeakCluster(images):
 
     print(images.shape)
 
@@ -88,7 +88,7 @@ def PeakCluster(images, crop_size=128):
 
     centroids = model.cluster_centers_
 
-    images = centroids.reshape(centroids.shape[0], int(math.sqrt(centroids.shape[1])), int(math.sqrt(centroids.shape[1])))
+    images = centroids.reshape(n_clusters, int(math.sqrt(centroids.shape[1])), int(math.sqrt(centroids.shape[1])))
     images *= 255
     images = images.astype(np.uint8)
 
