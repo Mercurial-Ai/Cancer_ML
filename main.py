@@ -70,7 +70,7 @@ class cancer_ml:
     def setup_cluster(self):
         X = self.data_pipe.image_only.X_train
 
-        X = random_crop(X, (128, 128, 1))   
+        X = random_crop(X, (256, 256, 1))   
 
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2]))
         self.model = PeakCluster(X)
@@ -85,7 +85,7 @@ class cancer_ml:
 
         X = self.data_pipe.image_only.X_train
 
-        X = random_crop(X, (128, 128, 1))   
+        X = random_crop(X, (256, 256, 1))   
 
         # flatten X as float32
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2])).astype('float32')
