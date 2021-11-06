@@ -114,21 +114,28 @@ class cancer_ml:
         class_array_dict = {}
         
         for i in range(n_clusters):
-            
-            class_array = np.empty(shape=(self.label_counts[i], image_array.shape[1], image_array.shape[2]), dtype=np.int8)
 
-            num_appended = 0
-            for image in image_array:
+            if i in list(self.label_counts.keys()):
+                
+                # do not include classes with only one instance
+                if self.label_counts[i] != 1:
+                
+                    class_array = np.empty(shape=(self.label_counts[i], image_array.shape[1], image_array.shape[2]), dtype=np.int8)
 
-                inference = self.make_class_inference(image)
+                    num_appended = 0
+                    for image in image_array:
 
-                j = 0
-                if inference == i:
-                    class_array[j] = image
-                    num_appended = num_appended + 1
-                    j = j + 1
+                        inference = self.make_class_inference(image)
 
-            class_array_dict[i] = class_array
+                        j = 0
+                        if inference == i:
+                            class_array[j] = image
+                            num_appended = num_appended + 1
+                            j = j + 1
+
+                    class_array_dict[i] = class_array
+
+        print(class_array_dict)
 
         return class_array_dict
 
@@ -142,10 +149,14 @@ class cancer_ml:
         n_clusters = 3
         class_array_dict = self.divide_into_classes(image_array, n_clusters)
 
+        print(self.label_counts)
         for i in range(n_clusters):
-            class_array = class_array_dict[i]
-            new_array = class_array[:lowest_label]
-            class_array_dict[i] = new_array
+
+            # do not include classes with only one instance
+            if self.label_counts[i] != 1:
+                class_array = class_array_dict[i]
+                new_array = class_array[:lowest_label]
+                class_array_dict[i] = new_array
 
         for array in (class_array_dict.values()):
             print(array.shape)
