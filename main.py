@@ -4,6 +4,7 @@ from src.clinical_only import clinical_only
 from src.image_model import image_model
 from src.cnn import cnn
 from collections import Counter
+import math
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -75,7 +76,13 @@ class cancer_ml:
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2]))
         self.model = PeakCluster(X)
 
+        # determine number of each label
+        self.label_counts = dict(Counter(self.model.labels_))
+
     def make_class_inference(self, image_array):
+
+        image_array = image_array.flatten()
+        image_array = np.expand_dims(image_array, axis=0)
 
         inference = self.neigh.predict(image_array)
 
@@ -85,28 +92,63 @@ class cancer_ml:
 
         X = self.data_pipe.image_only.X_train
 
-        X = random_crop(X, (256, 256, 1))   
+        X = random_crop(X, (256, 256, 1))
 
-        # flatten X as float32
+        # flatten X for KNeighbors
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2])).astype('float32')
 
         self.neigh = KNeighborsClassifier(n_neighbors=3)
         self.neigh.fit(X, self.model.labels_)
 
-        self.equalize_classes()
+        # unflatten X
+        X = np.reshape(X, (-1, int(math.sqrt(X.shape[1])), int(math.sqrt(X.shape[1]))))
+        print(X.shape)
+
+        self.equalize_classes(X)
 
     def get_classes(self):
         return self.model.labels_
 
-    def equalize_classes(self):
+    def divide_into_classes(self, image_array, n_clusters):
+
+        class_array_dict = {}
         
-        # determine number of each label
-        label_counts = dict(Counter(self.model.labels_))
+        for i in range(n_clusters):
+            
+            class_array = np.empty(shape=(self.label_counts[i], image_array.shape[1], image_array.shape[2]), dtype=np.int8)
+
+            num_appended = 0
+            for image in image_array:
+
+                inference = self.make_class_inference(image)
+
+                j = 0
+                if inference == i:
+                    class_array[j] = image
+                    num_appended = num_appended + 1
+                    j = j + 1
+
+            class_array_dict[i] = class_array
+
+        return class_array_dict
+
+    def equalize_classes(self, image_array):
 
         # find lowest count of labels
-        print(label_counts)
-        counts_list = list(label_counts.values())
+        print(self.label_counts)
+        counts_list = list(self.label_counts.values())
         lowest_label = min(counts_list)
+
+        n_clusters = 3
+        class_array_dict = self.divide_into_classes(image_array, n_clusters)
+
+        for i in range(n_clusters):
+            class_array = class_array_dict[i]
+            new_array = class_array[:lowest_label]
+            class_array_dict[i] = new_array
+
+        for array in (class_array_dict.values()):
+            print(array.shape)
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 #ml.run_model()
