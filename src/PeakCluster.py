@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 from matplotlib import colors
-from sklearn.cluster import MiniBatchKMeans
+from sklearn.cluster import KMeans
 from sklearn.metrics import calinski_harabasz_score 
 from scipy.interpolate import UnivariateSpline
 import math
@@ -12,13 +12,13 @@ def PeakCluster(images):
 
     print(images.shape)
 
-    clusters=range(3,20) 
+    clusters=range(2,20) 
 
     summed_square_distance=[]
     calinski_score=[]
 
     for i in clusters: 
-        kmeans=MiniBatchKMeans(n_clusters=3,init='random',random_state=1)
+        kmeans=KMeans(n_clusters=i,init='random',random_state=1)
         kmeans=kmeans.fit(images)
         summed_square_distance.append(kmeans.inertia_)
         calinski_score.append(calinski_harabasz_score(images,kmeans.labels_))
@@ -36,7 +36,7 @@ def PeakCluster(images):
     plt.savefig('d2_ssd.png') 
 
     print(n_clusters)
-    model = MiniBatchKMeans(n_clusters=3, random_state=0)
+    model = KMeans(n_clusters=n_clusters, random_state=0)
     model.fit(images)
     Y = model.labels_ 
 
