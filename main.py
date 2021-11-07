@@ -116,7 +116,7 @@ class cancer_ml:
         for i in range(n_clusters):
 
             if i in list(self.label_counts.keys()):
-                
+
                 # do not include classes with only one instance
                 if self.label_counts[i] != 1:
                 
@@ -136,20 +136,19 @@ class cancer_ml:
                     class_array_dict[i] = class_array
 
         print(class_array_dict)
+        print(self.label_counts)
 
         return class_array_dict
 
     def equalize_classes(self, image_array):
 
         # find lowest count of labels
-        print(self.label_counts)
         counts_list = list(self.label_counts.values())
         lowest_label = min(counts_list)
 
-        n_clusters = 3
+        n_clusters = len(self.label_counts)
         class_array_dict = self.divide_into_classes(image_array, n_clusters)
 
-        print(self.label_counts)
         for i in range(n_clusters):
 
             # do not include classes with only one instance
