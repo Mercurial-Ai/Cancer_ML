@@ -13,9 +13,10 @@ from src.random_crop import random_crop
 
 class cancer_ml:
 
-    def __init__(self, dataset, target, model="clinical_only"):
+    def __init__(self, dataset, target, model="clinical_only", crop_size=(256, 256)):
         self.dataset = dataset
         self.target = target
+        self.crop_size=crop_size
 
         # initialize model bools
         self.clinical = False
@@ -71,7 +72,7 @@ class cancer_ml:
     def setup_cluster(self):
         X = self.data_pipe.image_only.X_train
 
-        X = random_crop(X, (256, 256, 1))   
+        X = random_crop(X, (self.crop_size[0], self.crop_size[1], 1))   
 
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2]))
         self.model = PeakCluster(X)
@@ -92,7 +93,7 @@ class cancer_ml:
 
         X = self.data_pipe.image_only.X_train
 
-        X = random_crop(X, (256, 256, 1))
+        X = random_crop(X, (self.crop_size[0], self.crop_size[1], 1))
 
         # flatten X for KNeighbors
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2])).astype('float32')
@@ -160,8 +161,16 @@ class cancer_ml:
                 new_array = class_array[:lowest_count]
                 class_array_dict[i] = new_array
 
-        for array in list(class_array_dict.values()):
-            print(array.shape)
+        new_data = np.empty(shape=(lowest_count*n_clusters, self.crop_size[0], self.crop_size[1]), dtype=np.int8)
+        i = 0
+        for image_array in list(class_array_dict.values()):
+
+            for image in image_array:
+                new_data[i] = image
+
+                i = i + 1
+
+        print(new_data.shape)
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 #ml.run_model()
