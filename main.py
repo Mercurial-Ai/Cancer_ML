@@ -105,7 +105,7 @@ class cancer_ml:
         X = np.reshape(X, (-1, int(math.sqrt(X.shape[1])), int(math.sqrt(X.shape[1]))))
         print(X.shape)
 
-        self.equalize_classes(X)
+        self.data_pipe.image_only.X_train = self.equalize_classes(X)
 
     def get_classes(self):
         return self.model.labels_
@@ -170,13 +170,14 @@ class cancer_ml:
 
                 i = i + 1
 
-        print(new_data.shape)
+        new_data = np.expand_dims(new_data, axis=-1)
+
+        return new_data
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
-#ml.run_model()
-#ml.test_model()
 
 ml.setup_cluster()
-print(ml.get_classes())
-
 ml.k_neighbors()
+
+ml.run_model()
+ml.test_model()
