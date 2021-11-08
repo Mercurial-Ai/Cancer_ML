@@ -208,4 +208,3 @@ ml.setup_cluster()
 ml.k_neighbors()
 
 ml.run_model()
-ml.test_model()
