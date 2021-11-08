@@ -10,7 +10,7 @@ class cnn:
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=32):
 
-        opt = keras.optimizers.SGD(learning_rate=0.01)
+        opt = keras.optimizers.SGD(learning_rate=0.001)
 
         model = Sequential()
 
