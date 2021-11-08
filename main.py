@@ -116,43 +116,44 @@ class cancer_ml:
 
         y_train = y_train.to_numpy()
 
+        # dictionary containing image data per label
         class_array_dict = {}
 
-        filtered_y = []
-        
-        for i in range(n_clusters):
+        # dictionary containing y data per label
+        class_y_dict = {}
 
-            if i in list(self.label_counts.keys()):
+        self.num_clusters_used = 0
+        for label in range(n_clusters):
 
-                # do not include classes with only one instance
-                if self.label_counts[i] != 1:
-                
-                    class_array = np.empty(shape=(self.label_counts[i], image_array.shape[1], image_array.shape[2]), dtype=np.int8)
+            if self.label_counts[label] != 1:
 
-                    num_appended = 0
-                    index = 0
-                    for image in image_array:
+                # list of indices utilized to collect y
+                collected_indices = []
 
-                        inference = self.make_class_inference(image)[0]
+                class_array = np.empty(shape=(self.label_counts[label], image_array.shape[1], image_array.shape[2]), dtype=np.int8)
+            
+                i = 0
+                j = 0
+                for image in image_array:
 
-                        if inference == i:
-                            corresponding_y = y_train[index]
+                    inference = self.model.labels_[i]
 
-                            filtered_y.append(corresponding_y)
+                    if inference == label:
+                        class_array[j] = image
+                        collected_indices.append(i)
+                        j = j + 1
 
-                            class_array[num_appended] = image
+                    i = i + 1
+                        
+                class_array_dict[label] = class_array
 
-                            num_appended = num_appended + 1
+                y = y_train[collected_indices]
 
-                        index = index + 1
+                class_y_dict[label] = y
 
-                    class_array_dict[i] = class_array
+                self.num_clusters_used = self.num_clusters_used + 1
 
-        filtered_y = np.array(filtered_y)
-
-        self.data_pipe.image_only.y_train = filtered_y
-
-        return class_array_dict
+        return class_array_dict, class_y_dict
 
     def equalize_classes(self, image_array):
 
@@ -167,17 +168,28 @@ class cancer_ml:
         lowest_count = min(filtered_labels)
 
         n_clusters = len(self.label_counts)
-        class_array_dict = self.divide_into_classes(image_array, n_clusters)
+        class_array_dict, class_y_dict = self.divide_into_classes(image_array, n_clusters)
+        
+        for label in list(class_y_dict.keys()):
 
-        for i in range(n_clusters):
+            class_array = class_y_dict[label]
+            new_y = class_array[:lowest_count]
+            class_y_dict[label] = new_y
 
-            # do not include classes with only one instance
-            if self.label_counts[i] != 1:
-                class_array = class_array_dict[i]
-                new_array = class_array[:lowest_count]
-                class_array_dict[i] = new_array
+        new_y = np.array([])
+        for array in list(class_y_dict.values()):
+            new_y = np.append(new_y, array)
 
-        new_data = np.empty(shape=(lowest_count*n_clusters, self.crop_size[0], self.crop_size[1]), dtype=np.int8)
+        self.data_pipe.image_only.y_train = new_y
+
+        for label in list(class_array_dict.keys()):
+
+            class_array = class_array_dict[label]
+            new_array = class_array[:lowest_count]
+            class_array_dict[label] = new_array
+
+        print(lowest_count*self.num_clusters_used)
+        new_data = np.empty(shape=(lowest_count*self.num_clusters_used, self.crop_size[0], self.crop_size[1]), dtype=np.int8)
         i = 0
         for image_array in list(class_array_dict.values()):
 
