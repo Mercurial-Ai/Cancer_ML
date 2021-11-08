@@ -169,11 +169,16 @@ class cancer_ml:
 
         n_clusters = len(self.label_counts)
         class_array_dict, class_y_dict = self.divide_into_classes(image_array, n_clusters)
-        
-        for label in list(class_y_dict.keys()):
 
-            class_array = class_y_dict[label]
-            new_y = class_array[:lowest_count]
+        for label in list(class_array_dict.keys()):
+
+            class_array = class_array_dict[label]
+            y_array = class_y_dict[label]
+
+            new_array = class_array[:lowest_count]
+            new_y = y_array[:lowest_count]
+
+            class_array_dict[label] = new_array
             class_y_dict[label] = new_y
 
         new_y = np.array([])
@@ -181,12 +186,6 @@ class cancer_ml:
             new_y = np.append(new_y, array)
 
         self.data_pipe.image_only.y_train = new_y
-
-        for label in list(class_array_dict.keys()):
-
-            class_array = class_array_dict[label]
-            new_array = class_array[:lowest_count]
-            class_array_dict[label] = new_array
 
         print(lowest_count*self.num_clusters_used)
         new_data = np.empty(shape=(lowest_count*self.num_clusters_used, self.crop_size[0], self.crop_size[1]), dtype=np.int8)
