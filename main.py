@@ -112,7 +112,13 @@ class cancer_ml:
 
     def divide_into_classes(self, image_array, n_clusters):
 
+        y_train = self.data_pipe.image_only.y_train
+
+        y_train = y_train.to_numpy()
+
         class_array_dict = {}
+
+        filtered_y = []
         
         for i in range(n_clusters):
 
@@ -124,17 +130,27 @@ class cancer_ml:
                     class_array = np.empty(shape=(self.label_counts[i], image_array.shape[1], image_array.shape[2]), dtype=np.int8)
 
                     num_appended = 0
+                    index = 0
                     for image in image_array:
 
-                        inference = self.make_class_inference(image)
+                        inference = self.make_class_inference(image)[0]
 
-                        j = 0
                         if inference == i:
-                            class_array[j] = image
+                            corresponding_y = y_train[index]
+
+                            filtered_y.append(corresponding_y)
+
+                            class_array[num_appended] = image
+
                             num_appended = num_appended + 1
-                            j = j + 1
+
+                        index = index + 1
 
                     class_array_dict[i] = class_array
+
+        filtered_y = np.array(filtered_y)
+
+        self.data_pipe.image_only.y_train = filtered_y
 
         return class_array_dict
 
