@@ -9,6 +9,7 @@ class cnn:
         self.load_model=load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=32):
+        print(X_train.shape)
 
         opt = keras.optimizers.Adam(learning_rate=0.01)
 
