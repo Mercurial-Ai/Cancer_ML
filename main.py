@@ -92,8 +92,15 @@ class cancer_ml:
     def k_neighbors(self):
 
         X = self.data_pipe.image_only.X_train
+        X_test = self.data_pipe.image_only.X_test
+        X_val = self.data_pipe.image_only.X_val
 
         X = random_crop(X, (self.crop_size[0], self.crop_size[1], 1))
+        X_test = random_crop(X_test, (self.crop_size[0], self.crop_size[1], 1))
+        X_val = random_crop(X_val, (self.crop_size[0], self.crop_size[1], 1))
+
+        self.data_pipe.image_only.X_test = X_test
+        self.data_pipe.image_only.X_val = X_val
 
         # flatten X for KNeighbors
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2])).astype('float32')
@@ -207,3 +214,4 @@ ml.setup_cluster()
 ml.k_neighbors()
 
 ml.run_model()
+ml.test_model()
