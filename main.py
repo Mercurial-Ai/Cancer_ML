@@ -194,7 +194,6 @@ class cancer_ml:
 
         self.data_pipe.image_only.y_train = new_y.astype('int8')
 
-        print(lowest_count*self.num_clusters_used)
         new_data = np.empty(shape=(lowest_count*self.num_clusters_used, self.crop_size[0], self.crop_size[1]), dtype=np.int8)
         i = 0
         for image_array in list(class_array_dict.values()):
