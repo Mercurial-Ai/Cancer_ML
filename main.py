@@ -112,7 +112,6 @@ class cancer_ml:
 
         # unflatten X
         X = np.reshape(X, (-1, int(math.sqrt(X.shape[1])), int(math.sqrt(X.shape[1]))))
-        print(X.shape)
 
         self.data_pipe.image_only.X_train = self.equalize_classes(X)
         self.data_pipe.image_only.X_test = self.equalize_test(X_test)
