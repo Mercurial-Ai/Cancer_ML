@@ -105,7 +105,9 @@ class cancer_ml:
         # flatten X for KNeighbors
         X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2])).astype('float32')
 
-        self.neigh = KNeighborsClassifier(n_neighbors=3)
+        n_clusters = len(list(set(self.model.labels_)))
+
+        self.neigh = KNeighborsClassifier(n_neighbors=n_clusters)
         self.neigh.fit(X, self.model.labels_)
 
         # unflatten X
@@ -113,9 +115,195 @@ class cancer_ml:
         print(X.shape)
 
         self.data_pipe.image_only.X_train = self.equalize_classes(X)
+        self.data_pipe.image_only.X_test = self.equalize_test(X_test)
+        self.data_pipe.image_only.X_val = self.equalize_val(X_val)
 
     def get_classes(self):
         return self.model.labels_
+
+    def equalize_test(self, img_array):
+
+        y_test = self.data_pipe.image_only.y_test
+
+        y_test = y_test.to_numpy()
+
+        # dictionary containing image data per label
+        class_array_dict = {}
+
+        # dictionary containing y data per label
+        class_y_dict = {}
+
+        inferences = []
+        for image in img_array:
+            inference = self.make_class_inference(image)[0]
+            inferences.append(inference)
+
+        label_counts = dict(Counter(inferences))
+        
+        num_clusters_used = 0
+        for label in list(label_counts.keys()):
+
+            count = label_counts[label]
+
+            if count != 1:
+                # list of indices utilized to collect y
+                collected_indices = []
+
+                class_array = np.empty(shape=(label_counts[label], img_array.shape[1], img_array.shape[2]), dtype=np.int8)
+            
+                i = 0
+                j = 0
+                for image in img_array:
+
+                    inference = inferences[i]
+
+                    if inference == label:
+                        image = np.squeeze(image)
+                        class_array[j] = image
+                        collected_indices.append(i)
+                        j = j + 1
+
+                    i = i + 1
+                        
+                class_array_dict[label] = class_array 
+
+                y = y_test[collected_indices]
+
+                class_y_dict[label] = y
+
+                num_clusters_used = num_clusters_used + 1
+
+        # find lowest count of labels excluding labels with only 1 instance
+        labels = list(label_counts.keys())
+
+        filtered_labels = []
+        for label in labels:
+            if self.label_counts[label] != 1:
+                filtered_labels.append(label_counts[label])
+        
+        lowest_count = min(filtered_labels)
+
+        for label in list(class_array_dict.keys()):
+
+            class_array = class_array_dict[label]
+            y_array = class_y_dict[label]
+
+            new_array = class_array[:lowest_count]
+            new_y = y_array[:lowest_count]
+
+            class_array_dict[label] = new_array
+            class_y_dict[label] = new_y
+
+        new_y = np.array([])
+        for array in list(class_y_dict.values()):
+            new_y = np.append(new_y, array)
+
+        self.data_pipe.image_only.y_test = new_y.astype('int8')
+
+        new_data = np.empty(shape=(lowest_count*num_clusters_used, self.crop_size[0], self.crop_size[1]), dtype=np.int8)
+        i = 0
+        for image_array in list(class_array_dict.values()):
+
+            for image in image_array:
+                new_data[i] = image
+
+                i = i + 1
+
+        new_data = np.expand_dims(new_data, axis=-1)
+
+        return new_data
+
+    def equalize_val(self, img_array):
+
+        y_val = self.data_pipe.image_only.y_val
+
+        y_val = y_val.to_numpy()
+
+        # dictionary containing image data per label
+        class_array_dict = {}
+
+        # dictionary containing y data per label
+        class_y_dict = {}
+
+        inferences = []
+        for image in img_array:
+            inference = self.make_class_inference(image)[0]
+            inferences.append(inference)
+
+        label_counts = dict(Counter(inferences))
+        
+        num_clusters_used = 0
+        for label in list(label_counts.keys()):
+
+            count = label_counts[label]
+
+            if count != 1:
+                # list of indices utilized to collect y
+                collected_indices = []
+
+                class_array = np.empty(shape=(label_counts[label], img_array.shape[1], img_array.shape[2]), dtype=np.int8)
+            
+                i = 0
+                j = 0
+                for image in img_array:
+
+                    inference = inferences[i]
+
+                    if inference == label:
+                        image = np.squeeze(image)
+                        class_array[j] = image
+                        collected_indices.append(i)
+                        j = j + 1
+
+                    i = i + 1
+                        
+                class_array_dict[label] = class_array 
+
+                y = y_val[collected_indices]
+
+                class_y_dict[label] = y
+
+                num_clusters_used = num_clusters_used + 1
+
+        # find lowest count of labels excluding labels with only 1 instance
+        labels = list(label_counts.keys())
+
+        filtered_labels = []
+        for label in labels:
+            if self.label_counts[label] != 1:
+                filtered_labels.append(label_counts[label])
+        
+        lowest_count = min(filtered_labels)
+
+        for label in list(class_array_dict.keys()):
+
+            class_array = class_array_dict[label]
+            y_array = class_y_dict[label]
+
+            new_array = class_array[:lowest_count]
+            new_y = y_array[:lowest_count]
+
+            class_array_dict[label] = new_array
+            class_y_dict[label] = new_y
+
+        new_y = np.array([])
+        for array in list(class_y_dict.values()):
+            new_y = np.append(new_y, array)
+
+        self.data_pipe.image_only.y_val = new_y.astype('int8')
+
+        new_data = np.empty(shape=(lowest_count*num_clusters_used, self.crop_size[0], self.crop_size[1]), dtype=np.int8)
+        i = 0
+        for image_array in list(class_array_dict.values()):
+
+            for image in image_array:
+                new_data[i] = image
+
+                i = i + 1
+
+        new_data = np.expand_dims(new_data, axis=-1)
+
+        return new_data
 
     def divide_into_classes(self, image_array, n_clusters):
 
