@@ -57,7 +57,6 @@ def PeakCluster(images):
     plt.tight_layout() 
     plt.savefig('pca_plot.png')
 
-
     def infer_cluster_labels(kmeans, actual_labels):
         inferred_labels = {}
         for i in range(kmeans.n_clusters):
@@ -81,8 +80,6 @@ def PeakCluster(images):
             else:
                 # create a new array in this slot
                 inferred_labels[np.argmax(counts)] = [i]
-
-            #print(labels)
         
         return inferred_labels
 

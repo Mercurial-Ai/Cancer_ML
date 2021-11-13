@@ -7,7 +7,6 @@ from collections import Counter
 import math
 
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.neighbors import KNeighborsClassifier
 from src.random_crop import random_crop
 
@@ -394,10 +393,19 @@ class cancer_ml:
 
         return new_data
 
+    def save_arrays(self):
+        np.save("saved_arrays\X_train", self.data_pipe.image_only.X_train)
+        np.save("saved_arrays\X_test", self.data_pipe.image_only.X_test)
+        np.save("saved_arrays\X_val", self.data_pipe.image_only.X_val)
+        np.save("saved_arrays\y_train", self.data_pipe.image_only.y_train)
+        np.save("saved_arrays\y_test", self.data_pipe.image_only.y_test)
+        np.save("saved_arrays\y_val", self.data_pipe.image_only.y_val)
+
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 
 ml.setup_cluster()
 ml.k_neighbors()
+ml.save_arrays()
 
 ml.run_model()
 ml.test_model()

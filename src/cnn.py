@@ -11,7 +11,8 @@ class cnn:
     def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=32):
         print(X_train.shape)
 
-        opt = keras.optimizers.SGD(learning_rate=0.005)
+        opt = keras.optimizers.SGD(learning_rate=0.004)
+        loss = keras.losses.MeanAbsoluteError()
 
         model = Sequential()
 
@@ -34,7 +35,7 @@ class cnn:
         model.add(layers.Dense(1))
         model.add(layers.Activation('linear'))
 
-        model.compile(loss='mae',
+        model.compile(loss=loss,
                     optimizer=opt,
                     metrics=['accuracy'])
 
