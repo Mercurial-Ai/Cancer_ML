@@ -61,6 +61,7 @@ class cancer_ml:
             self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
 
     def test_model(self):
+        
         if self.clinical:
             print(self.model.test_model(self.data_pipe.only_clinical.X_test, self.data_pipe.only_clinical.y_test))
         elif self.image_clinical:

@@ -8,12 +8,11 @@ class cnn:
     def __init__(self, load_model=True):
         self.load_model=load_model
 
-    def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=32):
+    def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=128):
         epochs=20
-        print(X_train.shape)
 
-        opt = keras.optimizers.Adam(learning_rate=0.004)
-        loss = keras.losses.MeanAbsoluteError()
+        opt = keras.optimizers.Adam(learning_rate=0.007)
+        loss = keras.losses.BinaryCrossentropy()
 
         model = Sequential()
 
@@ -47,6 +46,8 @@ class cnn:
         return model
 
     def test_model(self, X_test, y_test):
+        print(X_test.shape)
+        print(y_test.shape)
         results = self.model.evaluate(X_test, y_test, batch_size=128)
 
         return results
