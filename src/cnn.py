@@ -13,7 +13,7 @@ class cnn:
         print(X_train.shape)
 
         opt = keras.optimizers.Adam(learning_rate=0.004)
-        loss = keras.losses.CategoricalCrossentropy()
+        loss = keras.losses.MeanAbsoluteError()
 
         model = Sequential()
 
