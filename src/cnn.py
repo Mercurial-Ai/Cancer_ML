@@ -9,9 +9,10 @@ class cnn:
         self.load_model=load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=32):
+        epochs=20
         print(X_train.shape)
 
-        opt = keras.optimizers.SGD(learning_rate=0.004)
+        opt = keras.optimizers.Adam(learning_rate=0.004)
         loss = keras.losses.CategoricalCrossentropy()
 
         model = Sequential()
