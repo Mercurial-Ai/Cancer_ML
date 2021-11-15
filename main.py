@@ -410,12 +410,12 @@ class cancer_ml:
         self.data_pipe.image_only.y_test = np.load("saved_arrays\y_test.npy")
         self.data_pipe.image_only.y_val = np.load("saved_arrays\y_val.npy")
 
-        print(self.data_pipe.image_only.X_train)
-        print(self.data_pipe.image_only.X_test)
-        print(self.data_pipe.image_only.X_val)
-        print(self.data_pipe.image_only.y_train)
-        print(self.data_pipe.image_only.y_test)
-        print(self.data_pipe.image_only.y_val)
+        print(self.data_pipe.image_only.X_train.shape)
+        print(self.data_pipe.image_only.X_test.shape)
+        print(self.data_pipe.image_only.X_val.shape)
+        print(self.data_pipe.image_only.y_train.shape)
+        print(self.data_pipe.image_only.y_test.shape)
+        print(self.data_pipe.image_only.y_val.shape)
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 
