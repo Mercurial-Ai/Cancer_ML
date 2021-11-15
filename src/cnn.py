@@ -12,8 +12,8 @@ class cnn:
         batch_size=128
         epochs=20
 
-        opt = keras.optimizers.SGD(learning_rate=0.007)
-        loss = keras.losses.BinaryCrossentropy()
+        opt = keras.optimizers.Adam(learning_rate=0.006)
+        loss = keras.losses.MeanAbsoluteError()
 
         model = Sequential()
 
