@@ -9,14 +9,19 @@ class cnn:
         self.load_model=load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=128):
+        batch_size=128
         epochs=20
 
-        opt = keras.optimizers.Adam(learning_rate=0.007)
+        opt = keras.optimizers.SGD(learning_rate=0.007)
         loss = keras.losses.BinaryCrossentropy()
 
         model = Sequential()
 
-        model.add(layers.Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
+        model.add(layers.Conv2D(128, (3, 3), input_shape=X_train.shape[1:]))
+        model.add(layers.Activation('relu'))
+        model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+
+        model.add(layers.Conv2D(64, (3, 3)))
         model.add(layers.Activation('relu'))
         model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
