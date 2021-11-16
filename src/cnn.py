@@ -13,7 +13,7 @@ class cnn:
         epochs=20
 
         opt = keras.optimizers.Adam(learning_rate=0.006)
-        loss = keras.losses.MeanAbsoluteError()
+        loss = keras.losses.BinaryCrossentropy()
 
         model = Sequential()
 
