@@ -12,7 +12,7 @@ class cnn:
         batch_size=128
         epochs=20
 
-        opt = keras.optimizers.Adam(learning_rate=0.006)
+        opt = keras.optimizers.SGD(learning_rate=0.007)
         loss = keras.losses.BinaryCrossentropy()
 
         model = Sequential()
@@ -46,7 +46,7 @@ class cnn:
 
         self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
-        model.save('data\\saved_models\\text_prediction\\keras_image_clinical_model.h5')
+        model.save('data\\saved_models\\text_prediction\\keras_cnn_model.h5')
 
         return model
 
