@@ -4,12 +4,12 @@ import numpy as np
 from itertools import combinations, product
 from random import shuffle
 
-from write_excel import write_excel
+from src.grid_search.write_excel import write_excel
 
 class grid_search:
 
     def read_grid(self):
-        grid = pd.read_csv("grid.csv")
+        grid = pd.read_csv("data\\grid.csv")
 
         grid_cols = list(grid.columns)
 
@@ -37,22 +37,17 @@ class grid_search:
 
         return comb_dict_list
 
-    def test_model(self, model, X_train, y_train, X_test, y_test, weight_dict):
-
-        X_train = np.load(X_train)
-        y_train = np.load(y_train)
-        X_test = np.load(X_test)
-        y_test = np.load(y_test)
+    def test_model(self, model, X_train, y_train, X_val, y_val, weight_dict):
 
         combs = self.read_grid()
 
         for comb in combs:
             model_copy = model
-            model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy', ''])
+            model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy'])
 
             fit = model_copy.fit(X_train, y_train, epochs=comb['epochs'], batch_size=comb['batch size'], class_weight=weight_dict)
 
-            results = model_copy.evaluate(X_test, y_test, batch_size=comb['batch size'])
+            results = model_copy.evaluate(X_val, y_val, batch_size=comb['batch size'])
 
             writer = write_excel('results', results)
             writer.run()

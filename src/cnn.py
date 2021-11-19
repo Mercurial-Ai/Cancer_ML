@@ -3,6 +3,8 @@ from tensorflow.keras import layers
 from tensorflow.keras import Sequential
 from src.get_weight_dict import get_weight_dict
 
+from src.grid_search.grid_search import grid_search
+
 class cnn:
 
     def __init__(self, load_model=True):
@@ -40,6 +42,9 @@ class cnn:
         model.add(layers.Dense(1))
         model.add(layers.Activation('linear'))
 
+        search = grid_search()
+        search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+
         model.compile(loss=loss,
                     optimizer=opt,
                     metrics=['accuracy'])
@@ -51,8 +56,6 @@ class cnn:
         return model
 
     def test_model(self, X_test, y_test):
-        print(X_test.shape)
-        print(y_test.shape)
         results = self.model.evaluate(X_test, y_test, batch_size=128)
 
         return results
