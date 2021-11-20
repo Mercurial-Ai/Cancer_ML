@@ -41,6 +41,7 @@ class grid_search:
 
         combs = self.read_grid()
 
+        print(len(combs), "combinations")
         for comb in combs:
             model_copy = model
             model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy'])
