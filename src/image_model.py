@@ -8,18 +8,18 @@ class image_model:
         self.load_model = load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=32):
-        input = keras.layers.Input(shape=(self.X_train.shape[1],))
+        input = keras.layers.Input(shape=(X_train.shape[1],))
 
-        x = Dense(150, activation=self.activation_function)(input)
-        x = Dense(150, activation=self.activation_function)(x)
-        x = Dense(150, activation=self.activation_function)(x)
-        x = Dense(120, activation=self.activation_function)(x)
-        x = Dense(120, activation=self.activation_function)(x)
-        x = Dense(100, activation=self.activation_function)(x)
-        x = Dense(100, activation=self.activation_function)(x)
-        x = Dense(80, activation=self.activation_function)(x)
-        x = Dense(80, activation=self.activation_function)(x)
-        x = Dense(45, activation=self.activation_function)(x)
+        x = Dense(150, activation="relu")(input)
+        x = Dense(150, activation="relu")(x)
+        x = Dense(150, activation="relu")(x)
+        x = Dense(120, activation="relu")(x)
+        x = Dense(120, activation="relu")(x)
+        x = Dense(100, activation="relu")(x)
+        x = Dense(100, activation="relu")(x)
+        x = Dense(80, activation="relu")(x)
+        x = Dense(80, activation="relu")(x)
+        x = Dense(45, activation="relu")(x)
         output = Dense(1, activation='linear')(x)
         model = keras.Model(input, output)
 

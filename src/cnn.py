@@ -11,8 +11,6 @@ class cnn:
         self.load_model=load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=128):
-        batch_size=128
-        epochs=20
 
         opt = keras.optimizers.SGD(learning_rate=0.007)
         loss = keras.losses.BinaryCrossentropy()
