@@ -9,7 +9,7 @@ from src.grid_search.write_excel import write_excel
 class grid_search:
 
     def read_grid(self):
-        grid = pd.read_csv("data\\grid.csv")
+        grid = pd.read_csv("data\grid.csv")
 
         grid_cols = list(grid.columns)
 
