@@ -12,6 +12,7 @@ class write_excel:
 
         # add column labels to sheet
         i = 0
+        print("hyps", self.hyps)
         perf_tuple = self.hyps[0]
         hyp_dict = perf_tuple[0]
         labels = list(hyp_dict.keys())
