@@ -52,6 +52,7 @@ class grid_search:
             results = model_copy.evaluate(X_val, y_val, batch_size=comb['batch size'])
 
             hyp_dict_list.append(comb)
+            print(hyp_dict_list)
 
         writer = write_excel('results', hyp_dict_list)
         writer.run()
