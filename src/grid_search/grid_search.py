@@ -42,7 +42,7 @@ class grid_search:
         combs = self.read_grid()
 
         print(len(combs), "combinations")
-        hyp_dict_list = []
+        hyp_acc_list = []
         for comb in combs:
             model_copy = model
             model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy'])
@@ -51,8 +51,12 @@ class grid_search:
 
             results = model_copy.evaluate(X_val, y_val, batch_size=comb['batch size'])
 
-            hyp_dict_list.append(comb)
-            print(hyp_dict_list)
+            percentAcc = results[-1]
 
-        writer = write_excel('results', hyp_dict_list)
+            hyp_acc_pair = (comb, (percentAcc))
+
+            hyp_acc_list.append(hyp_acc_pair)
+            print(hyp_acc_list)
+
+        writer = write_excel('results', hyp_acc_list)
         writer.run()
