@@ -26,7 +26,8 @@ class write_excel:
         # add corresponding hyperparameters and performance data to each column
         i = 1
         for perf_tuple in self.hyps:
-            accuracy = perf_tuple[-1][0]
+            hyp_dict = perf_tuple[0]
+            accuracy = perf_tuple[-1]
             j = 0
             for label in labels:
                 sheet.write(i, j, hyp_dict[label])

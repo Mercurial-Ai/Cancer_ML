@@ -58,5 +58,5 @@ class grid_search:
             hyp_acc_list.append(hyp_acc_pair)
             print(hyp_acc_list)
 
-        writer = write_excel('results', hyp_acc_list)
+        writer = write_excel('results.xls', hyp_acc_list)
         writer.run()
