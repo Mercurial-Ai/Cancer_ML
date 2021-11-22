@@ -31,10 +31,10 @@ class cnn:
 
         model.add(layers.Flatten())
 
-        model.add(layers.Dense(128))
+        model.add(layers.Dense(8))
         model.add(layers.Activation('relu'))
 
-        model.add(layers.Dense(64))
+        model.add(layers.Dense(4))
         model.add(layers.Activation('relu'))
 
         model.add(layers.Dense(1))
