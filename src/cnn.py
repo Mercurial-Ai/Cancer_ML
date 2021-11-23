@@ -17,15 +17,15 @@ class cnn:
 
         model = Sequential()
 
-        model.add(layers.Conv2D(64, (3, 3), input_shape=X_train.shape[1:]))
+        model.add(layers.Conv2D(64, (6, 6), input_shape=X_train.shape[1:]))
         model.add(layers.Activation('relu'))
-        model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+        model.add(layers.MaxPooling2D(pool_size=(4, 4)))
 
-        model.add(layers.Conv2D(32, (3, 3)))
+        model.add(layers.Conv2D(32, (6, 6)))
         model.add(layers.Activation('relu'))
-        model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+        model.add(layers.MaxPooling2D(pool_size=(3, 3)))
 
-        model.add(layers.Conv2D(16, (3, 3)))
+        model.add(layers.Conv2D(16, (6, 6)))
         model.add(layers.Activation('relu'))
         model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
@@ -35,9 +35,6 @@ class cnn:
         model.add(layers.Activation('relu'))
 
         model.add(layers.Dense(8))
-        model.add(layers.Activation('relu'))
-
-        model.add(layers.Dense(4))
         model.add(layers.Activation('relu'))
 
         model.add(layers.Dense(1))
