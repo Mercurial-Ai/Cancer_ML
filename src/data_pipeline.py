@@ -121,10 +121,18 @@ class data_pipeline:
 
         x = remove_ids(x)
 
-        # expand flatten images back into multi-dim
-        x = np.reshape(x, (x.shape[0], int(math.sqrt(x.shape[1])), int(math.sqrt(x.shape[1]))))
-
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
+
+        # normalize data
+        min_max_scaler = MinMaxScaler()
+        X_train = min_max_scaler.fit_transform(X_train)
+        X_test = min_max_scaler.fit_transform(X_test)
+        X_val = min_max_scaler.fit_transform(X_val)
+
+        # reshape back into 2d images
+        X_train = np.reshape(X_train, (X_train.shape[0], int(math.sqrt(X_train.shape[1])), int(math.sqrt(X_train.shape[1]))))
+        X_test = np.reshape(X_test, (X_test.shape[0], int(math.sqrt(X_test.shape[1])), int(math.sqrt(X_test.shape[1]))))
+        X_val = np.reshape(X_val, (X_val.shape[0], int(math.sqrt(X_val.shape[1])), int(math.sqrt(X_val.shape[1]))))
 
         # add additional dimension at the end of the shape to each partition
         X_train = np.expand_dims(X_train, axis=-1)
