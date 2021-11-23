@@ -412,9 +412,7 @@ class cancer_ml:
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 
-ml.setup_cluster()
-ml.k_neighbors()
-ml.save_arrays()
+ml.load_arrays()
 
 ml.run_model()
 ml.test_model()

@@ -49,7 +49,7 @@ class cnn:
 
         self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
-        model.save('data\\saved_models\\text_prediction\\keras_cnn_model.h5')
+        model.save('data\\saved_models\\keras_cnn_model.h5')
 
         return model
 
@@ -61,7 +61,7 @@ class cnn:
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=32):
 
         if self.load_model:
-            self.model = keras.models.load_model('data\\saved_models\\text_prediction\\keras_cnn_model.h5')
+            self.model = keras.models.load_model('data\\saved_models\\keras_cnn_model.h5')
         else:
             self.model = self.train_model(X_train, y_train, X_val, y_val, epochs, batch_size)
 
