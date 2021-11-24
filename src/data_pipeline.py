@@ -33,25 +33,28 @@ class data_pipeline:
         self.image_only = data_pod()
 
     def load_data(self):
-        self.df = pd.read_csv(self.clinical_path)
+        self.df = pd.read_csv(self.clinical_path, low_memory=False)
         self.clinical_ids = self.df[list(self.df.columns)[0]]
 
         self.df = self.df.set_index(list(self.df.columns)[0])
 
-        self.img_array = import_numpy(self.image_path, self.clinical_ids)
-
-        self.image_ids = self.img_array[:, -1]
-
         self.df = tokenize_dataset(self.df)
 
-        # get patients in clinical data with ids that correspond with image ids
-        self.filtered_df = self.df.loc[self.image_ids]
+        # if image path = None, dataset should be clinical only and imagery does not need to be imported
+        if self.image_path != None:
+            self.img_array = import_numpy(self.image_path, self.clinical_ids)
 
-        self.concatenated_array = self.concatenate_image_clinical()
+            self.image_ids = self.img_array[:, -1]
+
+            # get patients in clinical data with ids that correspond with image ids
+            self.filtered_df = self.df.loc[self.image_ids]
+
+            self.concatenated_array = self.concatenate_image_clinical()
+
+            self.partition_image_clinical_data()
+            self.partition_image_only_data()
 
         self.partition_clinical_only_data()
-        self.partition_image_clinical_data()
-        self.partition_image_only_data()
 
     def concatenate_image_clinical(self):
 

@@ -22,7 +22,7 @@ class clinical_only:
                             loss='mean_squared_error',
                             metrics=['accuracy'])
 
-        model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weights=get_weight_dict(y_train))
+        model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         model.save('data\\saved_models\\keras_clinical_only_model.h5')
 

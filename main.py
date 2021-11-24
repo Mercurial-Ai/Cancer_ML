@@ -410,7 +410,7 @@ class cancer_ml:
         self.data_pipe.image_only.y_test = np.load("saved_arrays\y_test.npy")
         self.data_pipe.image_only.y_val = np.load("saved_arrays\y_val.npy")
 
-ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
+ml = cancer_ml('metabric', 'chemotherapy', model='clinical_only')
 
 ml.load_arrays()
 
