@@ -127,10 +127,10 @@ class data_pipeline:
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
         # normalize data
-        min_max_scaler = MinMaxScaler()
-        X_train = min_max_scaler.fit_transform(X_train)
-        X_test = min_max_scaler.fit_transform(X_test)
-        X_val = min_max_scaler.fit_transform(X_val)
+        min_max_scaler = MinMaxScaler(copy=False)
+        min_max_scaler.fit_transform(X_train)
+        min_max_scaler.fit_transform(X_test)
+        min_max_scaler.fit_transform(X_val)
 
         # reshape back into 2d images
         X_train = np.reshape(X_train, (X_train.shape[0], int(math.sqrt(X_train.shape[1])), int(math.sqrt(X_train.shape[1]))))
