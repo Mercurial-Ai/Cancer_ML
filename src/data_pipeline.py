@@ -143,6 +143,13 @@ class data_pipeline:
         X_test = np.expand_dims(X_test, axis=-1)
         X_val = np.expand_dims(X_val, axis=-1)
 
+        self.image_only.X_train = X_train
+        self.image_only.X_test = X_test
+        self.image_only.X_val = X_val
+        self.image_only.y_train = y_train
+        self.image_only.y_test = y_test
+        self.image_only.y_val = y_val
+
     def slice_data(self):
         slice_size = 0.45
 
