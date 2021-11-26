@@ -1,5 +1,5 @@
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import pandas as pd
 import numpy as np
 import math
@@ -126,11 +126,16 @@ class data_pipeline:
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
-        # normalize data
-        min_max_scaler = MinMaxScaler(copy=False)
-        min_max_scaler.fit_transform(X_train)
-        min_max_scaler.fit_transform(X_test)
-        min_max_scaler.fit_transform(X_val)
+        def normalize(array):
+            scaler = MinMaxScaler(copy=False)
+            scaler.partial_fit(array)
+            array = scaler.transform(array)
+
+            return array
+
+        X_train = normalize(X_train)
+        X_test = normalize(X_test)
+        X_val = normalize(X_val)
 
         # reshape back into 2d images
         X_train = np.reshape(X_train, (X_train.shape[0], int(math.sqrt(X_train.shape[1])), int(math.sqrt(X_train.shape[1]))))
