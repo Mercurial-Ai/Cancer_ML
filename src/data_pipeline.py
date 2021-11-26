@@ -44,6 +44,8 @@ class data_pipeline:
         if self.image_path != None:
             self.img_array = import_numpy(self.image_path, self.clinical_ids)
 
+            self.slice_data()
+
             self.image_ids = self.img_array[:, -1]
 
             # get patients in clinical data with ids that correspond with image ids
@@ -126,16 +128,10 @@ class data_pipeline:
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
-        def normalize(array):
-            scaler = MinMaxScaler(copy=False)
-            scaler.partial_fit(array)
-            array = scaler.transform(array)
-
-            return array
-
-        X_train = normalize(X_train)
-        X_test = normalize(X_test)
-        X_val = normalize(X_val)
+        min_max_scaler = MinMaxScaler()
+        X_train = min_max_scaler.fit_transform(X_train)
+        X_test = min_max_scaler.fit_transform(X_test)
+        X_val = min_max_scaler.fit_transform(X_val)
 
         # reshape back into 2d images
         X_train = np.reshape(X_train, (X_train.shape[0], int(math.sqrt(X_train.shape[1])), int(math.sqrt(X_train.shape[1]))))
@@ -147,11 +143,7 @@ class data_pipeline:
         X_test = np.expand_dims(X_test, axis=-1)
         X_val = np.expand_dims(X_val, axis=-1)
 
+    def slice_data(self):
         slice_size = 0.45
 
-        self.image_only.X_train = X_train[0:int(round(X_train.shape[0]*slice_size, 0))]
-        self.image_only.X_test = X_test[0:int(round(X_test.shape[0]*slice_size, 0))]
-        self.image_only.y_train = y_train[0:int(round(y_train.shape[0]*slice_size, 0))]
-        self.image_only.y_test = y_test[0:int(round(y_test.shape[0]*slice_size, 0))]
-        self.image_only.X_val = X_val[0:int(round(X_val.shape[0]*slice_size, 0))]
-        self.image_only.y_val = y_val[0:int(round(y_val.shape[0]*slice_size, 0))]
+        self.img_array = self.img_array[0:int(round(self.img_array.shape[0]*slice_size, 0))]
