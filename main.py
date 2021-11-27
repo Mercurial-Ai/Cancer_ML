@@ -128,6 +128,10 @@ class cancer_ml:
         self.data_pipe.image_clinical.X_test = self.data_pipe.image_clinical.X_test[self.collected_indices_test]
         self.data_pipe.image_clinical.X_val = self.data_pipe.image_clinical.X_val[self.collected_indices_val]
 
+        self.data_pipe.image_clinical.y_train = self.data_pipe.image_clinical.y_train[self.collected_indices_train]
+        self.data_pipe.image_clinical.y_test = self.data_pipe.image_clinical.y_test[self.collected_indices_test]
+        self.data_pipe.image_clinical.y_val = self.data_pipe.image_clinical.y_val[self.collected_indices_val]
+
     def equalize_test(self, img_array):
 
         y_test = self.data_pipe.image_only.y_test
@@ -428,7 +432,7 @@ class cancer_ml:
         clinicalFile = open('clinical_only.pickle', 'r+b')
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
 
-ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
+ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='image_clinical')
 
 ml.setup_cluster()
 ml.k_neighbors()
