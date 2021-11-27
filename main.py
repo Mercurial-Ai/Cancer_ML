@@ -5,6 +5,7 @@ from src.image_model import image_model
 from src.cnn import cnn
 from collections import Counter
 import math
+import pickle
 
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
@@ -395,25 +396,34 @@ class cancer_ml:
         return new_data
 
     def save_arrays(self):
-        np.save("saved_arrays\X_train.npy", self.data_pipe.image_only.X_train)
-        np.save("saved_arrays\X_test.npy", self.data_pipe.image_only.X_test)
-        np.save("saved_arrays\X_val.npy", self.data_pipe.image_only.X_val)
-        np.save("saved_arrays\y_train.npy", self.data_pipe.image_only.y_train)
-        np.save("saved_arrays\y_test.npy", self.data_pipe.image_only.y_test)
-        np.save("saved_arrays\y_val.npy", self.data_pipe.image_only.y_val)
+        imageFile = open('image_only.pickle', 'r+b')
+        pickle.dump(self.data_pipe.image_only, imageFile)
+
+        ICfile = open('image_clinical.pickle', 'r+b')
+        pickle.dump(self.data_pipe.image_clinical, ICfile)
+
+        clinicalFile = open('clinical_only.pickle', 'r+b')
+        pickle.dump(self.data_pipe.only_clinical, clinicalFile)
 
     def load_arrays(self):
-        self.data_pipe.image_only.X_train = np.load("saved_arrays\X_train.npy")
-        self.data_pipe.image_only.X_test = np.load("saved_arrays\X_test.npy")
-        self.data_pipe.image_only.X_val = np.load("saved_arrays\X_val.npy")
-        self.data_pipe.image_only.y_train = np.load("saved_arrays\y_train.npy")
-        self.data_pipe.image_only.y_test = np.load("saved_arrays\y_test.npy")
-        self.data_pipe.image_only.y_val = np.load("saved_arrays\y_val.npy")
+        imageFile = open('image_only.pickle', 'r')
+        self.data_pipe.image_only = pickle.load(imageFile)
+        self.data_pipe.image_only.work()
+
+        ICfile = open('image_clinical.pickle', 'r')
+        self.data_pipe.image_clinical = pickle.load(ICfile)
+        self.data_pipe.image_clinical.work()
+
+        clinicalFile = open('clinical_only.pickle', 'r')
+        self.data_pipe.only_clinical = pickle.load(clinicalFile)
+        self.data_pipe.only_clinical.work()
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 
 ml.setup_cluster()
 ml.k_neighbors()
+
+ml.save_arrays()
 
 ml.run_model()
 ml.test_model()
