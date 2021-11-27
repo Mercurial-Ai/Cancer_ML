@@ -1,5 +1,6 @@
 from tensorflow import keras
 from tensorflow.keras.layers import Dense
+from src.grid_search.grid_search import grid_search
 from src.get_weight_dict import get_weight_dict
 
 class image_model:
@@ -22,6 +23,9 @@ class image_model:
         x = Dense(45, activation="relu")(x)
         output = Dense(1, activation='linear')(x)
         model = keras.Model(input, output)
+
+        search = grid_search()
+        search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         model.compile(optimizer='sgd',
                             loss='mse',
