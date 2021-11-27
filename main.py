@@ -118,8 +118,15 @@ class cancer_ml:
         self.data_pipe.image_only.X_test = self.equalize_test(X_test)
         self.data_pipe.image_only.X_val = self.equalize_val(X_val)
 
+        self.equalize_image_clinical()
+
     def get_classes(self):
         return self.model.labels_
+
+    def equalize_image_clinical(self):
+        self.data_pipe.image_clinical.X_train = self.data_pipe.image_clinical.X_train[self.collected_indices_train]
+        self.data_pipe.image_clinical.X_test = self.data_pipe.image_clinical.X_test[self.collected_indices_test]
+        self.data_pipe.image_clinical.X_val = self.data_pipe.image_clinical.X_val[self.collected_indices_val]
 
     def equalize_test(self, img_array):
 
@@ -172,6 +179,8 @@ class cancer_ml:
                 class_y_dict[label] = y
 
                 num_clusters_used = num_clusters_used + 1
+
+        self.collected_indices_test = collected_indices
 
         # find lowest count of labels excluding labels with only 1 instance
         labels = list(label_counts.keys())
@@ -265,6 +274,8 @@ class cancer_ml:
 
                 num_clusters_used = num_clusters_used + 1
 
+        self.collected_indices_val = collected_indices
+
         # find lowest count of labels excluding labels with only 1 instance
         labels = list(label_counts.keys())
 
@@ -348,6 +359,8 @@ class cancer_ml:
 
                 self.num_clusters_used = self.num_clusters_used + 1
 
+        self.collected_indices_train = collected_indices
+
         return class_array_dict, class_y_dict
 
     def equalize_classes(self, image_array):
@@ -417,7 +430,10 @@ class cancer_ml:
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 
-ml.load_arrays()
+ml.setup_cluster()
+ml.k_neighbors()
+
+ml.save_arrays()
 
 ml.run_model()
 ml.test_model()
