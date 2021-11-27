@@ -8,19 +8,20 @@ class image_model:
     def __init__(self, load_model=True):
         self.load_model = load_model
 
-    def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=32):
+    def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
         input = keras.layers.Input(shape=(X_train.shape[1],))
 
-        x = Dense(150, activation="relu")(input)
-        x = Dense(150, activation="relu")(x)
-        x = Dense(150, activation="relu")(x)
-        x = Dense(120, activation="relu")(x)
-        x = Dense(120, activation="relu")(x)
-        x = Dense(100, activation="relu")(x)
-        x = Dense(100, activation="relu")(x)
-        x = Dense(80, activation="relu")(x)
-        x = Dense(80, activation="relu")(x)
-        x = Dense(45, activation="relu")(x)
+        x = Dense(200000, activation="relu")(input)
+        x = Dense(150000, activation="relu")(x)
+        x = Dense(90000, activation="relu")(x)
+        x = Dense(4500, activation="relu")(x)
+        x = Dense(2000, activation='relu')(x)
+        x = Dense(1000, activation='relu')(x)
+        x = Dense(500, activation='relu')(x)
+        x = Dense(200, activation='relu')(x)
+        x = Dense(100, activation='relu')(x)
+        x = Dense(50, activation='relu')(x)
+        x = Dense(20, activation='relu')(x)
         output = Dense(1, activation='linear')(x)
         model = keras.Model(input, output)
 
@@ -42,7 +43,7 @@ class image_model:
 
         return results
 
-    def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=32):
+    def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=128):
         
         if self.load_model:
             self.model = keras.models.load_model('data\\saved_models\\keras_image_clinical_model.h5')
