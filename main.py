@@ -406,24 +406,18 @@ class cancer_ml:
         pickle.dump(self.data_pipe.only_clinical, clinicalFile)
 
     def load_arrays(self):
-        imageFile = open('image_only.pickle', 'r')
+        imageFile = open('image_only.pickle', 'r+b')
         self.data_pipe.image_only = pickle.load(imageFile)
-        self.data_pipe.image_only.work()
 
-        ICfile = open('image_clinical.pickle', 'r')
+        ICfile = open('image_clinical.pickle', 'r+b')
         self.data_pipe.image_clinical = pickle.load(ICfile)
-        self.data_pipe.image_clinical.work()
 
-        clinicalFile = open('clinical_only.pickle', 'r')
+        clinicalFile = open('clinical_only.pickle', 'r+b')
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
-        self.data_pipe.only_clinical.work()
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 
-ml.setup_cluster()
-ml.k_neighbors()
-
-ml.save_arrays()
+ml.load_arrays()
 
 ml.run_model()
 ml.test_model()
