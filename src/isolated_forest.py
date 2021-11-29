@@ -21,10 +21,11 @@ def isolated_forest(features, target):
     isolated_forest.fit(features)
     predicted=isolated_forest.predict(features)
 
-    data = pd.concat(features, target, axis=1)
+    target = np.expand_dims(target, -1)
 
-    data['anomaly']=predicted
-    outliers=data.loc[data['anomaly']==-1]
+    elements, counts = np.unique(predicted, return_counts=True)
+    counts_dict = dict(zip(elements, counts))
+    print(counts_dict)
 
-    print(data['anomaly'].value_counts())
-    data.to_csv('data_anomaly.csv')
+    predicted = pd.DataFrame(predicted)
+    predicted.to_csv('data_anomaly.csv')

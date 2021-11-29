@@ -437,10 +437,5 @@ ml = cancer_ml('metabric', 'chemotherapy', model='clincial_only')
 
 isolated_forest(ml.data_pipe.only_clinical.X_train, ml.data_pipe.only_clinical.y_train)
 
-ml.setup_cluster()
-ml.k_neighbors()
-
-ml.save_arrays()
-
 ml.run_model()
 ml.test_model()
