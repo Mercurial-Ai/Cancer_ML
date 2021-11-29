@@ -6,6 +6,7 @@ from src.cnn import cnn
 from collections import Counter
 import math
 import pickle
+from src.isolated_forest import isolated_forest
 
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
@@ -432,7 +433,9 @@ class cancer_ml:
         clinicalFile = open('clinical_only.pickle', 'r+b')
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
 
-ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='image_clinical')
+ml = cancer_ml('metabric', 'chemotherapy', model='clincial_only')
+
+isolated_forest(ml.data_pipe.only_clinical.X_train, ml.data_pipe.only_clinical.y_train)
 
 ml.setup_cluster()
 ml.k_neighbors()
