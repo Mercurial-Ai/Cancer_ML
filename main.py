@@ -414,28 +414,37 @@ class cancer_ml:
         return new_data
 
     def save_arrays(self):
-        imageFile = open('image_only.pickle', 'r+b')
+        imageFile = open('image_only.pickle', 'w+b')
         pickle.dump(self.data_pipe.image_only, imageFile)
+        imageFile.close()
 
-        ICfile = open('image_clinical.pickle', 'r+b')
+        ICfile = open('image_clinical.pickle', 'w+b')
         pickle.dump(self.data_pipe.image_clinical, ICfile)
+        ICfile.close()
 
-        clinicalFile = open('clinical_only.pickle', 'r+b')
+        clinicalFile = open('clinical_only.pickle', 'w+b')
         pickle.dump(self.data_pipe.only_clinical, clinicalFile)
+        clinicalFile.close()
 
     def load_arrays(self):
         imageFile = open('image_only.pickle', 'r+b')
         self.data_pipe.image_only = pickle.load(imageFile)
+        imageFile.close()
 
         ICfile = open('image_clinical.pickle', 'r+b')
         self.data_pipe.image_clinical = pickle.load(ICfile)
+        ICfile.close()
 
         clinicalFile = open('clinical_only.pickle', 'r+b')
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
+        clinicalFile.close()
 
-ml = cancer_ml('metabric', 'chemotherapy', model='clincial_only')
+ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='image_clinical')
 
-isolated_forest(ml.data_pipe.only_clinical.X_train, ml.data_pipe.only_clinical.y_train)
+ml.setup_cluster()
+ml.k_neighbors()
+
+ml.save_arrays()
 
 ml.run_model()
 ml.test_model()
