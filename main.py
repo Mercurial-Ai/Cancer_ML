@@ -415,15 +415,15 @@ class cancer_ml:
 
     def save_arrays(self):
         imageFile = open('image_only.pickle', 'w+b')
-        pickle.dump(self.data_pipe.image_only, imageFile)
+        pickle.dump(self.data_pipe.image_only, imageFile, protocol=4)
         imageFile.close()
 
         ICfile = open('image_clinical.pickle', 'w+b')
-        pickle.dump(self.data_pipe.image_clinical, ICfile)
+        pickle.dump(self.data_pipe.image_clinical, ICfile, protocol=4)
         ICfile.close()
 
         clinicalFile = open('clinical_only.pickle', 'w+b')
-        pickle.dump(self.data_pipe.only_clinical, clinicalFile)
+        pickle.dump(self.data_pipe.only_clinical, clinicalFile, protocol=4)
         clinicalFile.close()
 
     def load_arrays(self):
