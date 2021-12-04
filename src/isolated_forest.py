@@ -12,9 +12,6 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
 from collections import Counter
 import pandas as pd 
-import argparse 
-
-from src.get_distribution import get_distribution
 
 def isolated_forest(features, target):
 
@@ -26,7 +23,6 @@ def isolated_forest(features, target):
     predicted_df.to_csv('data_anomaly.csv')
 
     # get distribution of outlier data (-1 is outlier, 1 is inlier)
-    predicted_dist = get_distribution(predicted)
 
-    return predicted_dist
+    return predicted
 

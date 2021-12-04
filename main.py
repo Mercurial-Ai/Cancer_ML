@@ -11,6 +11,7 @@ from src.isolated_forest import isolated_forest
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from src.random_crop import random_crop
+from src.get_distribution import get_distribution
 
 class cancer_ml:
 
@@ -70,6 +71,20 @@ class cancer_ml:
             print(self.model.test_model(self.data_pipe.image_clinical.X_test, self.data_pipe.image_clinical.y_test))
         elif self.cnn:
             print(self.model.test_model(self.data_pipe.image_only.X_test, self.data_pipe.image_only.y_test))
+
+    def remove_outliers(self):
+        predicted = isolated_forest(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
+        
+        outlier_indices = []
+        i = 0
+        for prediction in predicted:
+            if prediction == -1:
+                outlier_indices.append(i)
+
+            i = i + 1
+
+        self.data_pipe.only_clinical.X_train = self.data_pipe.only_clinical.X_train[outlier_indices, :]
+        self.data_pipe.only_clinical.y_train = self.data_pipe.only_clinical.y_train.iloc[outlier_indices]
 
     def setup_cluster(self):
         X = self.data_pipe.image_only.X_train
@@ -439,12 +454,9 @@ class cancer_ml:
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
         clinicalFile.close()
 
-ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='image_clinical')
+ml = cancer_ml('metabric', 'chemotherapy', model='clinical_only')
 
-isolated_forest(ml.data_pipe.only_clinical.X_train, ml.data_pipe.only_clinical.y_train)
-
-ml.setup_cluster()
-ml.k_neighbors()
+ml.remove_outliers()
 
 ml.save_arrays()
 
