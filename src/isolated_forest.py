@@ -14,18 +14,19 @@ from collections import Counter
 import pandas as pd 
 import argparse 
 
+from src.get_distribution import get_distribution
+
 def isolated_forest(features, target):
 
     isolated_forest=IsolationForest(n_estimators=100, n_jobs=-1,random_state=42) 
 
-    isolated_forest.fit(features)
-    predicted=isolated_forest.predict(features)
+    predicted = isolated_forest.fit_predict(features, target)
 
-    target = np.expand_dims(target, -1)
+    predicted_df = pd.DataFrame(predicted)
+    predicted_df.to_csv('data_anomaly.csv')
 
-    elements, counts = np.unique(predicted, return_counts=True)
-    counts_dict = dict(zip(elements, counts))
-    print(counts_dict)
+    # get distribution of outlier data (-1 is outlier, 1 is inlier)
+    predicted_dist = get_distribution(predicted)
 
-    predicted = pd.DataFrame(predicted)
-    predicted.to_csv('data_anomaly.csv')
+    return predicted_dist
+
