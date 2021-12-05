@@ -11,8 +11,7 @@ class image_model:
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
         input = keras.layers.Input(shape=(X_train.shape[1],))
 
-        x = Dense(150000, activation="relu")(input)
-        x = Dense(90000, activation="relu")(x)
+        x = Dense(90000, activation="relu")(input)
         x = Dense(4500, activation="relu")(x)
         x = Dense(2000, activation='relu')(x)
         x = Dense(1000, activation='relu')(x)
