@@ -20,6 +20,13 @@ class cancer_ml:
         self.target = target
         self.crop_size=crop_size
 
+        if self.dataset == "duke":
+            self.collect_duke()
+        elif self.dataset == "hn1":
+            self.collect_HN1()
+        elif self.dataset == "metabric":
+            self.collect_METABRIC()
+
         # initialize model bools
         self.clinical = False
         self.image_clinical = False
@@ -27,17 +34,13 @@ class cancer_ml:
 
         if model == "clinical_only":
             self.clinical = True
+            self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
         elif model == "image_clinical":
             self.image_clinical = True
+            self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train)
         elif model == "cnn":
             self.cnn = True
-
-        if self.dataset == "duke":
-            self.collect_duke()
-        elif self.dataset == "hn1":
-            self.collect_HN1()
-        elif self.dataset == "metabric":
-            self.collect_METABRIC()
+            self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train = self.remove_outliers(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train)
 
     def collect_duke(self):
         self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", "data/Duke-Breast-Cancer-MRI/img_array_duke.npy", self.target)
@@ -72,8 +75,8 @@ class cancer_ml:
         elif self.cnn:
             print(self.model.test_model(self.data_pipe.image_only.X_test, self.data_pipe.image_only.y_test))
 
-    def remove_outliers(self):
-        predicted = isolated_forest(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
+    def remove_outliers(self, X, y):
+        predicted = isolated_forest(X, y)
         
         outlier_indices = []
         i = 0
@@ -83,8 +86,10 @@ class cancer_ml:
 
             i = i + 1
 
-        self.data_pipe.only_clinical.X_train = self.data_pipe.only_clinical.X_train[outlier_indices, :]
-        self.data_pipe.only_clinical.y_train = self.data_pipe.only_clinical.y_train.iloc[outlier_indices]
+        X = X[outlier_indices, :]
+        y = y.iloc[outlier_indices]
+
+        return X, y
 
     def setup_cluster(self):
         X = self.data_pipe.image_only.X_train
@@ -454,9 +459,7 @@ class cancer_ml:
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
         clinicalFile.close()
 
-ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='image_clinical')
-
-ml.load_arrays()
+ml = cancer_ml('metabric', 'chemotherapy', model='clinical_only')
 
 ml.run_model()
 ml.test_model()

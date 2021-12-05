@@ -22,7 +22,5 @@ def isolated_forest(features, target):
     predicted_df = pd.DataFrame(predicted)
     predicted_df.to_csv('data_anomaly.csv')
 
-    # get distribution of outlier data (-1 is outlier, 1 is inlier)
-
     return predicted
 
