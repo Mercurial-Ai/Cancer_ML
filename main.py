@@ -6,7 +6,7 @@ from src.cnn import cnn
 from collections import Counter
 import math
 import pickle
-from src.isolated_forest import isolated_forest
+from src.isolation_forest import isolation_forest
 
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
@@ -76,7 +76,7 @@ class cancer_ml:
             print(self.model.test_model(self.data_pipe.image_only.X_test, self.data_pipe.image_only.y_test))
 
     def remove_outliers(self, X, y):
-        predicted = isolated_forest(X, y)
+        predicted = isolation_forest(X, y)
         
         outlier_indices = []
         i = 0

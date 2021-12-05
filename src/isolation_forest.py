@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 from collections import Counter
 import pandas as pd 
 
-def isolated_forest(features, target):
+def isolation_forest(features, target):
 
     isolated_forest=IsolationForest(n_estimators=100, n_jobs=-1,random_state=42) 
 
