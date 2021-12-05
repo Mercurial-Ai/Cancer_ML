@@ -11,7 +11,6 @@ from src.isolation_forest import isolation_forest
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from src.random_crop import random_crop
-from src.get_distribution import get_distribution
 
 class cancer_ml:
 
@@ -37,10 +36,11 @@ class cancer_ml:
             self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
         elif model == "image_clinical":
             self.image_clinical = True
-            self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train)
         elif model == "cnn":
             self.cnn = True
-            self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train = self.remove_outliers(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train)
+
+            self.setup_cluster()
+            self.k_neighbors()
 
     def collect_duke(self):
         self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", "data/Duke-Breast-Cancer-MRI/img_array_duke.npy", self.target)
@@ -459,7 +459,7 @@ class cancer_ml:
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
         clinicalFile.close()
 
-ml = cancer_ml('metabric', 'chemotherapy', model='clinical_only')
+ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 
 ml.run_model()
 ml.test_model()
