@@ -1,6 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras.layers import Dense
 from src.get_weight_dict import get_weight_dict
+from src.grid_search.grid_search import grid_search
 
 class clinical_only:
 
@@ -8,6 +9,7 @@ class clinical_only:
         self.load_model = load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=32):
+        print(X_train.shape)
         input = keras.layers.Input(shape=(X_train.shape[1],))
 
         x = Dense(9, activation='relu')(input)
@@ -17,6 +19,9 @@ class clinical_only:
         x = Dense(2, activation='relu')(x)
         output = Dense(1, activation='linear')(x)
         model = keras.Model(input, output)
+
+        search = grid_search()
+        search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         model.compile(optimizer='SGD',
                             loss='mean_squared_error',

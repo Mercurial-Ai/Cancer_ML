@@ -1,5 +1,5 @@
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
 import math
@@ -7,9 +7,6 @@ import math
 from src.image_tools.import_numpy import import_numpy
 from src.image_tools.remove_ids import remove_ids
 from src.tokenize_dataset import tokenize_dataset
-from src.PeakCluster import PeakCluster
-
-from matplotlib import pyplot as plt
 
 class data_pod:
     def __init__(self):

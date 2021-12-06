@@ -459,7 +459,7 @@ class cancer_ml:
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
         clinicalFile.close()
 
-ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
+ml = cancer_ml('metabric', 'chemotherapy', model='clinical_only')
 
 ml.run_model()
 ml.test_model()
