@@ -78,16 +78,16 @@ class cancer_ml:
     def remove_outliers(self, X, y):
         predicted = isolation_forest(X, y)
         
-        outlier_indices = []
+        non_outlier_indices = []
         i = 0
         for prediction in predicted:
-            if prediction == -1:
-                outlier_indices.append(i)
+            if prediction != -1:
+                non_outlier_indices.append(i)
 
             i = i + 1
 
-        X = X[outlier_indices, :]
-        y = y.iloc[outlier_indices]
+        X = X[non_outlier_indices, :]
+        y = y.iloc[non_outlier_indices]
 
         return X, y
 
