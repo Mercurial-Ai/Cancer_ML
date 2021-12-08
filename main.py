@@ -87,6 +87,10 @@ class cancer_ml:
 
             i = i + 1
 
+        num_outliers = len(predicted) - len(non_outlier_indices)
+
+        print("Num Outliers:", num_outliers)
+
         X = X[non_outlier_indices, :]
         if str(type(y)) == "<class 'numpy.ndarray'>":
             y = y[non_outlier_indices]
@@ -464,6 +468,8 @@ class cancer_ml:
         clinicalFile.close()
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='image_clinical')
+
+ml.save_arrays()
 
 ml.run_model()
 ml.test_model()
