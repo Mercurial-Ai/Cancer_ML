@@ -36,6 +36,7 @@ class cancer_ml:
             self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
         elif model == "image_clinical":
             self.image_clinical = True
+            self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train)
         elif model == "cnn":
             self.cnn = True
 
@@ -87,7 +88,10 @@ class cancer_ml:
             i = i + 1
 
         X = X[non_outlier_indices, :]
-        y = y.iloc[non_outlier_indices]
+        if str(type(y)) == "<class 'numpy.ndarray'>":
+            y = y[non_outlier_indices]
+        else:
+            y = y.iloc[non_outlier_indices]
 
         return X, y
 
@@ -459,7 +463,7 @@ class cancer_ml:
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
         clinicalFile.close()
 
-ml = cancer_ml('metabric', 'chemotherapy', model='clinical_only')
+ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='image_clinical')
 
 ml.run_model()
 ml.test_model()
