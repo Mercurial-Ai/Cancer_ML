@@ -10,6 +10,7 @@ class clinical_only:
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=32):
         print(X_train.shape)
+        print(X_val.shape)
         input = keras.layers.Input(shape=(X_train.shape[1],))
 
         x = Dense(9, activation='relu')(input)

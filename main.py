@@ -40,6 +40,21 @@ class cancer_ml:
         elif model == "cnn":
             self.cnn = True
 
+            pre_shape = self.data_pipe.image_only.X_train.shape
+            flattened_img_x = np.empty(shape=(pre_shape[0], pre_shape[1]*pre_shape[2]), dtype=np.int8)
+
+            i = 0
+            for img in self.data_pipe.image_only.X_train:
+                flattened_img = img.flatten()
+                flattened_img_x[i] = flattened_img
+
+                i = i + 1
+
+            flattened_img_x, self.data_pipe.image_only.y_train = self.remove_outliers(flattened_img_x, self.data_pipe.image_only.y_train)
+
+            x = np.reshape(flattened_img_x, pre_shape)
+            self.data_pipe.image_only.X_train = x
+
             self.setup_cluster()
             self.k_neighbors()
 
@@ -165,7 +180,8 @@ class cancer_ml:
 
         y_test = self.data_pipe.image_only.y_test
 
-        y_test = y_test.to_numpy()
+        if str(type(y_test)) == "<class 'pandas.core.series.Series'>":
+            y_test = y_test.to_numpy()
 
         # dictionary containing image data per label
         class_array_dict = {}
@@ -259,7 +275,8 @@ class cancer_ml:
 
         y_val = self.data_pipe.image_only.y_val
 
-        y_val = y_val.to_numpy()
+        if str(type(y_val)) == "<class 'pandas.core.series.Series'>":
+            y_val = y_val.to_numpy()
 
         # dictionary containing image data per label
         class_array_dict = {}
@@ -353,7 +370,8 @@ class cancer_ml:
 
         y_train = self.data_pipe.image_only.y_train
 
-        y_train = y_train.to_numpy()
+        if str(type(y_train)) == "<class 'pandas.core.series.Series'>":
+            y_train = y_train.to_numpy()
 
         # dictionary containing image data per label
         class_array_dict = {}
@@ -467,9 +485,7 @@ class cancer_ml:
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
         clinicalFile.close()
 
-ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='image_clinical')
-
-ml.save_arrays()
+ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
 
 ml.run_model()
 ml.test_model()
