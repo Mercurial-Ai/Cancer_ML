@@ -1,3 +1,4 @@
+from src.ensemble import voting_ensemble
 from src.PeakCluster import PeakCluster
 from src.data_pipeline import data_pipeline
 from src.clinical_only import clinical_only
@@ -486,6 +487,12 @@ class cancer_ml:
         clinicalFile.close()
 
 ml = cancer_ml('duke', 'Adjuvant Chemotherapy', model='cnn')
+
+clinical_test = [ml.data_pipe.only_clinical.X_test, ml.data_pipe.only_clinical.y_test]
+image_clinical_test = [ml.data_pipe.image_clinical.X_test, ml.data_pipe.image_clinical.y_test]
+image_only_test = [ml.data_pipe.image_only.X_test, ml.data_pipe.image_only.y_test]
+
+en = voting_ensemble(clinical_test, image_clinical_test, image_only_test)
 
 ml.run_model()
 ml.test_model()
