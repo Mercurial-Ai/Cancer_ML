@@ -1,8 +1,14 @@
 import os
 from keras.backend import argmax
 from keras.models import load_model
+from scipy.sparse import data
 from sklearn.metrics import accuracy_score
 import numpy as np
+
+class data_pod:
+    def __init__(self, models, data):
+        self.models = models
+        self.data = data
 
 class voting_ensemble:
 
@@ -16,8 +22,19 @@ class voting_ensemble:
         self.image_clinical_models = self.load_models('data\\saved_models\\image_clinical')
         self.image_only_models = self.load_models('data\\saved_models\\image_only')
 
-        print('Ensemble Prediction:', self.predict(self.image_only_test[0], self.image_only_models))
-        print('Ensemble Eval:', self.evaluate_models(self.image_only_test[0], self.image_only_test[1], self.image_only_models))
+        clinical_only = data_pod(self.clinical_models, self.clinical_test)
+        image_clincial = data_pod(self.image_clinical_models, image_clinical_test)
+        image_only = data_pod(self.image_only_models, self.image_only_test)
+
+        all_models = [clinical_only, image_clincial, image_only]
+
+        for pod in all_models:
+            testX = pod.data[0]
+            testY = pod.data[1]
+            models = pod.models
+           
+            print('Ensemble Prediction:', self.predict(testX, models))
+            print('Ensemble Eval:', self.evaluate_models(testX, testY, models))
         
     def load_models(self, model_dir):
 
