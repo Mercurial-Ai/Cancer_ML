@@ -16,7 +16,8 @@ class voting_ensemble:
         self.image_clinical_models = self.load_models('data\\saved_models\\image_clinical')
         self.image_only_models = self.load_models('data\\saved_models\\image_only')
 
-        print(self.predict(self.image_only_test[0], self.image_only_models))
+        print('Ensemble Prediction:', self.predict(self.image_only_test[0], self.image_only_models))
+        print('Ensemble Eval:', self.evaluate_models(self.image_only_test[0], self.image_only_test[1], self.image_only_models))
         
     def load_models(self, model_dir):
 
@@ -45,8 +46,8 @@ class voting_ensemble:
 
         return result
 
-    def evaluate_models(self, testX, testY):
+    def evaluate_models(self, testX, testY, models):
 
-        y = self.predict(testX)
+        y = self.predict(testX, models)
 
         return accuracy_score(testY, y)
