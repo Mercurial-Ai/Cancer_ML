@@ -31,7 +31,7 @@ class image_model:
 
         self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
-        model.save('data\\saved_models\\keras_image_clinical_model.h5')
+        model.save('data\\saved_models\\image_clinical\\keras_image_clinical_model.h5')
 
         return model
 

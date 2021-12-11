@@ -28,13 +28,20 @@ class voting_ensemble:
 
         all_models = [clinical_only, image_clincial, image_only]
 
+        i = 0
         for pod in all_models:
             testX = pod.data[0]
             testY = pod.data[1]
             models = pod.models
+
+            print(models[0].summary())
            
             print('Ensemble Prediction:', self.predict(testX, models))
             print('Ensemble Eval:', self.evaluate_models(testX, testY, models))
+
+            print(i)
+
+            i = i + 1
         
     def load_models(self, model_dir):
 
