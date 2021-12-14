@@ -2,6 +2,7 @@ from tensorflow import keras
 from tensorflow.keras.layers import Dense
 from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
+from src.confusion_matrix import confusion_matrix
 
 class clinical_only:
 
@@ -18,23 +19,25 @@ class clinical_only:
         x = Dense(4, activation='relu')(x)
         x = Dense(2, activation='relu')(x)
         output = Dense(1, activation='linear')(x)
-        model = keras.Model(input, output)
+        self.model = keras.Model(input, output)
 
-        search = grid_search()
-        search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+        #search = grid_search()
+        #search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
-        model.compile(optimizer='SGD',
+        self.model.compile(optimizer='SGD',
                             loss='mean_squared_error',
                             metrics=['accuracy'])
 
-        model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+        self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
-        model.save('data\\saved_models\\clinical\\keras_clinical_only_model.h5')
+        self.model.save('data\\saved_models\\clinical\\keras_clinical_only_model.h5')
 
-        return model
+        return self.model
 
     def test_model(self, X_test, y_test):
         results = self.model.evaluate(X_test, y_test, batch_size=128)
+
+        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
 
         return results
 
