@@ -14,6 +14,15 @@ class voting_ensemble:
         image_clinical = cancer_ml("duke", "Adjuvant Chemotherapy", model="image_clinical")
         image_only = cancer_ml("duke", "Adjuvant Chemotherapy", model="cnn")
 
+        clinical.run_model()
+        clinical.test_model()
+
+        image_clinical.run_model()
+        image_clinical.test_model()
+
+        image_only.run_model()
+        image_only.test_model()
+
         self.clinical_models = self.load_models('data\\saved_models\\clinical')
         self.image_clinical_models = self.load_models('data\\saved_models\\image_clinical')
         self.image_only_models = self.load_models('data\\saved_models\\image_only')
