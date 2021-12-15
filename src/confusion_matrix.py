@@ -9,7 +9,7 @@ def confusion_matrix(y_true, y_pred):
     disp = ConfusionMatrixDisplay(c_matrix)
 
     # clear plt before plotting to prevent other graphs from appearing with .show()
-    plt.clear()
+    plt.close('all')
     
     disp.plot()
 
