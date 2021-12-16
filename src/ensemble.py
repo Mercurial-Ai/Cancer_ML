@@ -9,19 +9,20 @@ from src.cancer_ml import cancer_ml
 class voting_ensemble:
 
     # input iterables containing [x, y] for each data form
-    def __init__(self):
+    def __init__(self, load_models):
         clinical = cancer_ml("metabric", "chemotherapy", model="clinical_only")
         image_clinical = cancer_ml("duke", "Adjuvant Chemotherapy", model="image_clinical")
         image_only = cancer_ml("duke", "Adjuvant Chemotherapy", model="cnn")
 
-        clinical.run_model()
-        clinical.test_model()
+        if not load_models:
+            clinical.run_model()
+            clinical.test_model()
 
-        image_clinical.run_model()
-        image_clinical.test_model()
+            image_clinical.run_model()
+            image_clinical.test_model()
 
-        image_only.run_model()
-        image_only.test_model()
+            image_only.run_model()
+            image_only.test_model()
 
         self.clinical_models = self.load_models('data\\saved_models\\clinical')
         self.image_clinical_models = self.load_models('data\\saved_models\\image_clinical')
