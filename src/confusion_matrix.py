@@ -3,8 +3,7 @@ from sklearn.metrics import ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
 def confusion_matrix(y_true, y_pred):
-    print(y_true)
-    print(y_pred)
+
     c_matrix = c_mat(y_true, y_pred.round())
     disp = ConfusionMatrixDisplay(c_matrix)
 

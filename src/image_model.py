@@ -39,7 +39,12 @@ class image_model:
     def test_model(self, X_test, y_test):
         results = self.model.evaluate(X_test, y_test, batch_size=128)
 
-        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
+        try:
+
+            confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
+
+        except ValueError:
+            print("c_mat failed in image_clinical")
 
         return results
 
