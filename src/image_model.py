@@ -45,21 +45,21 @@ class image_model:
                             loss='mse',
                             metrics=['accuracy'])
 
-        clinical_x = X_train[:75]
-        image_x = X_train[76:]
+        clinical_x = X_train[:, :75]
+        image_x = X_train[:, 75:]
 
         # unflatten images in image_x
         unflattened_array = np.empty(shape=(image_x.shape[0], int(math.sqrt(image_x.shape[-1])), int(math.sqrt(image_x.shape[-1])), 1), dtype=np.int8)
         i = 0
         for image in image_x:
-            image = np.reshape(image, (1, int(math.sqrt(image_x.shape[-1])), int(math.sqrt(image_x.shape[-1])), 1))
+            image = np.reshape(image, (1, 512, 512, 1))
             unflattened_array[i] = image
 
             i = i + 1
 
         image_x = unflattened_array
 
-        self.fit = model.fit([clinical_x, image_x], y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+        self.fit = model.fit([clinical_x, image_x], y_train, epochs=epochs, batch_size=batch_size, class_weight=get_weight_dict(y_train))
 
         model.save('data\\saved_models\\image_clinical\\keras_image_clinical_model.h5')
 
