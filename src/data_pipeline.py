@@ -59,6 +59,7 @@ class data_pipeline:
 
         clinical_array = self.filtered_df.to_numpy()
 
+        print("clinical shape:", clinical_array.shape)
         concatenated_array = np.concatenate((clinical_array, self.img_array), axis=1)
 
         return concatenated_array

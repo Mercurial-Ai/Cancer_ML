@@ -1,8 +1,11 @@
 from tensorflow import keras
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense
+from tensorflow.keras.layers import concatenate
 from src.grid_search.grid_search import grid_search
 from src.get_weight_dict import get_weight_dict
 from src.confusion_matrix import confusion_matrix
+import numpy as np
+import math
 
 class image_model:
 
@@ -10,18 +13,30 @@ class image_model:
         self.load_model = load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
-        input = keras.layers.Input(shape=(X_train.shape[1],))
+        clinical_input = keras.layers.Input(shape=(75))
 
-        x = Dense(4500, activation="relu")(input)
-        x = Dense(2000, activation='relu')(x)
-        x = Dense(1000, activation='relu')(x)
-        x = Dense(500, activation='relu')(x)
-        x = Dense(200, activation='relu')(x)
-        x = Dense(100, activation='relu')(x)
-        x = Dense(50, activation='relu')(x)
-        x = Dense(20, activation='relu')(x)
+        x = Dense(60, activation="relu")(clinical_input)
+        x = Dense(40, activation='relu')(x)
+        x = Dense(25, activation='relu')(x)
+        x = Dense(15, activation='relu')(x)
+        x = Dense(5, activation='relu')(x)
+        flat1 = keras.layers.Flatten()(x)
+
+        image_input = keras.layers.Input(shape=(512, 512, 1))
+
+        x = Conv2D(32, kernel_size=4, activation='relu')(image_input)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+        x = Conv2D(16, kernel_size=4, activation='relu')(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+        flat2 = keras.layers.Flatten()(x)
+
+        merge = concatenate([flat1, flat2])
+
+        x = Dense(10, activation='relu')(merge)
+        x = Dense(10, activation='relu')(x)
+
         output = Dense(1, activation='linear')(x)
-        model = keras.Model(input, output)
+        model = keras.Model([clinical_input, image_input], output)
 
         #search = grid_search()
         #search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
@@ -30,7 +45,21 @@ class image_model:
                             loss='mse',
                             metrics=['accuracy'])
 
-        self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+        clinical_x = X_train[:75]
+        image_x = X_train[76:]
+
+        # unflatten images in image_x
+        unflattened_array = np.empty(shape=(image_x.shape[0], int(math.sqrt(image_x.shape[-1])), int(math.sqrt(image_x.shape[-1])), 1), dtype=np.int8)
+        i = 0
+        for image in image_x:
+            image = np.reshape(image, (1, int(math.sqrt(image_x.shape[-1])), int(math.sqrt(image_x.shape[-1])), 1))
+            unflattened_array[i] = image
+
+            i = i + 1
+
+        image_x = unflattened_array
+
+        self.fit = model.fit([clinical_x, image_x], y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         model.save('data\\saved_models\\image_clinical\\keras_image_clinical_model.h5')
 
