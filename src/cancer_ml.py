@@ -36,7 +36,13 @@ class cancer_ml:
             self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
         elif model == "image_clinical":
             self.image_clinical = True
-            self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train)
+            i = 0
+            for x in self.data_pipe.image_clinical.X_train:
+                x, self.data_pipe.image_clinical.y_train = self.remove_outliers(x, self.data_pipe.image_clinical.y_train)
+                self.data_pipe.image_clinical.X_train[i] = x
+
+                i = i + 1 
+
         elif model == "cnn":
             self.cnn = True
 
@@ -92,6 +98,7 @@ class cancer_ml:
             print(self.model.test_model(self.data_pipe.image_only.X_test, self.data_pipe.image_only.y_test))
 
     def remove_outliers(self, X, y):
+
         predicted = isolation_forest(X, y)
         
         non_outlier_indices = []
@@ -106,7 +113,17 @@ class cancer_ml:
 
         print("Num Outliers:", num_outliers)
 
-        X = X[non_outlier_indices, :]
+        if type(X) == tuple:
+            X = list(X)
+            i = 0
+            for array in X:
+                array = array[non_outlier_indices, :]
+                X[i] = array
+
+                i = i + 1
+        
+            X = tuple(X)
+
         if str(type(y)) == "<class 'numpy.ndarray'>":
             y = y[non_outlier_indices]
         else:
@@ -168,9 +185,37 @@ class cancer_ml:
         return self.model.labels_
 
     def equalize_image_clinical(self):
-        self.data_pipe.image_clinical.X_train = self.data_pipe.image_clinical.X_train[self.collected_indices_train]
-        self.data_pipe.image_clinical.X_test = self.data_pipe.image_clinical.X_test[self.collected_indices_test]
-        self.data_pipe.image_clinical.X_val = self.data_pipe.image_clinical.X_val[self.collected_indices_val]
+        new_train = []
+        new_test = []
+        new_val = []
+
+        i = 0
+        for data in self.data_pipe.image_clinical.X_train:
+            for array in data:
+                array = array[self.collected_indices_train]
+                new_train.append(array)
+
+                i = i + 1
+        
+        i = 0
+        for data in self.data_pipe.image_clinical.X_test:
+            for array in data:
+                array = array[self.collected_indices_test]
+                new_test.append(array)
+
+                i = i + 1
+
+        i = 0
+        for data in self.data_pipe.image_clinical.X_val:
+            for array in data:
+                array = array[self.collected_indices_val]
+                new_val.append(array)
+
+                i = i + 1
+
+        self.data_pipe.image_clinical.X_train = new_train
+        self.data_pipe.image_clinical.X_test = new_test
+        self.data_pipe.image_clinical.X_val = new_val
 
         self.data_pipe.image_clinical.y_train = self.data_pipe.image_clinical.y_train[self.collected_indices_train]
         self.data_pipe.image_clinical.y_test = self.data_pipe.image_clinical.y_test[self.collected_indices_test]

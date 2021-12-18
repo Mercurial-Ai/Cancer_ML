@@ -12,21 +12,6 @@ class image_model:
     def __init__(self, load_model=True):
         self.load_model = load_model
 
-    def split_modalities(self, x):
-        clinical_x = x[:, :75]
-        image_x = x[:, 75:]
-
-        # unflatten images in image_x
-        unflattened_array = np.empty(shape=(image_x.shape[0], int(math.sqrt(image_x.shape[-1])), int(math.sqrt(image_x.shape[-1])), 1), dtype=np.int8)
-        i = 0
-        for image in image_x:
-            image = np.reshape(image, (1, 512, 512, 1))
-            unflattened_array[i] = image
-
-            i = i + 1
-
-        return clinical_x, unflattened_array
-
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
         clinical_input = keras.layers.Input(shape=(75))
 
@@ -60,10 +45,7 @@ class image_model:
                             loss='mse',
                             metrics=['accuracy'])
 
-        clinical_x_train, image_x_train = self.split_modalities(X_train)
-        clinical_x_val, image_x_val = self.split_modalities(X_val)
-
-        self.fit = model.fit([clinical_x_train, image_x_train], y_train, epochs=epochs, batch_size=batch_size, validation_data=([clinical_x_val, image_x_val], y_val), class_weight=get_weight_dict(y_train))
+        self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         model.save('data\\saved_models\\image_clinical\\keras_image_clinical_model.h5')
 
@@ -71,11 +53,9 @@ class image_model:
 
     def test_model(self, X_test, y_test):
 
-        clinical_x_test, image_x_test = self.split_modalities(X_test)
+        results = self.model.evaluate(X_test, y_test, batch_size=128)
 
-        results = self.model.evaluate([clinical_x_test, image_x_test], y_test, batch_size=128)
-
-        confusion_matrix(y_true=y_test, y_pred=self.model.predict([clinical_x_test, image_x_test]))
+        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
 
         return results
 

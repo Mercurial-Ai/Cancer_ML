@@ -58,8 +58,6 @@ class data_pipeline:
     def concatenate_image_clinical(self):
 
         clinical_array = self.filtered_df.to_numpy()
-
-        print("clinical shape:", clinical_array.shape)
         concatenated_array = np.concatenate((clinical_array, self.img_array), axis=1)
 
         return concatenated_array
@@ -93,6 +91,21 @@ class data_pipeline:
         self.only_clinical.X_val = X_val
         self.only_clinical.y_val = y_val
 
+    def split_modalities(self, x):
+        clinical_x = x[:, :75]
+        image_x = x[:, 75:]
+
+        # unflatten images in image_x
+        unflattened_array = np.empty(shape=(image_x.shape[0], int(math.sqrt(image_x.shape[-1])), int(math.sqrt(image_x.shape[-1])), 1), dtype=np.int8)
+        i = 0
+        for image in image_x:
+            image = np.reshape(image, (1, 512, 512, 1))
+            unflattened_array[i] = image
+
+            i = i + 1
+
+        return clinical_x, unflattened_array
+
     def partition_image_clinical_data(self):
 
         target_index = self.df.columns.get_loc(self.target)
@@ -109,6 +122,10 @@ class data_pipeline:
         X_train = min_max_scaler.fit_transform(X_train)
         X_test = min_max_scaler.fit_transform(X_test)
         X_val = min_max_scaler.fit_transform(X_val)
+
+        X_train = [self.split_modalities(X_train)]
+        X_test = [self.split_modalities(X_test)]
+        X_val = [self.split_modalities(X_val)]
 
         self.image_clinical.X_train = X_train
         self.image_clinical.X_test = X_test
