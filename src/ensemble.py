@@ -24,9 +24,9 @@ class voting_ensemble:
             image_only.run_model()
             image_only.test_model()
 
-        self.clinical_models = self.load_models('data\\saved_models\\clinical')
-        self.image_clinical_models = self.load_models('data\\saved_models\\image_clinical')
-        self.image_only_models = self.load_models('data\\saved_models\\image_only')
+        self.clinical_models = self.load_models('data/saved_models/clinical')
+        self.image_clinical_models = self.load_models('data/saved_models/image_clinical')
+        self.image_only_models = self.load_models('data/saved_models/image_only')
 
         all_models = [self.clinical_models, self.image_clinical_models, self.image_only_models]
 

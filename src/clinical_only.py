@@ -30,7 +30,7 @@ class clinical_only:
 
         self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
-        self.model.save('data\\saved_models\\clinical\\keras_clinical_only_model.h5')
+        self.model.save('data/saved_models/clinical/keras_clinical_only_model.h5')
 
         return self.model
 
