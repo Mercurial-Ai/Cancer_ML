@@ -39,7 +39,7 @@ class image_model:
         model = keras.Model([clinical_input, image_input], output)
 
         search = grid_search()
-        search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+        search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         model.compile(optimizer='sgd',
                             loss='mse',
