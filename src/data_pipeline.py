@@ -166,6 +166,6 @@ class data_pipeline:
         self.image_only.y_val = y_val
 
     def slice_data(self):
-        slice_size = 0.25
+        slice_size = 0.31
 
         self.img_array = self.img_array[0:int(round(self.img_array.shape[0]*slice_size, 0))]

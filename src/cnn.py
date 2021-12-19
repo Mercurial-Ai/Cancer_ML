@@ -41,8 +41,8 @@ class cnn:
         self.model.add(layers.Dense(1))
         self.model.add(layers.Activation('linear'))
 
-        #search = grid_search()
-        #search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+        search = grid_search()
+        search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         self.model.compile(loss=loss,
                     optimizer=opt,

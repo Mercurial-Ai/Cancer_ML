@@ -21,8 +21,8 @@ class clinical_only:
         output = Dense(1, activation='linear')(x)
         self.model = keras.Model(input, output)
 
-        #search = grid_search()
-        #search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+        search = grid_search()
+        search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         self.model.compile(optimizer='SGD',
                             loss='mean_squared_error',
