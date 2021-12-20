@@ -74,7 +74,13 @@ class data_pipeline:
     
     def partition_clinical_only_data(self):
         
-        x = self.df.drop(self.target, axis=1)
+        if type(self.target) == list:
+            for var in self.target:
+                var = var.replace("\n", "")
+                x = self.df.drop(var, axis=1)
+        else:
+            x = self.df.drop(self.target, axis=1)
+        
         y = self.df[self.target]
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
