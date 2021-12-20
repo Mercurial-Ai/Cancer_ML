@@ -17,6 +17,7 @@ class cancer_ml:
     def __init__(self, dataset, target, model="clinical_only", crop_size=(256, 256)):
         self.dataset = dataset
         self.target = target
+        self.model = model
         self.crop_size=crop_size
 
         if type(target) == list and len(target) > 1:
@@ -36,13 +37,13 @@ class cancer_ml:
         self.image_clinical = False
         self.cnn = False
 
-        if model == "clinical_only":
+        if self.model == "clinical_only":
             self.clinical = True
             
             if not multi_target:
                 self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
 
-        elif model == "image_clinical":
+        elif self.model == "image_clinical":
             self.image_clinical = True
 
             if not multi_target:
@@ -53,7 +54,7 @@ class cancer_ml:
 
                     i = i + 1 
 
-        elif model == "cnn":
+        elif self.model == "cnn":
             self.cnn = True
 
             pre_shape = self.data_pipe.image_only.X_train.shape
@@ -76,7 +77,12 @@ class cancer_ml:
             self.k_neighbors()
 
     def collect_duke(self):
-        self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", "data/Duke-Breast-Cancer-MRI/img_array_duke.npy", self.target)
+
+        if self.model !="clinical_only":
+            self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", "data/Duke-Breast-Cancer-MRI/img_array_duke.npy", self.target)
+        else: 
+            self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", None, self.target)
+
         self.data_pipe.load_data()
     
     def collect_HN1(self):

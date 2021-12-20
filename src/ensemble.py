@@ -41,7 +41,19 @@ class voting_ensemble:
 
         metabric_dependent = ['type_of_breast_surgery', 'chemotherapy', 'hormone_therapy', 'overall_survival_months', 'overall_survival', 'radio_therapy', 'death_from_cancer']
 
+        duke_independent = ['Patient ID', 'Days to MRI (From the Date of Diagnosis)', 'Manufacturer', 'Manufacturer Model Name', 'Scan Options', 'Field Strength (Tesla)', 'Patient Position During MRI', 'Image Position of Patient', 'Contrast Agent', 'Contrast Bolus Volume (mL)', 'TR (Repetition Time)', 'TE (Echo Time)', 
+                            'Acquisition Matrix', 'Slice Thickness', 'Rows', 'Columns', 'Flip Angle', 'FOV Computed (Field of View) in cm', 'Date of Birth (Days)', 'Menopause (at diagnosis)', 'Race and Ethnicity', 'Metastatic at Presentation (Outside of Lymph Nodes', 'ER', 'PR', 'Mol Subtype', 'Oncotype score', 
+                            'Staging(Tumor Size)# [T]', 'Staging(Nodes)#(Nx replaced by -1)[N]', 'Staging(Metastasis)#(Mx -replaced by -1)[M]', 'Tumor Grade', 'Position', 'Bilateral Information', 'For Other Side If Bilateral', 'Multicentric/Multifocal', 'Contralateral Breast Involvement', 
+                            'Lymphadenopathy or Suspicious Nodes', 'Skin/Nipple Invovlement', 'Pec/Chest Involvement', 'Age at mammo (days)', 'Breast Density', 'Shape', 'Margin', 'Architectural distortion', 'Mass Density', 'Calcifications', 'Tumor Size (cm)', 'Shape.1', 'Margin.1', 'Tumor Size (cm).1', 'Echogenicity', 'Solid'
+                            'Posterior acoustic shadowing', 'Known Ovarian Status', 'Number of Ovaries In Situ', ]
+
+        duke_dependent = ['Surgery', 'Days to Surgery (from the date of diagnosis)', 'Definitive Surgery Type', 'Clinical Response, Evaluated Through Imaging ', 'Pathologic Response to Neoadjuvant Therapy', 'Days to local recurrence (from the date of diagnosis) ', 'Days to distant recurrence(from the date of diagnosis) ', 'Days to death (from the date of diagnosis) ', 
+                            'Days to last local recurrence free assessment (from the date of diagnosis) ', 'Days to last distant recurrence free assemssment(from the date of diagnosis) ', 'Neoadjuvant Chemotherapy', 'Adjuvant Chemotherapy', 'Neoadjuvant Endocrine Therapy Medications ',
+                            'Adjuvant Endocrine Therapy Medications ', 'Therapeutic or Prophylactic Oophorectomy as part of Endocrine Therapy ', 'Neoadjuvant Anti-Her2 Neu Therapy', 'Adjuvant Anti-Her2 Neu Therapy ', 'Received Neoadjuvant Therapy or Not', 'Pathologic response to Neoadjuvant therapy: Pathologic stage (T) following neoadjuvant therapy ',
+                            'Pathologic response to Neoadjuvant therapy: Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy: Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response: Stricter Definition', 'Overall Near-complete Response: Looser Definition', 'Near-complete Response (Graded Measure)']
+
         clinical = cancer_ml("metabric", metabric_dependent, model="clinical_only")
+        clinical = cancer_ml("duke", duke_dependent, model="clinical_only")
         image_clinical = cancer_ml("duke", "Adjuvant Chemotherapy", model="image_clinical")
         image_only = cancer_ml("duke", "Adjuvant Chemotherapy", model="cnn")
 
