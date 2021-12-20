@@ -1,3 +1,4 @@
+from matplotlib.pyplot import get
 from tensorflow import keras
 from tensorflow.keras.layers import Dense
 from src.get_weight_dict import get_weight_dict
@@ -21,8 +22,8 @@ class clinical_only:
         output = Dense(y_train.shape[1], activation='linear')(x)
         self.model = keras.Model(input, output)
 
-        #search = grid_search()
-        #search.test_model(self.model, X_train, y_train, X_val, y_val)
+        search = grid_search()
+        search.test_model(self.model, X_train, y_train, X_val, y_val)
 
         self.model.compile(optimizer='SGD',
                             loss='mean_squared_error',

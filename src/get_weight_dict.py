@@ -3,8 +3,6 @@ from src.get_distribution import get_distribution
 def get_weight_dict(array):
     array_dict = get_distribution(array)
 
-    print(array_dict)
-
     keys = list(array_dict.keys())
 
     # reverse values of dict

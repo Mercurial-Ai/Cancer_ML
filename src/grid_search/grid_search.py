@@ -37,7 +37,7 @@ class grid_search:
 
         return comb_dict_list
 
-    def test_model(self, model, X_train, y_train, X_val, y_val, weight_dict):
+    def test_model(self, model, X_train, y_train, X_val, y_val, weight_dict=None):
 
         combs = self.read_grid()
 
