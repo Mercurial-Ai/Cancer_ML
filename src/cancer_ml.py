@@ -19,6 +19,11 @@ class cancer_ml:
         self.target = target
         self.crop_size=crop_size
 
+        if type(target) == list and len(target) > 1:
+            multi_target = True
+        else:
+            multi_target = False
+
         if self.dataset == "duke":
             self.collect_duke()
         elif self.dataset == "hn1":
@@ -33,15 +38,20 @@ class cancer_ml:
 
         if model == "clinical_only":
             self.clinical = True
-            #self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
+            
+            if not multi_target:
+                self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
+
         elif model == "image_clinical":
             self.image_clinical = True
-            i = 0
-            for x in self.data_pipe.image_clinical.X_train:
-                x, self.data_pipe.image_clinical.y_train = self.remove_outliers(x, self.data_pipe.image_clinical.y_train)
-                self.data_pipe.image_clinical.X_train[i] = x
 
-                i = i + 1 
+            if not multi_target:
+                i = 0
+                for x in self.data_pipe.image_clinical.X_train:
+                    x, self.data_pipe.image_clinical.y_train = self.remove_outliers(x, self.data_pipe.image_clinical.y_train)
+                    self.data_pipe.image_clinical.X_train[i] = x
+
+                    i = i + 1 
 
         elif model == "cnn":
             self.cnn = True
@@ -56,7 +66,8 @@ class cancer_ml:
 
                 i = i + 1
 
-            flattened_img_x, self.data_pipe.image_only.y_train = self.remove_outliers(flattened_img_x, self.data_pipe.image_only.y_train)
+            if not multi_target:
+                flattened_img_x, self.data_pipe.image_only.y_train = self.remove_outliers(flattened_img_x, self.data_pipe.image_only.y_train)
 
             x = np.reshape(flattened_img_x, pre_shape)
             self.data_pipe.image_only.X_train = x

@@ -12,6 +12,11 @@ class clinical_only:
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=32):
 
+        if type(y_train) == list and len(y_train) > 1:
+            self.multi_target = True
+        else:
+            self.multi_target = False
+
         input = keras.layers.Input(shape=(X_train.shape[1],))
 
         x = Dense(9, activation='relu')(input)
@@ -23,13 +28,20 @@ class clinical_only:
         self.model = keras.Model(input, output)
 
         search = grid_search()
-        search.test_model(self.model, X_train, y_train, X_val, y_val)
+
+        if not self.multi_target:
+            search.test_model(self.model, X_train, y_train, X_val, y_val)
+        else:
+            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         self.model.compile(optimizer='SGD',
                             loss='mean_squared_error',
                             metrics=['accuracy'])
 
-        self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+        if not self.multi_target:
+            self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+        else:
+            self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weights=get_weight_dict(y_train))
 
         self.model.save('data/saved_models/clinical/keras_clinical_only_model.h5')
 
@@ -37,6 +49,9 @@ class clinical_only:
 
     def test_model(self, X_test, y_test):
         results = self.model.evaluate(X_test, y_test, batch_size=128)
+
+        if not self.multi_target:
+            confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
 
         return results
 
