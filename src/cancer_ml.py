@@ -33,7 +33,7 @@ class cancer_ml:
 
         if model == "clinical_only":
             self.clinical = True
-            self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
+            #self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
         elif model == "image_clinical":
             self.image_clinical = True
             i = 0
