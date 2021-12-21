@@ -11,6 +11,7 @@ def remove_ids(img_array):
             img = np.delete(img, -1)
             new_array[i] = img
             i = i + 1
+            
     except IndexError:
         new_shape = img_array.shape
 

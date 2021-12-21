@@ -5,7 +5,6 @@ import numpy as np
 import math
 
 from src.image_tools.import_numpy import import_numpy
-from src.image_tools.remove_ids import remove_ids
 from src.tokenize_dataset import tokenize_dataset
 
 class data_pod:
