@@ -55,7 +55,8 @@ class image_model:
 
         results = self.model.evaluate(X_test, y_test, batch_size=128)
 
-        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
+        if len(y_test.shape) == 1:
+            confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
 
         return results
 
