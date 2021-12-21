@@ -46,19 +46,19 @@ class data_pipeline:
 
             self.image_ids = self.img_array[:, -1]
 
+            # remove ids from img_array
+            self.img_array = np.delete(self.img_array, -1, axis=1)
+
             # get patients in clinical data with ids that correspond with image ids
             self.filtered_df = self.df.loc[self.image_ids]
-
-            self.concatenated_array = self.concatenate_image_clinical()
 
             self.partition_image_clinical_data()
             self.partition_image_only_data()
 
         self.partition_clinical_only_data()
 
-    def concatenate_image_clinical(self):
+    def concatenate_image_clinical(self, clinical_array):
 
-        clinical_array = self.filtered_df.to_numpy()
         concatenated_array = np.concatenate((clinical_array, self.img_array), axis=1)
 
         return concatenated_array
@@ -99,8 +99,9 @@ class data_pipeline:
         self.only_clinical.y_val = y_val
 
     def split_modalities(self, x):
-        clinical_x = x[:, :75]
-        image_x = x[:, 75:]
+
+        clinical_x = x[:, :self.clinical_x.shape[1]]
+        image_x = x[:, self.clinical_x.shape[1]:]
 
         # unflatten images in image_x
         unflattened_array = np.empty(shape=(image_x.shape[0], int(math.sqrt(image_x.shape[-1])), int(math.sqrt(image_x.shape[-1])), 1), dtype=np.int8)
@@ -115,12 +116,18 @@ class data_pipeline:
 
     def partition_image_clinical_data(self):
 
-        target_index = self.df.columns.get_loc(self.target)
+        self.clinical_x = self.filtered_df
 
-        self.concatenated_array = self.concatenated_array.astype(np.int8)
+        if type(self.target) == list:
+            for var in self.target:
+                var = var.replace("\n", "")
+                self.clinical_x = self.clinical_x.drop(var, axis=1)
+        else:
+            self.clinical_x = self.clinical_x.drop(self.target, axis=1)
 
-        x = np.delete(self.concatenated_array, target_index, axis=1)
-        y = self.concatenated_array[:, target_index]
+        y = self.filtered_df[self.target]
+
+        x = self.concatenate_image_clinical(self.clinical_x)
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
@@ -145,8 +152,6 @@ class data_pipeline:
 
         x = self.img_array
         y = self.filtered_df[self.target]
-
-        x = remove_ids(x)
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 

@@ -54,8 +54,8 @@ class voting_ensemble:
 
         clinical = cancer_ml("metabric", metabric_dependent, model="clinical_only")
         clinical = cancer_ml("duke", duke_dependent, model="clinical_only")
-        image_clinical = cancer_ml("duke", "Adjuvant Chemotherapy", model="image_clinical")
-        image_only = cancer_ml("duke", "Adjuvant Chemotherapy", model="cnn")
+        image_clinical = cancer_ml("duke", duke_dependent, model="image_clinical")
+        image_only = cancer_ml("duke", duke_dependent, model="cnn")
 
         if not load_models:
             clinical.run_model()
