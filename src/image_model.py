@@ -6,6 +6,7 @@ from src.get_weight_dict import get_weight_dict
 from src.confusion_matrix import confusion_matrix
 import numpy as np
 import math
+import pandas as pd
 
 class image_model:
 
@@ -13,7 +14,13 @@ class image_model:
         self.load_model = load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
-        clinical_input = keras.layers.Input(shape=(75))
+
+        if type(y_train) == pd.DataFrame:
+            self.multi_target = True
+        else:
+            self.multi_target = False
+
+        clinical_input = keras.layers.Input(shape=(X_train[0][0].shape[1]))
 
         x = Dense(60, activation="relu")(clinical_input)
         x = Dense(40, activation='relu')(x)
@@ -39,13 +46,20 @@ class image_model:
         model = keras.Model([clinical_input, image_input], output)
 
         search = grid_search()
-        search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+
+        if self.multi_target:
+            search.test_model(model, X_train, y_train, X_val, y_val)
+        else:
+            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         model.compile(optimizer='sgd',
                             loss='mse',
                             metrics=['accuracy'])
 
-        self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+        if self.multi_target:
+            self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+        else:
+            self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         model.save('data/saved_models/image_clinical/keras_image_clinical_model.h5')
 

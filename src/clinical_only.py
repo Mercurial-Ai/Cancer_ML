@@ -4,6 +4,7 @@ from tensorflow.keras.layers import Dense
 from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
 from src.confusion_matrix import confusion_matrix
+import pandas as pd
 
 class clinical_only:
 
@@ -12,7 +13,7 @@ class clinical_only:
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=32):
 
-        if type(y_train) == list:
+        if type(y_train) == pd.DataFrame:
             self.multi_target = True
         else:
             self.multi_target = False
@@ -29,7 +30,7 @@ class clinical_only:
 
         search = grid_search()
 
-        if not self.multi_target:
+        if self.multi_target:
             search.test_model(self.model, X_train, y_train, X_val, y_val)
         else:
             search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
@@ -38,7 +39,7 @@ class clinical_only:
                             loss='mean_squared_error',
                             metrics=['accuracy'])
 
-        if not self.multi_target:
+        if self.multi_target:
             self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
         else:
             self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weights=get_weight_dict(y_train))

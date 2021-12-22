@@ -1,6 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import Sequential
+import pandas as pd
 from src.confusion_matrix import confusion_matrix
 from src.get_weight_dict import get_weight_dict
 
@@ -12,6 +13,11 @@ class cnn:
         self.load_model=load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=128):
+
+        if type(y_train) == pd.DataFrame:
+            self.multi_target = True
+        else:
+            self.multi_target = False
 
         opt = keras.optimizers.SGD(learning_rate=0.007)
         loss = keras.losses.BinaryCrossentropy()
@@ -42,13 +48,20 @@ class cnn:
         self.model.add(layers.Activation('linear'))
 
         search = grid_search()
-        search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+
+        if self.multi_target:
+            search.test_model(self.model, X_train, y_train, X_val, y_val)
+        else:
+            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         self.model.compile(loss=loss,
                     optimizer=opt,
                     metrics=['accuracy'])
 
-        self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+        if self.multi_target:
+            self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+        else:
+            self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         self.model.save('data/saved_models/image_only/keras_cnn_model.h5')
 
