@@ -14,7 +14,7 @@ class cnn:
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=128):
 
-        if type(y_train) == pd.DataFrame:
+        if len(y_train.shape) > 1:
             self.multi_target = True
         else:
             self.multi_target = False
@@ -22,30 +22,28 @@ class cnn:
         opt = keras.optimizers.SGD(learning_rate=0.007)
         loss = keras.losses.BinaryCrossentropy()
 
-        self.model = Sequential()
+        input = layers.Input(shape=(X_train.shape[1:]))
 
-        self.model.add(layers.Conv2D(64, (6, 6), input_shape=X_train.shape[1:]))
-        self.model.add(layers.Activation('relu'))
-        self.model.add(layers.MaxPooling2D(pool_size=(4, 4)))
+        x = layers.Conv2D(64, (6, 6))(input)
+        x = layers.Activation('relu')(x)
+        x = layers.MaxPooling2D(pool_size=(4, 4))(x)
 
-        self.model.add(layers.Conv2D(32, (6, 6)))
-        self.model.add(layers.Activation('relu'))
-        self.model.add(layers.MaxPooling2D(pool_size=(3, 3)))
+        x = layers.Conv2D(32, (6, 6))(x)
+        x = layers.Activation('relu')(x)
+        x = layers.MaxPooling2D(pool_size=(3, 3))(x)
 
-        self.model.add(layers.Conv2D(16, (6, 6)))
-        self.model.add(layers.Activation('relu'))
-        self.model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+        x = layers.Conv2D(16, (6, 6))(x)
+        x = layers.Activation('relu')(x)
+        x = layers.MaxPooling2D(pool_size=(2, 2))(x)
 
-        self.model.add(layers.Flatten())
+        x = layers.Flatten()(x)
 
-        self.model.add(layers.Dense(16))
-        self.model.add(layers.Activation('relu'))
+        x = layers.Dense(24)(x)
+        x = layers.Activation('relu')(x)
 
-        self.model.add(layers.Dense(8))
-        self.model.add(layers.Activation('relu'))
+        output = layers.Dense(y_train.shape[1], activation='relu')(x)
 
-        self.model.add(layers.Dense(1))
-        self.model.add(layers.Activation('linear'))
+        self.model = keras.Model(input, output)
 
         search = grid_search()
 
