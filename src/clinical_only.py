@@ -30,10 +30,10 @@ class clinical_only:
 
         search = grid_search()
 
-        if self.multi_target:
-            search.test_model(self.model, X_train, y_train, X_val, y_val)
-        else:
-            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+        #if self.multi_target:
+        #    search.test_model(self.model, X_train, y_train, X_val, y_val)
+        #else:
+        #    search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         self.model.compile(optimizer='SGD',
                             loss='mean_squared_error',

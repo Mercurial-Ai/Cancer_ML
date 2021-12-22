@@ -47,10 +47,10 @@ class image_model:
 
         search = grid_search()
 
-        if self.multi_target:
-            search.test_model(model, X_train, y_train, X_val, y_val)
-        else:
-            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+        #if self.multi_target:
+        #    search.test_model(model, X_train, y_train, X_val, y_val)
+        #else:
+        #    search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         model.compile(optimizer='sgd',
                             loss='mse',

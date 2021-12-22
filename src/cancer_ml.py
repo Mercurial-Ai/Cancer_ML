@@ -502,9 +502,12 @@ class cancer_ml:
             class_array_dict[label] = new_array
             class_y_dict[label] = new_y
 
-        new_y = np.array([])
-        for array in list(class_y_dict.values()):
-            new_y = np.append(new_y, array)
+        arrays = []
+        for data in list(class_y_dict.values()):
+            data = data.to_numpy()
+            arrays.append(data)
+
+        new_y = np.concatenate(tuple(arrays), axis=0)
 
         self.data_pipe.image_only.y_train = new_y.astype('int8')
 
@@ -516,6 +519,9 @@ class cancer_ml:
                 new_data[i] = image
 
                 i = i + 1
+
+        print('post loop x:', new_data.shape)
+        print('post loop y:', self.data_pipe.image_only.y_train.shape)
 
         new_data = np.expand_dims(new_data, axis=-1)
 
