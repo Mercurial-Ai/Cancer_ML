@@ -122,7 +122,7 @@ class voting_ensemble:
 
             ensembled_predictions.append(nums_avg)
 
-        self.ensembled_prediction = sum(ensembled_predictions) / len(ensembled_predictions)
+        self.ensembled_prediction = ensembled_predictions
 
     def load_models(self, model_dir):
 
