@@ -18,7 +18,7 @@ class cancer_ml:
         self.dataset = dataset
         self.target = target
         self.model = model
-        self.crop_size=crop_size
+        self.crop_size = crop_size
 
         if type(target) == list and len(target) > 1:
             multi_target = True

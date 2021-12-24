@@ -5,6 +5,7 @@ from scipy.sparse import data
 from sklearn.metrics import accuracy_score
 import numpy as np
 from src.cancer_ml import cancer_ml
+import math
 
 class voting_ensemble:
 
@@ -52,14 +53,17 @@ class voting_ensemble:
                             'Adjuvant Endocrine Therapy Medications ', 'Therapeutic or Prophylactic Oophorectomy as part of Endocrine Therapy ', 'Neoadjuvant Anti-Her2 Neu Therapy', 'Adjuvant Anti-Her2 Neu Therapy ', 'Received Neoadjuvant Therapy or Not', 'Pathologic response to Neoadjuvant therapy: Pathologic stage (T) following neoadjuvant therapy ',
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
-        clinical = cancer_ml("metabric", metabric_dependent, model="clinical_only")
-        clinical = cancer_ml("duke", duke_dependent, model="clinical_only")
+        clinical_metabric = cancer_ml("metabric", metabric_dependent, model="clinical_only")
+        clinical_duke = cancer_ml("duke", duke_dependent, model="clinical_only")
         image_clinical = cancer_ml("duke", duke_dependent, model="image_clinical")
         image_only = cancer_ml("duke", duke_dependent, model="cnn")
 
         if not load_models:
-            clinical.run_model()
-            clinical.test_model()
+            clinical_metabric.run_model()
+            clinical_metabric.test_model()
+
+            clinical_duke.run_model()
+            clinical_duke.test_model()
 
             image_clinical.run_model()
             image_clinical.test_model()
@@ -67,51 +71,59 @@ class voting_ensemble:
             image_only.run_model()
             image_only.test_model()
 
-        self.clinical_models = self.load_models('data/saved_models/clinical')
+        self.clinical_metabric_models = self.load_models('data/saved_models/clinical_metabric')
+        self.clinical_duke_models = self.load_models('data/saved_models/clinical_duke')
         self.image_clinical_models = self.load_models('data/saved_models/image_clinical')
         self.image_only_models = self.load_models('data/saved_models/image_only')
 
-        all_models = [self.clinical_models, self.image_clinical_models, self.image_only_models]
+        all_models = [self.clinical_metabric_models, self.clinical_duke_models, self.image_clinical_models, self.image_only_models]
 
-        clinical_test = [clinical.data_pipe.only_clinical.X_test, clinical.data_pipe.only_clinical.y_test]
+        clinical_metabric_test = [clinical_metabric.data_pipe.only_clinical.X_test, clinical_metabric.data_pipe.only_clinical.y_test]
+        clinical_duke_test = [clinical_duke.data_pipe.only_clinical.X_test, clinical_duke.data_pipe.only_clinical.y_test]
         image_clinical_test = [image_clinical.data_pipe.image_clinical.X_test, image_clinical.data_pipe.image_clinical.y_test]
         image_only_test = [image_only.data_pipe.image_only.X_test, image_only.data_pipe.image_only.y_test]
 
-        all_data = [clinical_test, image_clinical_test, image_only_test]
+        all_data = [clinical_metabric_test, clinical_duke_test, image_clinical_test, image_only_test]
 
         i = 0
         predictions = []
-        evals = []
         for models in all_models:
 
             # filter out empty model lists
-            if len(models) >= 1:
+            if len(models) >=1:
                 data = all_data[i]
 
                 testX = data[0]
                 testY = data[1]
-
+                
                 ensemble_prediction = self.predict(testX, models)
                 predictions.append(ensemble_prediction)
 
-                ensemble_eval = self.evaluate_models(testX, testY, models)
-                evals.append(ensemble_eval)
+            i = i + 1
+
+        # remove nans from predictions
+        i = 0
+        for pred in predictions:
+            for y in pred:
+                if math.isnan(y):
+                    del predictions[i]
 
             i = i + 1
 
+        # find average of predictions across model variants
         ensembled_predictions = []
-        ensembled_evals = []
-            
-        # find average of predictions and evals for ensembled values
-        for prediction in predictions:
-            ensembled_predictions.append(float(np.mean(prediction)))
+        for i in range(len(predictions[0])):
+            nums = []
+            for j in range(len(predictions)):
+                num = predictions[j][i]
+                nums.append(num)
 
-        for eval in evals:
-            ensembled_evals.append(float(np.mean(eval)))
+            nums_avg = sum(nums) / len(nums)
+
+            ensembled_predictions.append(nums_avg)
 
         self.ensembled_prediction = sum(ensembled_predictions) / len(ensembled_predictions)
-        self.ensembled_eval = sum(ensembled_evals) / len(ensembled_evals)
-        
+
     def load_models(self, model_dir):
 
         model_names = os.listdir(model_dir)
@@ -129,18 +141,31 @@ class voting_ensemble:
         return models
 
     def predict(self, testX, models):
-
         y = [model.predict(testX) for model in models]
         y = np.array(y)
 
-        sum = np.sum(y, axis=0)
+        # find mean of each var prediction in each model's prediction
+        means = []
+        for pred in y:
+            mean_list = []
+            for i in range(pred.shape[-1]):
+                col = pred[:, i]
+                mean = np.mean(col)
 
-        result = argmax(sum, axis=1)
+                mean_list.append(mean)
 
-        return result
+            means.append(mean_list)
 
-    def evaluate_models(self, testX, testY, models):
+        # find average of every corresponding var in predictions from models
+        avgs = []
+        for i in range(len(means[0])):
+            nums = []
+            for j in range(len(means)):
+                num = means[j][i]
+                nums.append(num)
 
-        y = self.predict(testX, models)
+            nums_avg = sum(nums) / len(nums)
 
-        return accuracy_score(testY, y)
+            avgs.append(nums_avg)
+
+        return avgs
