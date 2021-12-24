@@ -99,6 +99,8 @@ class voting_ensemble:
                 ensemble_prediction = self.predict(testX, models)
                 predictions.append(ensemble_prediction)
 
+                self.eval(testX, testY, models)
+
             i = i + 1
 
         # remove nans from predictions
@@ -110,19 +112,7 @@ class voting_ensemble:
 
             i = i + 1
 
-        # find average of predictions across model variants
-        ensembled_predictions = []
-        for i in range(len(predictions[0])):
-            nums = []
-            for j in range(len(predictions)):
-                num = predictions[j][i]
-                nums.append(num)
-
-            nums_avg = sum(nums) / len(nums)
-
-            ensembled_predictions.append(nums_avg)
-
-        self.ensembled_prediction = ensembled_predictions
+        self.ensembled_prediction = predictions
 
     def load_models(self, model_dir):
 
@@ -169,3 +159,8 @@ class voting_ensemble:
             avgs.append(nums_avg)
 
         return avgs
+
+    def eval(self, testX, testY, models):
+        y = self.predict(testX, models)
+
+        y = np.array(y)
