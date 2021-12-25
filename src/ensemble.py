@@ -103,16 +103,22 @@ class voting_ensemble:
 
             i = i + 1
 
+        print(predictions)
         # remove nans from predictions
-        i = 0
         for pred in predictions:
+            i = 0
             for y in pred:
                 if math.isnan(y):
-                    del predictions[i]
+                    del pred[i]
 
-            i = i + 1
+                i = i + 1
 
         self.ensembled_prediction = predictions
+
+        print(clinical_metabric.data_pipe.only_clinical.y_test)
+        print(clinical_duke.data_pipe.only_clinical.y_test)
+        print(image_clinical.data_pipe.image_clinical.y_test)
+        print(image_only.data_pipe.image_only.y_test)
 
     def load_models(self, model_dir):
 
@@ -134,29 +140,18 @@ class voting_ensemble:
         y = [model.predict(testX) for model in models]
         y = np.array(y)
 
-        # find mean of each var prediction in each model's prediction
-        means = []
-        for pred in y:
-            mean_list = []
-            for i in range(pred.shape[-1]):
-                col = pred[:, i]
-                mean = np.mean(col)
-
-                mean_list.append(mean)
-
-            means.append(mean_list)
-
-        # find average of every corresponding var in predictions from models
+        # find the average of each corresponding var across models
         avgs = []
-        for i in range(len(means[0])):
-            nums = []
-            for j in range(len(means)):
-                num = means[j][i]
-                nums.append(num)
+        for i in range(y.shape[1]):
+            for j in range(y.shape[-1]):
+                nums = []
+                for model_preds in y:
+                    example = model_preds[i]
+                    nums.append(example[j])
 
-            nums_avg = sum(nums) / len(nums)
+                avg = sum(nums) / len(nums)
 
-            avgs.append(nums_avg)
+                avgs.append(avg)
 
         return avgs
 
