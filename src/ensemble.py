@@ -105,6 +105,8 @@ class voting_ensemble:
 
         self.ensembled_prediction = predictions
 
+        duke_predictions = predictions[1:]
+
     def load_models(self, model_dir):
 
         model_names = os.listdir(model_dir)
@@ -125,7 +127,7 @@ class voting_ensemble:
         y = [model.predict(testX) for model in models]
         y = np.array(y)
 
-        # find the average of each corresponding var across model
+        # find the average of each corresponding var across models
         all_vars = []
         for i in range(y.shape[-1]):
             all_var = []
