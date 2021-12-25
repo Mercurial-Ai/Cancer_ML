@@ -103,22 +103,7 @@ class voting_ensemble:
 
             i = i + 1
 
-        print(predictions)
-        # remove nans from predictions
-        for pred in predictions:
-            i = 0
-            for y in pred:
-                if math.isnan(y):
-                    del pred[i]
-
-                i = i + 1
-
         self.ensembled_prediction = predictions
-
-        print(clinical_metabric.data_pipe.only_clinical.y_test)
-        print(clinical_duke.data_pipe.only_clinical.y_test)
-        print(image_clinical.data_pipe.image_clinical.y_test)
-        print(image_only.data_pipe.image_only.y_test)
 
     def load_models(self, model_dir):
 
@@ -140,20 +125,19 @@ class voting_ensemble:
         y = [model.predict(testX) for model in models]
         y = np.array(y)
 
-        # find the average of each corresponding var across models
-        avgs = []
-        for i in range(y.shape[1]):
-            for j in range(y.shape[-1]):
-                nums = []
-                for model_preds in y:
-                    example = model_preds[i]
-                    nums.append(example[j])
+        # find the average of each corresponding var across model
+        all_vars = []
+        for i in range(y.shape[-1]):
+            all_var = []
+            for model in y:
+                for example in model:
+                    all_var.append(example[i])
 
-                avg = sum(nums) / len(nums)
+            all_vars.append(all_var)
 
-                avgs.append(avg)
-
-        return avgs
+        all_vars = np.array(all_vars)
+                    
+        return all_vars
 
     def eval(self, testX, testY, models):
         y = self.predict(testX, models)
