@@ -22,7 +22,7 @@ class image_model:
 
         clinical_input = keras.layers.Input(shape=(X_train[0][0].shape[1]))
 
-        x = Dense(60, activation="relu")(clinical_input)
+        x = Dense(50, activation="relu")(clinical_input)
         x = Dense(40, activation='relu')(x)
         x = Dense(25, activation='relu')(x)
         x = Dense(15, activation='relu')(x)
@@ -45,12 +45,14 @@ class image_model:
         output = Dense(y_train.shape[1], activation='linear')(x)
         model = keras.Model([clinical_input, image_input], output)
 
+        print(model.summary())
+
         search = grid_search()
 
-        #if self.multi_target:
-        #    search.test_model(model, X_train, y_train, X_val, y_val)
-        #else:
-        #    search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+        if self.multi_target:
+            search.test_model(model, X_train, y_train, X_val, y_val)
+        else:
+            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
 
         model.compile(optimizer='sgd',
                             loss='mse',
