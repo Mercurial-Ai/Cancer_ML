@@ -105,7 +105,26 @@ class voting_ensemble:
 
         self.ensembled_prediction = predictions
 
-        duke_predictions = predictions[1:]
+        duke_image_predictions = predictions[2:]
+
+        i = 0
+        for pred in duke_image_predictions:
+            pred = np.reshape(pred, (pred.shape[1], pred.shape[0]))
+            duke_image_predictions[i] = pred
+
+            i = i + 1
+
+        avg_arr = np.empty(shape=(duke_image_predictions[0].shape))
+        for i in range(duke_image_predictions[0].shape[-1]):
+            for j in range(duke_image_predictions[0].shape[0]):
+                num1 = duke_image_predictions[0][j, i]
+                num2 = duke_image_predictions[1][j, i]
+
+                avg = (num1 + num2) / 2
+
+                avg_arr[j, i] = avg
+
+        self.img_avg_arr = avg_arr
 
     def load_models(self, model_dir):
 
