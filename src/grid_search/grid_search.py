@@ -37,26 +37,36 @@ class grid_search:
 
         return comb_dict_list
 
-    def test_model(self, model, X_train, y_train, X_val, y_val, weight_dict=None):
+    def test_model(self, model, X_train, y_train, X_val, y_val, weight_dict=None, num_combs=None):
 
         combs = self.read_grid()
 
-        print(len(combs), "combinations")
+        print(len(combs), "possible combinations")
+
+        if num_combs == None:
+            num_combs = len(combs)
+
         hyp_acc_list = []
+        i = 0
         for comb in combs:
-            model_copy = model
-            model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy'])
+            if i <= num_combs:
+                model_copy = model
+                model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy'])
 
-            fit = model_copy.fit(X_train, y_train, epochs=comb['epochs'], batch_size=comb['batch size'], class_weight=weight_dict)
+                fit = model_copy.fit(X_train, y_train, epochs=comb['epochs'], batch_size=comb['batch size'], class_weight=weight_dict)
 
-            results = model_copy.evaluate(X_val, y_val, batch_size=comb['batch size'])
+                results = model_copy.evaluate(X_val, y_val, batch_size=comb['batch size'])
 
-            percentAcc = results[-1]
+                percentAcc = results[-1]
 
-            hyp_acc_pair = (comb, (percentAcc))
+                hyp_acc_pair = (comb, (percentAcc))
 
-            hyp_acc_list.append(hyp_acc_pair)
-            print(hyp_acc_list)
+                hyp_acc_list.append(hyp_acc_pair)
+                print(hyp_acc_list)
+            else:
+                break
+
+            i = i + 1
 
         writer = write_excel('results.xls', hyp_acc_list)
         writer.run()

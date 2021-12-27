@@ -50,9 +50,9 @@ class image_model:
         search = grid_search()
 
         if self.multi_target:
-            search.test_model(model, X_train, y_train, X_val, y_val)
+            search.test_model(model, X_train, y_train, X_val, y_val, num_combs=3)
         else:
-            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train))
+            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=3)
 
         model.compile(optimizer='sgd',
                             loss='mse',
