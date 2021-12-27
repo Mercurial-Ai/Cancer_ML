@@ -23,24 +23,25 @@ class image_model:
         clinical_input = keras.layers.Input(shape=(X_train[0][0].shape[1]))
 
         x = Dense(50, activation="relu")(clinical_input)
-        x = Dense(40, activation='relu')(x)
         x = Dense(25, activation='relu')(x)
         x = Dense(15, activation='relu')(x)
-        x = Dense(5, activation='relu')(x)
         flat1 = keras.layers.Flatten()(x)
 
         image_input = keras.layers.Input(shape=(512, 512, 1))
 
-        x = Conv2D(32, kernel_size=4, activation='relu')(image_input)
-        x = MaxPooling2D(pool_size=(2, 2))(x)
-        x = Conv2D(16, kernel_size=4, activation='relu')(x)
-        x = MaxPooling2D(pool_size=(2, 2))(x)
+        x = Conv2D(64, kernel_size=5, activation='relu')(image_input)
+        x = MaxPooling2D(pool_size=(6, 6))(x)
+        x = Conv2D(32, kernel_size=5, activation='relu')(x)
+        x = MaxPooling2D(pool_size=(6, 6))(x)
+        x = Conv2D(16, kernel_size=5, activation='relu')(x)
+        x = MaxPooling2D(pool_size=(6, 6))(x)
         flat2 = keras.layers.Flatten()(x)
 
         merge = concatenate([flat1, flat2])
 
-        x = Dense(10, activation='relu')(merge)
-        x = Dense(10, activation='relu')(x)
+        x = Dense(128, activation='relu')(merge)
+        x = Dense(64, activation='relu')(x)
+        x = Dense(32, activation='relu')(x)
 
         output = Dense(y_train.shape[1], activation='linear')(x)
         model = keras.Model([clinical_input, image_input], output)
