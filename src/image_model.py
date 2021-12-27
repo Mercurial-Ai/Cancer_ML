@@ -30,17 +30,16 @@ class image_model:
         image_input = keras.layers.Input(shape=(512, 512, 1))
 
         x = Conv2D(64, kernel_size=5, activation='relu')(image_input)
-        x = MaxPooling2D(pool_size=(6, 6))(x)
+        x = MaxPooling2D(pool_size=(5, 5))(x)
         x = Conv2D(32, kernel_size=5, activation='relu')(x)
-        x = MaxPooling2D(pool_size=(6, 6))(x)
-        x = Conv2D(16, kernel_size=5, activation='relu')(x)
-        x = MaxPooling2D(pool_size=(6, 6))(x)
+        x = MaxPooling2D(pool_size=(5, 5))(x)
+        x = Conv2D(8, kernel_size=5, activation='relu')(x)
+        x = MaxPooling2D(pool_size=(5, 5))(x)
         flat2 = keras.layers.Flatten()(x)
 
         merge = concatenate([flat1, flat2])
 
-        x = Dense(128, activation='relu')(merge)
-        x = Dense(64, activation='relu')(x)
+        x = Dense(64, activation='relu')(merge)
         x = Dense(32, activation='relu')(x)
 
         output = Dense(y_train.shape[1], activation='linear')(x)
