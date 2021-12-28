@@ -49,7 +49,7 @@ class grid_search:
         hyp_acc_list = []
         i = 0
         for comb in combs:
-            if i <= num_combs:
+            if i < num_combs:
                 model_copy = model
                 model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy'])
 

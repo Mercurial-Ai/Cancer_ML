@@ -1,11 +1,8 @@
 import os
-from keras.backend import argmax
 from keras.models import load_model
-from scipy.sparse import data
-from sklearn.metrics import accuracy_score
 import numpy as np
+from src.confusion_matrix import confusion_matrix
 from src.cancer_ml import cancer_ml
-import math
 
 class voting_ensemble:
 
@@ -98,6 +95,8 @@ class voting_ensemble:
                 
                 ensemble_prediction = self.predict(testX, models)
                 predictions.append(ensemble_prediction)
+
+                confusion_matrix(testY, ensemble_prediction)
 
                 self.eval(testX, testY, models)
 
