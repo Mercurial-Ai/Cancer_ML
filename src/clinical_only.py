@@ -45,6 +45,7 @@ class clinical_only:
         else:
             self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weights=get_weight_dict(y_train))
 
+        # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
         if X_train.shape == (1713, 691):
             self.model.save('data/saved_models/clinical_metabric/keras_clinical_only_model.h5')
         else:

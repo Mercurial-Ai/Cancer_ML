@@ -39,7 +39,8 @@ class image_model:
 
         merge = concatenate([flat1, flat2])
 
-        x = Dense(64, activation='relu')(merge)
+        x = Dense(80, activation='relu')(merge)
+        x = Dense(64, activation='relu')(x)
         x = Dense(32, activation='relu')(x)
 
         output = Dense(y_train.shape[1], activation='linear')(x)
