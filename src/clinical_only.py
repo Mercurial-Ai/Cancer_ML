@@ -47,9 +47,15 @@ class clinical_only:
 
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
         if X_train.shape == (1713, 691):
-            self.model.save('data/saved_models/clinical_metabric/keras_clinical_only_model.h5')
+            try:
+                self.model.save('data/saved_models/clinical_metabric/keras_clinical_only_model.h5')
+            except:
+                print("clinical metabric could not be saved")
         else:
-            self.model.save('data/saved_models/clinical_duke/keras_clinical_only_model.h5')
+            try:
+                self.model.save('data/saved_models/clinical_duke/keras_clinical_only_model.h5')
+            except:
+                print("clinical duke could not be saved")
 
         return self.model
 

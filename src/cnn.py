@@ -61,7 +61,10 @@ class cnn:
         else:
             self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
-        self.model.save('data/saved_models/image_only/keras_cnn_model.h5')
+        try:
+            self.model.save('data/saved_models/image_only/keras_cnn_model.h5')
+        except:
+            print("image only model could not be saved")
 
         return self.model
 
