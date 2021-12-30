@@ -59,6 +59,7 @@ class data_pipeline:
     def concatenate_image_clinical(self, clinical_array):
 
         concatenated_array = np.concatenate((clinical_array, self.img_array), axis=1)
+        print('conc shape:', concatenated_array.shape)
 
         return concatenated_array
 
