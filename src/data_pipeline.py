@@ -58,6 +58,8 @@ class data_pipeline:
 
     def concatenate_image_clinical(self, clinical_array):
 
+        print('clinical array shape:', clinical_array.shape)
+        print('img shape:', self.img_array.shape)
         concatenated_array = np.concatenate((clinical_array, self.img_array), axis=1)
         print('conc shape:', concatenated_array.shape)
 
@@ -178,6 +180,6 @@ class data_pipeline:
         self.image_only.y_val = y_val
 
     def slice_data(self):
-        slice_size = 0.3
+        slice_size = 0.25
 
         self.img_array = self.img_array[0:int(round(self.img_array.shape[0]*slice_size, 0))]
