@@ -3,6 +3,7 @@ from keras.models import load_model
 import numpy as np
 from src.confusion_matrix import confusion_matrix
 from src.cancer_ml import cancer_ml
+import pandas as pd
 
 class voting_ensemble:
 
@@ -96,9 +97,13 @@ class voting_ensemble:
                 ensemble_prediction = self.predict(testX, models)
                 predictions.append(ensemble_prediction)
 
-                confusion_matrix(testY, ensemble_prediction)
-
-                self.eval(testX, testY, models)
+                testY = np.transpose(testY)
+        
+                try:
+                    confusion_matrix(testY, ensemble_prediction)
+                except:
+                    print("c matrix failed")
+                    print(ensemble_prediction)
 
             i = i + 1
 
@@ -106,24 +111,21 @@ class voting_ensemble:
 
         duke_image_predictions = predictions[2:]
 
-        i = 0
-        for pred in duke_image_predictions:
-            pred = np.reshape(pred, (pred.shape[1], pred.shape[0]))
-            duke_image_predictions[i] = pred
-
-            i = i + 1
-
         avg_arr = np.empty(shape=(duke_image_predictions[0].shape))
         for i in range(duke_image_predictions[0].shape[-1]):
             for j in range(duke_image_predictions[0].shape[0]):
                 num1 = duke_image_predictions[0][j, i]
                 num2 = duke_image_predictions[1][j, i]
 
+                # find the average of each corresponding var across models
                 avg = (num1 + num2) / 2
 
                 avg_arr[j, i] = avg
 
         self.img_avg_arr = avg_arr
+
+        accuracy = self.eval(self.img_avg_arr, all_data[2][1])
+        print("Accuracy:", accuracy)
 
     def load_models(self, model_dir):
 
@@ -145,7 +147,6 @@ class voting_ensemble:
         y = [model.predict(testX) for model in models]
         y = np.array(y)
 
-        # find the average of each corresponding var across models
         all_vars = []
         for i in range(y.shape[-1]):
             all_var = []
@@ -156,10 +157,32 @@ class voting_ensemble:
             all_vars.append(all_var)
 
         all_vars = np.array(all_vars)
-                    
+
         return all_vars
 
-    def eval(self, testX, testY, models):
-        y = self.predict(testX, models)
+    def eval(self, testX, testY):
+        
+        if type(testY) == pd.DataFrame:
+            testY = testY.to_numpy()
+            testY = np.transpose(testY)
 
-        y = np.array(y)
+        print("testX:", testX)
+        print("testY:", testY)
+
+        total_nums = testX.shape[0] * testX.shape[1]
+
+        num_correct = 0
+        for i in range(testX.shape[-1]):
+            for j in range(testX.shape[0]):
+                num1 = testX[j, i]
+                num2 = testY[j, i]
+
+                num1 = round(num1, 0)
+                num2 = round(num2, 0)
+                
+                if num1 == num2:
+                    num_correct = num_correct + 1
+
+        percent_accuracy = (num_correct / total_nums)*100
+        
+        return percent_accuracy

@@ -14,7 +14,7 @@ class cnn:
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=128):
 
-        if len(y_train.shape) > 1:
+        if y_train.shape[-1] > 1:
             self.multi_target = True
         else:
             self.multi_target = False
@@ -48,9 +48,9 @@ class cnn:
         search = grid_search()
 
         if self.multi_target:
-            search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=24)
+            search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
         else:
-            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=24)
+            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
 
         self.model.compile(loss=loss,
                     optimizer=opt,
@@ -69,7 +69,7 @@ class cnn:
         return self.model
 
     def test_model(self, X_test, y_test):
-        results = self.model.evaluate(X_test, y_test, batch_size=128)
+        results = self.model.evaluate(X_test, y_test, batch_size=32)
 
         if len(y_test.shape) == 1:
             confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))

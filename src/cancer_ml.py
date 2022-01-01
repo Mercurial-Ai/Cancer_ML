@@ -234,9 +234,9 @@ class cancer_ml:
         self.data_pipe.image_clinical.X_test = new_test
         self.data_pipe.image_clinical.X_val = new_val
 
-        self.data_pipe.image_clinical.y_train = self.data_pipe.image_clinical.y_train.iloc[self.collected_indices_train]
-        self.data_pipe.image_clinical.y_test = self.data_pipe.image_clinical.y_test.iloc[self.collected_indices_test]
-        self.data_pipe.image_clinical.y_val = self.data_pipe.image_clinical.y_val.iloc[self.collected_indices_val]
+        self.data_pipe.image_clinical.y_train = self.data_pipe.image_clinical.y_train[self.collected_indices_train]
+        self.data_pipe.image_clinical.y_test = self.data_pipe.image_clinical.y_test[self.collected_indices_test]
+        self.data_pipe.image_clinical.y_val = self.data_pipe.image_clinical.y_val[self.collected_indices_val]
 
     def equalize_test(self, img_array):
 
@@ -285,7 +285,7 @@ class cancer_ml:
                         
                 class_array_dict[label] = class_array 
 
-                y = y_test.iloc[collected_indices]
+                y = y_test[collected_indices]
 
                 class_y_dict[label] = y
 
@@ -316,7 +316,6 @@ class cancer_ml:
 
         arrays = []
         for data in list(class_y_dict.values()):
-            data = data.to_numpy()
             arrays.append(data)
 
         new_y = np.concatenate(tuple(arrays), axis=0)
@@ -383,7 +382,7 @@ class cancer_ml:
                         
                 class_array_dict[label] = class_array 
 
-                y = y_val.iloc[collected_indices]
+                y = y_val[collected_indices]
 
                 class_y_dict[label] = y
 
@@ -414,7 +413,6 @@ class cancer_ml:
 
         arrays = []
         for data in list(class_y_dict.values()):
-            data = data.to_numpy()
             arrays.append(data)
 
         new_y = np.concatenate(tuple(arrays), axis=0)
@@ -472,7 +470,7 @@ class cancer_ml:
                         
                 class_array_dict[label] = class_array
 
-                y = y_train.iloc[collected_indices]
+                y = y_train[collected_indices]
 
                 class_y_dict[label] = y
 
@@ -510,7 +508,6 @@ class cancer_ml:
 
         arrays = []
         for data in list(class_y_dict.values()):
-            data = data.to_numpy()
             arrays.append(data)
 
         new_y = np.concatenate(tuple(arrays), axis=0)

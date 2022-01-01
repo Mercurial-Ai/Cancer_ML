@@ -15,7 +15,7 @@ class image_model:
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
 
-        if type(y_train) == pd.DataFrame:
+        if y_train.shape[-1] > 1:
             self.multi_target = True
         else:
             self.multi_target = False
@@ -51,18 +51,18 @@ class image_model:
         search = grid_search()
 
         if self.multi_target:
-            search.test_model(model, X_train, y_train, X_val, y_val, num_combs=24)
+            search.test_model(model, X_train, y_train, X_val, y_val, num_combs=1)
         else:
-            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=24)
+            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
 
-        model.compile(optimizer='sgd',
+        model.compile(optimizer='adam',
                             loss='mse',
                             metrics=['accuracy'])
 
         if self.multi_target:
-            self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+            self.fit = model.fit(X_train, y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val))
         else:
-            self.fit = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+            self.fit = model.fit(X_train, y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         try:
             model.save('data/saved_models/image_clinical/keras_image_clinical_model.h5')
@@ -73,7 +73,7 @@ class image_model:
 
     def test_model(self, X_test, y_test):
 
-        results = self.model.evaluate(X_test, y_test, batch_size=128)
+        results = self.model.evaluate(X_test, y_test, batch_size=32)
 
         if len(y_test.shape) == 1:
             confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))

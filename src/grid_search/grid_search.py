@@ -53,7 +53,7 @@ class grid_search:
                 model_copy = model
                 model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy'])
 
-                fit = model_copy.fit(X_train, y_train, epochs=comb['epochs'], batch_size=comb['batch size'], validation_data=(X_val, y_val), class_weight=weight_dict)
+                fit = model_copy.fit(X_train, y_train, epochs=int(comb['epochs']), batch_size=comb['batch size'], validation_data=(X_val, y_val), class_weight=weight_dict)
 
                 results = model_copy.evaluate(X_val, y_val, batch_size=comb['batch size'])
 
