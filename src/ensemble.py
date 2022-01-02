@@ -93,17 +93,16 @@ class voting_ensemble:
 
                 testX = data[0]
                 testY = data[1]
+
+                if type(testX) == list:
+                    testX = testX[0]
                 
+                print('true y:', testY)
                 ensemble_prediction = self.predict(testX, models)
+                print("en pred:", ensemble_prediction)
                 predictions.append(ensemble_prediction)
 
-                testY = np.transpose(testY)
-        
-                try:
-                    confusion_matrix(testY, ensemble_prediction)
-                except:
-                    print("c matrix failed")
-                    print(ensemble_prediction)
+                confusion_matrix(testY, ensemble_prediction)
 
             i = i + 1
 
@@ -145,6 +144,7 @@ class voting_ensemble:
 
     def predict(self, testX, models):
         y = [model.predict(testX) for model in models]
+        print("prediction y:", y)
         y = np.array(y)
 
         all_vars = []
@@ -161,13 +161,9 @@ class voting_ensemble:
         return all_vars
 
     def eval(self, testX, testY):
-        
-        if type(testY) == pd.DataFrame:
-            testY = testY.to_numpy()
-            testY = np.transpose(testY)
 
-        print("testX:", testX)
-        print("testY:", testY)
+        testY = testY.to_numpy()
+        testY = np.transpose(testY)
 
         total_nums = testX.shape[0] * testX.shape[1]
 

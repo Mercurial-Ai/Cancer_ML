@@ -29,16 +29,21 @@ def confusion_matrix(y_true, y_pred):
 
     else:
         y_pred = np.reshape(y_pred, (y_pred.shape[1], y_pred.shape[0]))
+        print(y_pred.shape)
+        print(y_true.shape)
         for i in range(y_true.shape[1]):
             col1 = y_true[:, i]
             col2 = y_pred[:, i]
 
-            c_matrix = c_mat(col1, col2.round())
-            disp = ConfusionMatrixDisplay(c_matrix)
+            try:
+                c_matrix = c_mat(col1, col2.round())
+                disp = ConfusionMatrixDisplay(c_matrix)
 
-            # clear plt before plotting to prevent other graphs from appearing with .show()
-            plt.close('all')
-            
-            disp.plot()
+                # clear plt before plotting to prevent other graphs from appearing with .show()
+                plt.close('all')
+                
+                disp.plot()
 
-            plt.savefig("confusion_matrices/confusion_matrix " + vars[i])
+                plt.savefig("confusion_matrices/confusion_matrix " + vars[i])
+            except ValueError:
+                print("var failed in c matrix")

@@ -58,10 +58,7 @@ class data_pipeline:
 
     def concatenate_image_clinical(self, clinical_array):
 
-        print('clinical array shape:', clinical_array.shape)
-        print('img shape:', self.img_array.shape)
         concatenated_array = np.concatenate((clinical_array, self.img_array), axis=1)
-        print('conc shape:', concatenated_array.shape)
 
         return concatenated_array
 
@@ -92,11 +89,6 @@ class data_pipeline:
         X_train = min_max_scaler.fit_transform(X_train)
         X_test = min_max_scaler.fit_transform(X_test)
         X_val = min_max_scaler.fit_transform(X_val)
-
-        min_max_scaler = MinMaxScaler()
-        y_train = min_max_scaler.fit_transform(y_train)
-        y_test = min_max_scaler.fit_transform(y_test)
-        y_val = min_max_scaler.fit_transform(y_val)
 
         self.only_clinical.X_train = X_train
         self.only_clinical.X_test = X_test
@@ -144,11 +136,6 @@ class data_pipeline:
         X_test = min_max_scaler.fit_transform(X_test)
         X_val = min_max_scaler.fit_transform(X_val)
 
-        min_max_scaler = MinMaxScaler()
-        y_train = min_max_scaler.fit_transform(y_train)
-        y_test = min_max_scaler.fit_transform(y_test)
-        y_val = min_max_scaler.fit_transform(y_val)
-
         X_train = [self.split_modalities(X_train)]
         X_test = [self.split_modalities(X_test)]
         X_val = [self.split_modalities(X_val)]
@@ -171,11 +158,6 @@ class data_pipeline:
         X_train = min_max_scaler.fit_transform(X_train)
         X_test = min_max_scaler.fit_transform(X_test)
         X_val = min_max_scaler.fit_transform(X_val)
-
-        min_max_scaler = MinMaxScaler()
-        y_train = min_max_scaler.fit_transform(y_train)
-        y_test = min_max_scaler.fit_transform(y_test)
-        y_val = min_max_scaler.fit_transform(y_val)
 
         # reshape back into 2d images
         X_train = np.reshape(X_train, (X_train.shape[0], int(math.sqrt(X_train.shape[1])), int(math.sqrt(X_train.shape[1]))))
