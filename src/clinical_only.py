@@ -18,32 +18,67 @@ class clinical_only:
         else:
             self.multi_target = False
 
-        input = keras.layers.Input(shape=(X_train.shape[1],))
+        # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
+        if X_train.shape != (1713, 691):
+            print("Duke input:", X_train.shape)
+            input = keras.layers.Input(shape=(X_train.shape[1],))
 
-        x = Dense(9, activation='relu')(input)
-        x = Dense(9, activation='relu')(x)
-        x = Dense(6, activation='relu')(x)
-        x = Dense(4, activation='relu')(x)
-        x = Dense(2, activation='relu')(x)
-        output = Dense(y_train.shape[1], activation='linear')(x)
+            x = Dense(64, activation='relu')(input)
+            x = Dense(32, activation='relu')(x)
+            output = Dense(y_train.shape[1], activation='linear')(x)
 
-        self.model = keras.Model(input, output)
+            self.model = keras.Model(input, output)
 
-        search = grid_search()
+            print(self.model.summary())
 
-        if self.multi_target:
-            search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
+            search = grid_search()
+
+            if self.multi_target:
+                search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
+            else:
+                search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
+
+            self.model.compile(optimizer='SGD',
+                                loss='mean_squared_error',
+                                metrics=['accuracy'])
+
+            if self.multi_target:
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+            else:
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weights=get_weight_dict(y_train))
+
         else:
-            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
+            print("metabric input:", X_train.shape)
+            input = keras.layers.Input(shape=(X_train.shape[1],))
 
-        self.model.compile(optimizer='SGD',
-                            loss='mean_squared_error',
-                            metrics=['accuracy'])
+            x = Dense(512, activation='relu')(input)
+            x = Dense(256, activation='relu')(x)
+            x = Dense(128, activation='relu')(x)
+            x = Dense(64, activation='relu')(x)
+            x = Dense(32, activation='relu')(x)
+            x = Dense(16, activation='relu')(x)
 
-        if self.multi_target:
-            self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
-        else:
-            self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weights=get_weight_dict(y_train))
+            output = Dense(y_train.shape[1], activation='linear')(x)
+
+            self.model = keras.Model(input, output)
+
+            print(self.model.summary())
+
+            search = grid_search()
+
+            if self.multi_target:
+                search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
+            else:
+                search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
+
+            self.model.compile(optimizer='SGD',
+                                loss='mean_squared_error',
+                                metrics=['accuracy'])
+
+            if self.multi_target:
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+            else:
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weights=get_weight_dict(y_train))
 
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
         if X_train.shape == (1713, 691):
