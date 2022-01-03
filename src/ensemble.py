@@ -1,4 +1,5 @@
 import os
+from keras.backend import argmax, expand_dims
 from keras.models import load_model
 import numpy as np
 from src.confusion_matrix import confusion_matrix
@@ -88,7 +89,7 @@ class voting_ensemble:
         for models in all_models:
 
             # filter out empty model lists
-            if len(models) >=1:
+            if len(models) >= 1:
                 data = all_data[i]
 
                 testX = data[0]
@@ -97,18 +98,33 @@ class voting_ensemble:
                 if type(testX) == list:
                     testX = testX[0]
                 
-                print('true y:', testY)
-                ensemble_prediction = self.predict(testX, models)
-                print("en pred:", ensemble_prediction)
-                predictions.append(ensemble_prediction)
+                if type(testX) != tuple:
+                    for example in testX:
+                        ensemble_prediction = self.predict(example, models)
+                        predictions.append(ensemble_prediction)
 
-                confusion_matrix(testY, ensemble_prediction)
+                        ensemble_prediction = np.flip(ensemble_prediction)
+                        confusion_matrix(testY, ensemble_prediction)
+                else:
+                    for j in range(testX[0].shape[0]):
+                        clinical_example = testX[0][j]
+                        img_example = testX[1][j]
+
+                        clinical_example = np.expand_dims(clinical_example, 0)
+                        img_example = np.expand_dims(img_example, 0)
+
+                        example = [clinical_example, img_example]
+                        ensemble_prediction = self.predict(example, models)
+                        predictions.append(ensemble_prediction)
+
+                        ensemble_prediction = np.flip(ensemble_prediction)
+                        confusion_matrix(testY, ensemble_prediction)
 
             i = i + 1
 
         self.ensembled_prediction = predictions
 
-        duke_image_predictions = predictions[2:]
+        duke_image_predictions = predictions[95:]
 
         avg_arr = np.empty(shape=(duke_image_predictions[0].shape))
         for i in range(duke_image_predictions[0].shape[-1]):
@@ -123,7 +139,7 @@ class voting_ensemble:
 
         self.img_avg_arr = avg_arr
 
-        accuracy = self.eval(self.img_avg_arr, all_data[2][1])
+        accuracy = self.eval(self.img_avg_arr, all_data[3][1])
         print("Accuracy:", accuracy)
 
     def load_models(self, model_dir):
@@ -143,41 +159,54 @@ class voting_ensemble:
         return models
 
     def predict(self, testX, models):
+
+        if type(testX) != list:
+            testX = np.expand_dims(testX, 0)
+
         y = [model.predict(testX) for model in models]
-        print("prediction y:", y)
         y = np.array(y)
+        y = np.squeeze(y, 0)
 
-        all_vars = []
+        results = []
+        # sum across models
         for i in range(y.shape[-1]):
-            all_var = []
-            for model in y:
-                for example in model:
-                    all_var.append(example[i])
+            var = y[:, i]
+            sum = np.sum(var, axis=0)
 
-            all_vars.append(all_var)
+            if type(sum) == np.array:
+                # argmax across models
+                result = argmax(sum, axis=1)
+            else:
+                result = sum
 
-        all_vars = np.array(all_vars)
+            results.append(result)
 
-        return all_vars
+        results = np.array(results)
 
-    def eval(self, testX, testY):
+        results = np.expand_dims(results, 0)
 
-        testY = testY.to_numpy()
-        testY = np.transpose(testY)
+        return results
 
-        total_nums = testX.shape[0] * testX.shape[1]
+    def eval(self, prediction, testY):
+        
+        if type(testY) == pd.DataFrame:
+            testY = testY.to_numpy()
+
+        total_nums = testY.shape[0] * testY.shape[1]
 
         num_correct = 0
-        for i in range(testX.shape[-1]):
-            for j in range(testX.shape[0]):
-                num1 = testX[j, i]
-                num2 = testY[j, i]
 
-                num1 = round(num1, 0)
-                num2 = round(num2, 0)
-                
-                if num1 == num2:
-                    num_correct = num_correct + 1
+        for j in range(testY.shape[0]):
+            pred = prediction[:, j]
+            true = testY[:, j]
+
+            for out in pred:
+                for y in true:
+                    out = round(out, 0)
+                    y = round(y, 0)
+
+                    if out == y:
+                        num_correct = num_correct + 1
 
         percent_accuracy = (num_correct / total_nums)*100
         

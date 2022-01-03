@@ -28,7 +28,7 @@ def confusion_matrix(y_true, y_pred):
         plt.show()
 
     else:
-        y_pred = np.reshape(y_pred, (y_pred.shape[1], y_pred.shape[0]))
+        
         print(y_pred.shape)
         print(y_true.shape)
         for i in range(y_true.shape[1]):
@@ -45,5 +45,7 @@ def confusion_matrix(y_true, y_pred):
                 disp.plot()
 
                 plt.savefig("confusion_matrices/confusion_matrix " + vars[i])
-            except ValueError:
-                print("var failed in c matrix")
+            except ValueError as e:
+                pass
+                #print(e)
+                #print("var failed in c matrix")
