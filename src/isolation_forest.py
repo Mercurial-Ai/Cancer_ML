@@ -5,7 +5,7 @@ import math
 
 def isolation_forest(features, target):
 
-    isolated_forest=RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42, max_depth=30) 
+    isolated_forest=RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42, max_depth=100) 
 
     if type(features) == tuple:
         # concatenate features for image clinical
