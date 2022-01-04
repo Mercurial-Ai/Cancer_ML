@@ -29,8 +29,6 @@ def confusion_matrix(y_true, y_pred):
 
     else:
         
-        print(y_pred.shape)
-        print(y_true.shape)
         for i in range(y_true.shape[1]):
             col1 = y_true[:, i]
             col2 = y_pred[:, i]

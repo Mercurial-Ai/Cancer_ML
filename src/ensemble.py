@@ -77,6 +77,10 @@ class voting_ensemble:
 
         all_models = [self.clinical_metabric_models, self.clinical_duke_models, self.image_clinical_models, self.image_only_models]
 
+        for models in all_models:
+            for model in models:
+                print(model.summary())
+
         clinical_metabric_test = [clinical_metabric.data_pipe.only_clinical.X_test, clinical_metabric.data_pipe.only_clinical.y_test]
         clinical_duke_test = [clinical_duke.data_pipe.only_clinical.X_test, clinical_duke.data_pipe.only_clinical.y_test]
         image_clinical_test = [image_clinical.data_pipe.image_clinical.X_test, image_clinical.data_pipe.image_clinical.y_test]

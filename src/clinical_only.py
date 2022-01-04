@@ -20,7 +20,7 @@ class clinical_only:
 
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
         if X_train.shape != (1713, 691):
-            print("Duke input:", X_train.shape)
+
             input = keras.layers.Input(shape=(X_train.shape[1],))
 
             x = Dense(64, activation='relu')(input)
@@ -48,7 +48,7 @@ class clinical_only:
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weights=get_weight_dict(y_train))
 
         else:
-            print("metabric input:", X_train.shape)
+   
             input = keras.layers.Input(shape=(X_train.shape[1],))
 
             x = Dense(512, activation='relu')(input)
@@ -67,9 +67,9 @@ class clinical_only:
             search = grid_search()
 
             if self.multi_target:
-                search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
+                search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=24)
             else:
-                search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
+                search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=24)
 
             self.model.compile(optimizer='SGD',
                                 loss='mean_squared_error',

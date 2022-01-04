@@ -14,6 +14,7 @@ class image_model:
         self.load_model = load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
+        print("image clinical x train:", X_train.shape)
 
         if y_train.shape[-1] > 1:
             self.multi_target = True
@@ -51,9 +52,9 @@ class image_model:
         search = grid_search()
 
         if self.multi_target:
-            search.test_model(model, X_train, y_train, X_val, y_val, num_combs=1)
+            search.test_model(model, X_train, y_train, X_val, y_val, num_combs=24)
         else:
-            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
+            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=24)
 
         model.compile(optimizer='adam',
                             loss='mse',
