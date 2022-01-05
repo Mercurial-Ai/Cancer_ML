@@ -561,3 +561,4 @@ class cancer_ml:
         clinicalFile = open('clinical_only.pickle', 'r+b')
         self.data_pipe.only_clinical = pickle.load(clinicalFile)
         clinicalFile.close()
+        

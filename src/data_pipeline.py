@@ -3,7 +3,6 @@ from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
 import math
-
 from src.image_tools.import_numpy import import_numpy
 from src.tokenize_dataset import tokenize_dataset
 
