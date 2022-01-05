@@ -25,7 +25,7 @@ class clinical_only:
 
             x = Dense(64, activation='relu')(input)
             x = Dense(32, activation='relu')(x)
-            output = Dense(y_train.shape[1], activation='linear')(x)
+            output = Dense(y_train.shape[-1], activation='linear')(x)
 
             self.model = keras.Model(input, output)
 
@@ -58,7 +58,7 @@ class clinical_only:
             x = Dense(32, activation='relu')(x)
             x = Dense(16, activation='relu')(x)
 
-            output = Dense(y_train.shape[1], activation='linear')(x)
+            output = Dense(y_train.shape[-1], activation='linear')(x)
 
             self.model = keras.Model(input, output)
 
@@ -67,9 +67,9 @@ class clinical_only:
             search = grid_search()
 
             if self.multi_target:
-                search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=24)
+                search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
             else:
-                search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=24)
+                search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
 
             self.model.compile(optimizer='SGD',
                                 loss='mean_squared_error',
@@ -98,7 +98,10 @@ class clinical_only:
         results = self.model.evaluate(X_test, y_test, batch_size=32)
 
         if len(y_test.shape) == 1:
-            confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
+            try:
+                confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
+            except:
+                print('c matrix failed')
 
         return results
 

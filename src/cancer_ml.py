@@ -285,7 +285,10 @@ class cancer_ml:
                         
                 class_array_dict[label] = class_array 
 
-                y = y_test.iloc[collected_indices]
+                if type(self.target) == list:
+                    y = y_test.iloc[collected_indices]
+                else:
+                    y = y_test[collected_indices]
 
                 class_y_dict[label] = y
 
@@ -382,7 +385,10 @@ class cancer_ml:
                         
                 class_array_dict[label] = class_array 
 
-                y = y_val.iloc[collected_indices]
+                if type(self.target) == list:
+                    y = y_val.iloc[collected_indices]
+                else:
+                    y = y_val[collected_indices]
 
                 class_y_dict[label] = y
 
@@ -470,7 +476,10 @@ class cancer_ml:
                         
                 class_array_dict[label] = class_array
 
-                y = y_train.iloc[collected_indices]
+                if type(self.target) == list:
+                    y = y_train.iloc[collected_indices]
+                else:
+                    y = y_train[collected_indices]
 
                 class_y_dict[label] = y
 

@@ -41,7 +41,7 @@ class cnn:
         x = layers.Dense(24)(x)
         x = layers.Activation('relu')(x)
 
-        output = layers.Dense(y_train.shape[1], activation='relu')(x)
+        output = layers.Dense(y_train.shape[-1], activation='relu')(x)
 
         self.model = keras.Model(input, output)
 

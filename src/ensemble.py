@@ -52,10 +52,10 @@ class voting_ensemble:
                             'Adjuvant Endocrine Therapy Medications ', 'Therapeutic or Prophylactic Oophorectomy as part of Endocrine Therapy ', 'Neoadjuvant Anti-Her2 Neu Therapy', 'Adjuvant Anti-Her2 Neu Therapy ', 'Received Neoadjuvant Therapy or Not', 'Pathologic response to Neoadjuvant therapy: Pathologic stage (T) following neoadjuvant therapy ',
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
-        clinical_metabric = cancer_ml("metabric", metabric_dependent, model="clinical_only")
-        clinical_duke = cancer_ml("duke", duke_dependent, model="clinical_only")
-        image_clinical = cancer_ml("duke", duke_dependent, model="image_clinical")
-        image_only = cancer_ml("duke", duke_dependent, model="cnn")
+        clinical_metabric = cancer_ml("metabric", "chemotherapy", model="clinical_only")
+        clinical_duke = cancer_ml("duke", "Adjuvant Chemotherapy", model="clinical_only")
+        image_clinical = cancer_ml("duke", "Adjuvant Chemotherapy", model="image_clinical")
+        image_only = cancer_ml("duke", "Adjuvant Chemotherapy", model="cnn")
 
         if not load_models:
             clinical_metabric.run_model()

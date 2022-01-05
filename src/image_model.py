@@ -14,7 +14,6 @@ class image_model:
         self.load_model = load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
-        print("image clinical x train:", X_train.shape)
 
         if y_train.shape[-1] > 1:
             self.multi_target = True
@@ -44,7 +43,7 @@ class image_model:
         x = Dense(64, activation='relu')(x)
         x = Dense(32, activation='relu')(x)
 
-        output = Dense(y_train.shape[1], activation='linear')(x)
+        output = Dense(y_train.shape[-1], activation='linear')(x)
         model = keras.Model([clinical_input, image_input], output)
 
         print(model.summary())
