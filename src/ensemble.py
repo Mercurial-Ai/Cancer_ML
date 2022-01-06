@@ -5,6 +5,7 @@ import numpy as np
 from src.confusion_matrix import confusion_matrix
 from src.cancer_ml import cancer_ml
 import pandas as pd
+from sklearn.metrics import accuracy_score
 
 class voting_ensemble:
 
@@ -128,22 +129,13 @@ class voting_ensemble:
 
         self.ensembled_prediction = predictions
 
-        duke_image_predictions = predictions[95:]
+        duke_image_predictions = predictions[141:]
 
-        avg_arr = np.empty(shape=(duke_image_predictions[0].shape))
-        for i in range(duke_image_predictions[0].shape[-1]):
-            for j in range(duke_image_predictions[0].shape[0]):
-                num1 = duke_image_predictions[0][j, i]
-                num2 = duke_image_predictions[1][j, i]
+        duke_image_predictions = np.concatenate(duke_image_predictions, axis=0)
 
-                # find the average of each corresponding var across models
-                avg = (num1 + num2) / 2
+        duke_image_true = np.concatenate([all_data[2][1], all_data[3][1]], axis=0)
 
-                avg_arr[j, i] = avg
-
-        self.img_avg_arr = avg_arr
-
-        accuracy = self.eval(self.img_avg_arr, all_data[3][1])
+        accuracy = self.eval(duke_image_predictions, duke_image_true)
         print("Accuracy:", accuracy)
 
     def load_models(self, model_dir):
@@ -167,7 +159,14 @@ class voting_ensemble:
         if type(testX) != list:
             testX = np.expand_dims(testX, 0)
 
-        y = [model.predict(testX) for model in models]
+        y = []
+        for model in models:
+            try:
+                prediction = model.predict(testX)
+                y.append(prediction)
+            except ValueError:
+                print("invalid model input found")
+
         y = np.concatenate(y, axis=0)
 
         results = []
@@ -195,22 +194,14 @@ class voting_ensemble:
         if type(testY) == pd.DataFrame:
             testY = testY.to_numpy()
 
-        total_nums = testY.shape[0] * testY.shape[1]
+        accuracies = []
+        for j in range(testY.shape[-1]):
 
-        num_correct = 0
-
-        for j in range(testY.shape[0]):
             pred = prediction[:, j]
             true = testY[:, j]
 
-            for out in pred:
-                for y in true:
-                    out = round(out, 0)
-                    y = round(y, 0)
+            accuracy = accuracy_score(true, pred.round())
 
-                    if out == y:
-                        num_correct = num_correct + 1
-
-        percent_accuracy = (num_correct / total_nums)*100
+            accuracies.append(accuracy)
         
-        return percent_accuracy
+        return accuracies
