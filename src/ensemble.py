@@ -129,7 +129,10 @@ class voting_ensemble:
 
         self.ensembled_prediction = predictions
 
-        duke_image_predictions = predictions[141:]
+        duke_image_predictions = []
+        for prediction in self.ensembled_prediction:
+            if prediction.shape[-1] == 24:
+                duke_image_predictions.append(prediction)
 
         duke_image_predictions = np.concatenate(duke_image_predictions, axis=0)
 
