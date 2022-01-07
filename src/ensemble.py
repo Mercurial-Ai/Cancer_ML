@@ -136,7 +136,7 @@ class voting_ensemble:
 
         duke_image_predictions = np.concatenate(duke_image_predictions, axis=0)
 
-        duke_image_true = np.concatenate([all_data[2][1], all_data[3][1]], axis=0)
+        duke_image_true = np.concatenate([all_data[1][1], all_data[2][1], all_data[3][1]], axis=0)
 
         accuracy = self.eval(duke_image_predictions, duke_image_true)
         print("Accuracy:", accuracy)
