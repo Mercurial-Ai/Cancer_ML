@@ -40,19 +40,17 @@ class cancer_ml:
         if self.model == "clinical_only":
             self.clinical = True
             
-            if not multi_target:
-                self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
+            self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
 
         elif self.model == "image_clinical":
             self.image_clinical = True
 
-            if not multi_target:
-                i = 0
-                for x in self.data_pipe.image_clinical.X_train:
-                    x, self.data_pipe.image_clinical.y_train = self.remove_outliers(x, self.data_pipe.image_clinical.y_train)
-                    self.data_pipe.image_clinical.X_train[i] = x
+            i = 0
+            for x in self.data_pipe.image_clinical.X_train:
+                x, self.data_pipe.image_clinical.y_train = self.remove_outliers(x, self.data_pipe.image_clinical.y_train)
+                self.data_pipe.image_clinical.X_train[i] = x
 
-                    i = i + 1 
+                i = i + 1 
 
         elif self.model == "cnn":
             self.cnn = True
@@ -67,8 +65,7 @@ class cancer_ml:
 
                 i = i + 1
 
-            if not multi_target:
-                flattened_img_x, self.data_pipe.image_only.y_train = self.remove_outliers(flattened_img_x, self.data_pipe.image_only.y_train)
+            flattened_img_x, self.data_pipe.image_only.y_train = self.remove_outliers(flattened_img_x, self.data_pipe.image_only.y_train)
 
             x = np.reshape(flattened_img_x, pre_shape)
             self.data_pipe.image_only.X_train = x
@@ -140,6 +137,11 @@ class cancer_ml:
                 i = i + 1
         
             X = tuple(X)
+        else:
+            if str(type(X)) == "<class 'numpy.ndarray'>":
+                X = X[non_outlier_indices]
+            else:
+                X = X.iloc[non_outlier_indices]
 
         if str(type(y)) == "<class 'numpy.ndarray'>":
             y = y[non_outlier_indices]
