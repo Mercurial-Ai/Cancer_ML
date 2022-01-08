@@ -48,9 +48,9 @@ class cnn:
         search = grid_search()
 
         if self.multi_target:
-            search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=24)
+            search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=6)
         else:
-            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=24)
+            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=6)
 
         self.model.compile(loss=loss,
                     optimizer=opt,
