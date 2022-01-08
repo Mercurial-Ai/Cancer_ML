@@ -20,11 +20,6 @@ class cancer_ml:
         self.model = model
         self.crop_size = crop_size
 
-        if type(target) == list and len(target) > 1:
-            multi_target = True
-        else:
-            multi_target = False
-
         if self.dataset == "duke":
             self.collect_duke()
         elif self.dataset == "hn1":

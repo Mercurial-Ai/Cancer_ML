@@ -2,7 +2,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import IsolationForest
 import pandas as pd 
 import numpy as np
-import math
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 def isolation_forest(features, target):
 
@@ -33,5 +35,34 @@ def isolation_forest(features, target):
 
     predicted_df = pd.DataFrame(predicted)
     predicted_df.to_csv('data_anomaly.csv')
+
+    outlier_indices = []
+    i = 0
+    for prediction in predicted:
+        if prediction == -1:
+            outlier_indices.append(i)
+
+        i = i + 1
+
+    pca = PCA(n_components=3)
+
+    if type(features) == tuple:
+        features = concatenated_array
+
+    scaler = StandardScaler()
+    features = scaler.fit_transform(features)
+    features = pca.fit_transform(features)
+
+    fig = plt.figure()
+    fig.suptitle("3D PCA of Features with Outliers and Inliers")
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.scatter(features[:, 0], features[:, 1], zs=features[:, 2], s=4, lw=1, label="inliers", c="green")
+
+    ax.scatter(features[outlier_indices,0], features[outlier_indices,1], features[outlier_indices,2], lw=2, s=60, marker='x', c='red', label='outliers')
+
+    ax.legend()
+
+    plt.savefig("3d_outlier_pca" + str(features.shape) + ".png")
 
     return predicted
