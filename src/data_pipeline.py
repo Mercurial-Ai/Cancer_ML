@@ -179,3 +179,5 @@ class data_pipeline:
         slice_size = 0.25
 
         self.img_array = self.img_array[0:int(round(self.img_array.shape[0]*slice_size, 0))]
+
+        print("img_array shape:", self.img_array.shape)

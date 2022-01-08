@@ -14,6 +14,8 @@ class image_model:
         self.load_model = load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
+        print("image clinical x train clinical shape:", X_train[0][0].shape)
+        print("image clinical x train image shape:", X_train[0][1].shape)
 
         if y_train.shape[-1] > 1:
             self.multi_target = True

@@ -10,8 +10,6 @@ import math
 
 def PeakCluster(images):
 
-    print(images.shape)
-
     clusters=range(2,20) 
 
     summed_square_distance=[]
