@@ -38,7 +38,19 @@ class cnn:
 
         x = layers.Flatten()(x)
 
-        x = layers.Dense(24)(x)
+        x = layers.Dense(512)(x)
+        x = layers.Activation('relu')(x)
+
+        x = layers.Dense(256)(x)
+        x = layers.Activation('relu')(x)
+
+        x = layers.Dense(128)(x)
+        x = layers.Activation('relu')(x)
+
+        x = layers.Dense(64)(x)
+        x = layers.Activation('relu')(x)
+
+        x = layers.Dense(32)(x)
         x = layers.Activation('relu')(x)
 
         output = layers.Dense(y_train.shape[-1], activation='relu')(x)
