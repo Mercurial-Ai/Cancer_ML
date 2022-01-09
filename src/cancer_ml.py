@@ -14,6 +14,9 @@ from src.random_crop import random_crop
 
 class cancer_ml:
 
+    def tuple_to_list(self, t):
+        return list(map(self.tuple_to_list, t)) if isinstance(t, (list, tuple)) else t
+
     def __init__(self, dataset, target, model="clinical_only", crop_size=(256, 256)):
         self.dataset = dataset
         self.target = target
@@ -39,6 +42,12 @@ class cancer_ml:
 
         elif self.model == "image_clinical":
             self.image_clinical = True
+
+            self.data_pipe.image_clinical.X_train = self.tuple_to_list(self.data_pipe.image_clinical.X_train)
+
+            self.data_pipe.image_clinical.X_train[0][0], self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train[0][0], self.data_pipe.image_clinical.y_train)
+
+            self.data_pipe.image_clinical.X_train[0][1] = self.data_pipe.image_clinical.X_train[0][1][self.non_outlier_indices]
 
         elif self.model == "cnn":
             self.cnn = True
@@ -88,15 +97,15 @@ class cancer_ml:
 
         predicted = isolation_forest(X, y)
         
-        non_outlier_indices = []
+        self.non_outlier_indices = []
         i = 0
         for prediction in predicted:
             if prediction != -1:
-                non_outlier_indices.append(i)
+                self.non_outlier_indices.append(i)
 
             i = i + 1
 
-        num_outliers = len(predicted) - len(non_outlier_indices)
+        num_outliers = len(predicted) - len(self.non_outlier_indices)
 
         print("Num Outliers:", num_outliers)
 
@@ -104,7 +113,7 @@ class cancer_ml:
             X = list(X)
             i = 0
             for array in X:
-                array = array[non_outlier_indices, :]
+                array = array[self.non_outlier_indices, :]
                 X[i] = array
 
                 i = i + 1
@@ -112,14 +121,14 @@ class cancer_ml:
             X = tuple(X)
         else:
             if str(type(X)) == "<class 'numpy.ndarray'>":
-                X = X[non_outlier_indices]
+                X = X[self.non_outlier_indices]
             else:
-                X = X.iloc[non_outlier_indices]
+                X = X.iloc[self.non_outlier_indices]
 
         if str(type(y)) == "<class 'numpy.ndarray'>":
-            y = y[non_outlier_indices]
+            y = y[self.non_outlier_indices]
         else:
-            y = y.iloc[non_outlier_indices]
+            y = y.iloc[self.non_outlier_indices]
 
         return X, y
 
