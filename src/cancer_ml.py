@@ -40,30 +40,8 @@ class cancer_ml:
         elif self.model == "image_clinical":
             self.image_clinical = True
 
-            i = 0
-            for x in self.data_pipe.image_clinical.X_train:
-                x, self.data_pipe.image_clinical.y_train = self.remove_outliers(x, self.data_pipe.image_clinical.y_train)
-                self.data_pipe.image_clinical.X_train[i] = x
-
-                i = i + 1 
-
         elif self.model == "cnn":
             self.cnn = True
-
-            pre_shape = self.data_pipe.image_only.X_train.shape
-            flattened_img_x = np.empty(shape=(pre_shape[0], pre_shape[1]*pre_shape[2]), dtype=np.int8)
-
-            i = 0
-            for img in self.data_pipe.image_only.X_train:
-                flattened_img = img.flatten()
-                flattened_img_x[i] = flattened_img
-
-                i = i + 1
-
-            flattened_img_x, self.data_pipe.image_only.y_train = self.remove_outliers(flattened_img_x, self.data_pipe.image_only.y_train)
-
-            x = np.reshape(flattened_img_x, pre_shape)
-            self.data_pipe.image_only.X_train = x
 
             self.setup_cluster()
             self.k_neighbors()
