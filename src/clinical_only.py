@@ -13,7 +13,7 @@ class clinical_only:
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=32):
 
-        if y_train.shape[-1] > 1:
+        if len(y_train.shape) > 1:
             self.multi_target = True
         else:
             self.multi_target = False
