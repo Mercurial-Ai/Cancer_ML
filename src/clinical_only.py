@@ -4,6 +4,7 @@ from tensorflow.keras.layers import Dense
 from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
 from src.confusion_matrix import confusion_matrix
+from src.weighted_loss import weighted_loss
 import pandas as pd
 
 class clinical_only:
@@ -71,8 +72,11 @@ class clinical_only:
             else:
                 search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=24)
 
+            loss = weighted_loss(5, 0, 1.5)
+
+            print("loss applied")
             self.model.compile(optimizer='SGD',
-                                loss='mean_squared_error',
+                                loss=loss.loss_func,
                                 metrics=['accuracy'])
 
             if self.multi_target:
