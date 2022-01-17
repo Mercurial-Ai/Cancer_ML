@@ -20,7 +20,7 @@ class clinical_only:
             self.multi_target = False
 
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
-        if X_train.shape != (1713, 691):
+        if X_train.shape != (1711, 691):
 
             input = keras.layers.Input(shape=(X_train.shape[1],))
 
@@ -68,15 +68,12 @@ class clinical_only:
             search = grid_search()
 
             if self.multi_target:
-                search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=24)
+                search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
             else:
-                search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=24)
+                search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
 
-            loss = weighted_loss(5, 0, 1.5)
-
-            print("loss applied")
             self.model.compile(optimizer='SGD',
-                                loss=loss.loss_func,
+                                loss='mae',
                                 metrics=['accuracy'])
 
             if self.multi_target:
@@ -85,7 +82,7 @@ class clinical_only:
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weights=get_weight_dict(y_train))
 
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
-        if X_train.shape == (1713, 691):
+        if X_train.shape == (1711, 691):
             try:
                 self.model.save('data/saved_models/clinical_metabric/keras_clinical_only_model.h5')
             except:
