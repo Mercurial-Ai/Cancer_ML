@@ -17,7 +17,7 @@ class image_model:
         print("image clinical x train clinical shape:", X_train[0][0].shape)
         print("image clinical x train image shape:", X_train[0][1].shape)
 
-        if y_train.shape[-1] > 1:
+        if len(y_train.shape) > 1:
             self.multi_target = True
         else:
             self.multi_target = False
@@ -64,6 +64,7 @@ class image_model:
         if self.multi_target:
             self.fit = model.fit(X_train, y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val))
         else:
+            print("weights applied")
             self.fit = model.fit(X_train, y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         try:

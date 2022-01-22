@@ -14,7 +14,7 @@ class cnn:
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=128):
 
-        if y_train.shape[-1] > 1:
+        if len(y_train.shape) > 1:
             self.multi_target = True
         else:
             self.multi_target = False
@@ -62,6 +62,7 @@ class cnn:
         if self.multi_target:
             search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=12)
         else:
+            print("weights applied")
             search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=12)
 
         self.model.compile(loss=loss,

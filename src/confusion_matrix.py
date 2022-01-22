@@ -17,15 +17,21 @@ def confusion_matrix(y_true, y_pred):
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
     if len(y_true.shape) == 1:
-        c_matrix = c_mat(y_true, y_pred.round())
-        disp = ConfusionMatrixDisplay(c_matrix)
 
-        plt.close('all')
+        try:
+            c_matrix = c_mat(y_true, y_pred.round())
+            disp = ConfusionMatrixDisplay(c_matrix)
 
-        disp.plot()
+            plt.close('all')
 
-        plt.savefig("confusion_matrix")
-        plt.show()
+            disp.plot()
+
+            plt.savefig("confusion_matrix")
+            plt.show()
+        except Exception as e:
+            pass
+            print(e)
+            print("var failed in c matrix")
 
     else:
         
@@ -44,6 +50,5 @@ def confusion_matrix(y_true, y_pred):
 
                 plt.savefig("confusion_matrices/confusion_matrix " + vars[i])
             except ValueError as e:
-                pass
-                #print(e)
-                #print("var failed in c matrix")
+                print(e)
+                print("var failed in c matrix")
