@@ -5,7 +5,6 @@ import numpy as np
 import math
 from src.image_tools.import_numpy import import_numpy
 from src.tokenize_dataset import tokenize_dataset
-from src.equalize_clinical_classes import equalize_clinical_classes
 
 class data_pod:
     def __init__(self):
@@ -53,10 +52,8 @@ class data_pipeline:
 
             self.partition_image_clinical_data()
             self.partition_image_only_data()
-        else:
-            self.df = equalize_clinical_classes(self.df, self.target)
 
-            self.partition_clinical_only_data()
+        self.partition_clinical_only_data()
 
     def concatenate_image_clinical(self, clinical_array):
 
