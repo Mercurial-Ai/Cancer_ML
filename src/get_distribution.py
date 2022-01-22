@@ -3,7 +3,8 @@ import pandas as pd
 # return dictionary of distribution of array's elements
 def get_distribution(iterable):
 
-    iterable = pd.Series(iterable)
+    if type(iterable) != pd.Series:
+        iterable = pd.Series(iterable)
 
     counts_dict = iterable.value_counts().to_dict()
 

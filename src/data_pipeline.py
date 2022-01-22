@@ -5,6 +5,7 @@ import numpy as np
 import math
 from src.image_tools.import_numpy import import_numpy
 from src.tokenize_dataset import tokenize_dataset
+from src.equalize_clinical_classes import equalize_clinical_classes
 
 class data_pod:
     def __init__(self):
@@ -35,6 +36,8 @@ class data_pipeline:
         self.df = self.df.set_index(list(self.df.columns)[0])
 
         self.df = tokenize_dataset(self.df)
+
+        self.df = equalize_clinical_classes(self.df, self.target)
 
         # if image path = None, dataset should be clinical only and imagery does not need to be imported
         if self.image_path != None:
