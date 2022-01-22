@@ -37,8 +37,6 @@ class data_pipeline:
 
         self.df = tokenize_dataset(self.df)
 
-        self.df = equalize_clinical_classes(self.df, self.target)
-
         # if image path = None, dataset should be clinical only and imagery does not need to be imported
         if self.image_path != None:
             self.img_array = import_numpy(self.image_path, self.clinical_ids)
@@ -55,8 +53,10 @@ class data_pipeline:
 
             self.partition_image_clinical_data()
             self.partition_image_only_data()
+        else:
+            self.df = equalize_clinical_classes(self.df, self.target)
 
-        self.partition_clinical_only_data()
+            self.partition_clinical_only_data()
 
     def concatenate_image_clinical(self, clinical_array):
 

@@ -19,8 +19,6 @@ class clinical_only:
         else:
             self.multi_target = False
 
-        print("X train clinical only shape:", X_train.shape)
-
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
         if X_train.shape != (1711, 691):
 
@@ -48,6 +46,7 @@ class clinical_only:
             if self.multi_target:
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
             else:
+                print("weight dict:", get_weight_dict(y_train))
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         else:
@@ -81,6 +80,7 @@ class clinical_only:
             if self.multi_target:
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
             else:
+                print("weight dict:", get_weight_dict(y_train))
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
