@@ -1,6 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.python.keras.layers.core import Activation
+from src.grid_search.grid_search import grid_search
 
 class u_net:
 
@@ -45,7 +46,11 @@ class u_net:
         outputs = keras.layers.Dense(y_train.shape[-1], activation='linear')(x)
         self.model = keras.models.Model(inputs, outputs)
 
-        self.model.compile(optimizer="adam", loss="mse", metrics=['acc'])
+        search = grid_search()
+
+        search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=12)
+
+        self.model.compile(optimizer="adam", loss="mse", metrics=['accuracy'])
 
         print(self.model.summary())
 

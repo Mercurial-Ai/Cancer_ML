@@ -63,14 +63,14 @@ class voting_ensemble:
         image_only = cancer_ml("duke", "Adjuvant Chemotherapy", model="cnn")
 
         if not load_models:
-            clinical_metabric.run_model()
-            clinical_metabric.test_model()
+            #clinical_metabric.run_model()
+            #clinical_metabric.test_model()
 
-            clinical_duke.run_model()
-            clinical_duke.test_model()
+            #clinical_duke.run_model()
+            #clinical_duke.test_model()
 
-            image_clinical.run_model()
-            image_clinical.test_model()
+            #image_clinical.run_model()
+            #image_clinical.test_model()
 
             image_only.run_model()
             image_only.test_model()

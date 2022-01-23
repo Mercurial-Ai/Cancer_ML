@@ -7,7 +7,7 @@ from collections import Counter
 import math
 import pickle
 from src.isolation_forest import isolation_forest
-
+from src.u_net import u_net
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from src.random_crop import random_crop
@@ -81,7 +81,7 @@ class cancer_ml:
             self.model = image_model(load_model=False)
             self.model.get_model(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train, self.data_pipe.image_clinical.X_val, self.data_pipe.image_clinical.y_val)
         elif self.cnn:
-            self.model = cnn(load_model=False)
+            self.model = u_net()
             self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
 
     def test_model(self):
