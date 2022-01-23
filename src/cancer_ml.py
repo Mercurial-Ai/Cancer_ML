@@ -45,9 +45,9 @@ class cancer_ml:
 
             self.data_pipe.image_clinical.X_train = self.tuple_to_list(self.data_pipe.image_clinical.X_train)
 
-            self.data_pipe.image_clinical.X_train[0][0], self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train[0][0], self.data_pipe.image_clinical.y_train)
+            self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train)
 
-            self.data_pipe.image_clinical.X_train[0][1] = self.data_pipe.image_clinical.X_train[0][1][self.non_outlier_indices]
+            self.data_pipe.image_clinical.X_train[1] = self.data_pipe.image_clinical.X_train[1][self.non_outlier_indices]
 
         elif self.model == "cnn":
             self.cnn = True

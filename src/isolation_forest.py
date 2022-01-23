@@ -8,6 +8,8 @@ from sklearn.preprocessing import StandardScaler
 
 def isolation_forest(features, target):
 
+    print('features:', features.shape)
+
     isolated_forest=IsolationForest(n_estimators=100, n_jobs=-1, random_state=42) 
 
     if type(features) == tuple:

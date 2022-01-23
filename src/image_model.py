@@ -14,15 +14,13 @@ class image_model:
         self.load_model = load_model
 
     def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
-        print("image clinical x train clinical shape:", X_train[0][0].shape)
-        print("image clinical x train image shape:", X_train[0][1].shape)
 
         if len(y_train.shape) > 1:
             self.multi_target = True
         else:
             self.multi_target = False
 
-        clinical_input = keras.layers.Input(shape=(X_train[0][0].shape[1]))
+        clinical_input = keras.layers.Input(shape=(X_train[0].shape[1]))
 
         x = Dense(50, activation="relu")(clinical_input)
         x = Dense(25, activation='relu')(x)
