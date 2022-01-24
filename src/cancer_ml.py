@@ -191,12 +191,11 @@ class cancer_ml:
         new_val = []
 
         i = 0
-        for data in self.data_pipe.image_clinical.X_train:
-            for array in data:
-                array = array[self.collected_indices_train]
-                new_train.append(array)
+        for array in self.data_pipe.image_clinical.X_train:
+            array = array[self.collected_indices_train]
+            new_train.append(array)
 
-                i = i + 1
+            i = i + 1
         
         i = 0
         for data in self.data_pipe.image_clinical.X_test:
