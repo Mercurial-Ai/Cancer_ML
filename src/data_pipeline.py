@@ -72,8 +72,6 @@ class data_pipeline:
         return X_train, X_test, y_train, y_test, X_val, y_val
     
     def partition_clinical_only_data(self):
-
-        self.df = equalize_clinical_classes(self.df, self.target)[0]
         
         if type(self.target) == list:
             for var in self.target:
@@ -144,8 +142,6 @@ class data_pipeline:
 
         target = list(self.filtered_df).index(self.target)
 
-        X_train = equalize_clinical_classes(X_train[0][0], target, X_train[0][1])
-
         self.image_clinical.X_train = X_train
         self.image_clinical.X_test = X_test
         self.image_clinical.y_train = y_train
@@ -154,14 +150,6 @@ class data_pipeline:
         self.image_clinical.y_val = y_val
 
     def partition_image_only_data(self):
-
-        print(self.filtered_df.shape)
-        print(self.img_array.shape)
-
-        self.filtered_df, self.img_array = equalize_clinical_classes(self.filtered_df, self.target, imagery=self.img_array)
-
-        print(self.filtered_df.shape)
-        print(self.img_array.shape)
 
         x = self.img_array
         y = self.filtered_df[self.target]

@@ -8,11 +8,9 @@ from sklearn.preprocessing import StandardScaler
 
 def isolation_forest(features, target):
 
-    print('features:', features.shape)
-
     isolated_forest=IsolationForest(n_estimators=100, n_jobs=-1, random_state=42) 
 
-    if type(features) == tuple:
+    if type(features) == tuple or type(features) == list:
         # concatenate features for image clinical
         clinical_array = features[0]
         image_array = features[1]
@@ -48,7 +46,7 @@ def isolation_forest(features, target):
 
     pca = PCA(n_components=3)
 
-    if type(features) == tuple:
+    if type(features) == tuple or type(features) == list:
         features = concatenated_array
 
     scaler = StandardScaler()
