@@ -29,30 +29,31 @@ class u_net:
         inputs = keras.layers.Input((X_train.shape[1], X_train.shape[2], 1))
         
         p0 = inputs
-        c1, p1 = down_block(p0, f[0]) #128 -> 64
-        c2, p2 = down_block(p1, f[1]) #64 -> 32
-        c3, p3 = down_block(p2, f[2]) #32 -> 16
-        c4, p4 = down_block(p3, f[3]) #16->8
+        c1, p1 = down_block(p0, f[4]) 
+        c2, p2 = down_block(p1, f[3]) 
+        c3, p3 = down_block(p2, f[2]) 
+        c4, p4 = down_block(p3, f[1]) 
         
-        bn = bottleneck(p4, f[4])
+        bn = bottleneck(p4, f[0])
         
-        u1 = up_block(bn, c4, f[3]) #8 -> 16
-        u2 = up_block(u1, c3, f[2]) #16 -> 32
-        u3 = up_block(u2, c2, f[1]) #32 -> 64
-        u4 = up_block(u3, c1, f[0]) #64 -> 128
+        u1 = up_block(bn, c4, f[1]) 
+        u2 = up_block(u1, c3, f[2]) 
+        u3 = up_block(u2, c2, f[3]) 
+        u4 = up_block(u3, c1, f[4]) 
         
         x = keras.layers.Conv2D(1, (1, 1), padding="same", activation="relu")(u4)
+        x = keras.layers.MaxPooling2D((3, 3))(x)
         x = keras.layers.Flatten()(x)
         outputs = keras.layers.Dense(y_train.shape[-1], activation='linear')(x)
         self.model = keras.models.Model(inputs, outputs)
+
+        print(self.model.summary())
 
         search = grid_search()
 
         search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=12)
 
         self.model.compile(optimizer="adam", loss="mse", metrics=['accuracy'])
-
-        print(self.model.summary())
 
         self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
 
