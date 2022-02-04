@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Dense
 from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
 from src.confusion_matrix import confusion_matrix
-from src.weighted_loss import weighted_loss
+from src.class_loss import class_loss
 import pandas as pd
 
 class clinical_only:
@@ -20,34 +20,42 @@ class clinical_only:
             self.multi_target = False
 
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
-        if X_train.shape != (1711, 691):
+        if X_train.shape[-1] != 691:
 
             input = keras.layers.Input(shape=(X_train.shape[1],))
 
             x = Dense(64, activation='relu')(input)
             x = Dense(32, activation='relu')(x)
-            output = Dense(y_train.shape[-1], activation='linear')(x)
+            
+            outputs = []
+            for i in range(y_train.shape[-1]):
+                output = Dense(1, activation='linear')(x)
 
-            self.model = keras.Model(input, output)
+                outputs.append(output)
+
+            self.model = keras.Model(input, outputs)
 
             print(self.model.summary())
 
             search = grid_search()
 
-            if self.multi_target:
-                search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
-            else:
-                search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
+            #if self.multi_target:
+            #    search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
+            #else:
+            #    search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
 
-            self.model.compile(optimizer='SGD',
-                                loss='mean_squared_error',
-                                metrics=['accuracy'])
-
+            class_weights = get_weight_dict(y_train)
             if self.multi_target:
-                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+                self.model.compile(optimizer='SGD',
+                                    loss={k: class_loss(v) for k, v, in class_weights.items()},
+                                    metrics=['accuracy'])
             else:
-                print("weight dict:", get_weight_dict(y_train))
-                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+                self.model.compile(optimizer='SGD',
+                                    loss='mae',
+                                    metrics=['accuracy'])
+
+                print("weight dict:", class_weights)
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
 
         else:
    
@@ -60,31 +68,39 @@ class clinical_only:
             x = Dense(32, activation='relu')(x)
             x = Dense(16, activation='relu')(x)
 
-            output = Dense(y_train.shape[-1], activation='linear')(x)
+            outputs = []
+            for i in range(y_train.shape[-1]):
+                output = Dense(1, activation='linear')(x)
 
-            self.model = keras.Model(input, output)
+                outputs.append(output)
+
+            self.model = keras.Model(input, outputs)
 
             print(self.model.summary())
 
             search = grid_search()
 
-            if self.multi_target:
-                search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
-            else:
-                search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
+            #if self.multi_target:
+            #    search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=1)
+            #else:
+            #    search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
 
-            self.model.compile(optimizer='SGD',
-                                loss='mae',
-                                metrics=['accuracy'])
-
+            class_weights = get_weight_dict(y_train)
             if self.multi_target:
+                self.model.compile(optimizer='SGD',
+                                    loss={k: class_loss(v) for k, v, in class_weights.items()},
+                                    metrics=['accuracy'])
+
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
             else:
-                print("weight dict:", get_weight_dict(y_train))
-                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+                self.model.compile(optimizer='SGD',
+                                    loss='mae',
+                                    metrics=['accuracy'])
+
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
 
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
-        if X_train.shape == (1711, 691):
+        if X_train.shape[-1] != 691:
             try:
                 self.model.save('data/saved_models/clinical_metabric/keras_clinical_only_model.h5')
             except:

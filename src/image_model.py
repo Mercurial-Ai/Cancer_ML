@@ -20,7 +20,7 @@ class image_model:
         else:
             self.multi_target = False
 
-        clinical_input = keras.layers.Input(shape=(X_train[0].shape[1]))
+        clinical_input = keras.layers.Input(shape=(X_train[0][0].shape[1]))
 
         x = Dense(50, activation="relu")(clinical_input)
         x = Dense(25, activation='relu')(x)
