@@ -56,11 +56,11 @@ class voting_ensemble:
         print("metabric starting")
         clinical_metabric = cancer_ml("metabric", metabric_dependent, model="clinical_only")
         print("duke clinical only starting")
-        clinical_duke = cancer_ml("duke", 'Adjuvant Chemotherapy', model="clinical_only")
+        clinical_duke = cancer_ml("duke", duke_dependent, model="clinical_only")
         print("duke image clinical starting")
-        image_clinical = cancer_ml("duke", 'Adjuvant Chemotherapy', model="image_clinical")
+        image_clinical = cancer_ml("duke", duke_dependent, model="image_clinical")
         print("duke image only starting")
-        image_only = cancer_ml("duke", "Adjuvant Chemotherapy", model="cnn")
+        image_only = cancer_ml("duke", duke_dependent, model="cnn")
 
         if not load_models:
             clinical_metabric.run_model()

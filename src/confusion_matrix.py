@@ -16,39 +16,37 @@ def confusion_matrix(y_true, y_pred):
                             'Adjuvant Endocrine Therapy Medications ', 'Therapeutic or Prophylactic Oophorectomy as part of Endocrine Therapy ', 'Neoadjuvant Anti-Her2 Neu Therapy', 'Adjuvant Anti-Her2 Neu Therapy ', 'Received Neoadjuvant Therapy or Not', 'Pathologic response to Neoadjuvant therapy: Pathologic stage (T) following neoadjuvant therapy ',
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
+    # convert y_pred to a NumPy array from a list
+    y_pred = np.concatenate(y_pred, axis=1)
+
     if len(y_true.shape) == 1:
 
-        try:
-            c_matrix = c_mat(y_true, y_pred.round())
-            disp = ConfusionMatrixDisplay(c_matrix)
+        print(y_true)
+        print(y_pred)
 
-            plt.close('all')
+        c_matrix = c_mat(y_true, y_pred.round())
+        disp = ConfusionMatrixDisplay(c_matrix)
 
-            disp.plot()
+        plt.close('all')
 
-            plt.savefig("confusion_matrix")
-            plt.show()
-        except Exception as e:
-            pass
-            print(e)
-            print("var failed in c matrix")
+        disp.plot()
+
+        plt.savefig("confusion_matrix")
+        plt.show()
 
     else:
-        
-        for i in range(y_true.shape[1]):
+
+        for i in range(y_true.shape[-1]):
+
             col1 = y_true[:, i]
             col2 = y_pred[:, i]
 
-            try:
-                c_matrix = c_mat(col1, col2.round())
-                disp = ConfusionMatrixDisplay(c_matrix)
+            c_matrix = c_mat(col1, col2.round())
+            disp = ConfusionMatrixDisplay(c_matrix)
 
-                # clear plt before plotting to prevent other graphs from appearing with .show()
-                plt.close('all')
-                
-                disp.plot()
+            # clear plt before plotting to prevent other graphs from appearing with .show()
+            plt.close('all')
+            
+            disp.plot()
 
-                plt.savefig("confusion_matrices/confusion_matrix " + vars[i])
-            except ValueError as e:
-                print(e)
-                print("var failed in c matrix")
+            plt.savefig("confusion_matrices/confusion_matrix " + vars[i])

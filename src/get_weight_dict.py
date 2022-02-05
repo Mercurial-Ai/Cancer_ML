@@ -1,7 +1,7 @@
 from src.get_distribution import get_distribution
 import pandas as pd
 
-def get_weight_dict(array):
+def get_weight_dict(array, output_names):
 
     if type(array) == pd.DataFrame:
         array = array.to_numpy()
@@ -19,7 +19,7 @@ def get_weight_dict(array):
             values = list(array_dict.values())
             values.reverse()
 
-            weight_dict["dense_" + str(6+i)] = values
+            weight_dict[output_names[i]] = values
 
     else:
         array_dict = get_distribution(array)

@@ -37,6 +37,12 @@ class clinical_only:
 
             print(self.model.summary())
 
+            output_names = []
+            for layer in self.model.layers:
+                if type(layer) == Dense:
+                    if layer.units == 1:
+                        output_names.append(layer.name)
+
             search = grid_search()
 
             #if self.multi_target:
@@ -44,18 +50,20 @@ class clinical_only:
             #else:
             #    search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
 
-            class_weights = get_weight_dict(y_train)
+            class_weights = get_weight_dict(y_train, output_names)
             if self.multi_target:
                 self.model.compile(optimizer='SGD',
                                     loss={k: class_loss(v) for k, v, in class_weights.items()},
                                     metrics=['accuracy'])
+
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), verbose=0)
             else:
                 self.model.compile(optimizer='SGD',
                                     loss='mae',
                                     metrics=['accuracy'])
 
                 print("weight dict:", class_weights)
-                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights, verbose=0)
 
         else:
    
@@ -78,6 +86,12 @@ class clinical_only:
 
             print(self.model.summary())
 
+            output_names = []
+            for layer in self.model.layers:
+                if type(layer) == Dense:
+                    if layer.units == 1:
+                        output_names.append(layer.name)
+
             search = grid_search()
 
             #if self.multi_target:
@@ -85,19 +99,19 @@ class clinical_only:
             #else:
             #    search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
 
-            class_weights = get_weight_dict(y_train)
+            class_weights = get_weight_dict(y_train, output_names)
             if self.multi_target:
                 self.model.compile(optimizer='SGD',
                                     loss={k: class_loss(v) for k, v, in class_weights.items()},
                                     metrics=['accuracy'])
 
-                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), verbose=0)
             else:
                 self.model.compile(optimizer='SGD',
                                     loss='mae',
                                     metrics=['accuracy'])
 
-                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights, verbose=0)
 
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
         if X_train.shape[-1] != 691:
@@ -114,13 +128,9 @@ class clinical_only:
         return self.model
 
     def test_model(self, X_test, y_test):
-        results = self.model.evaluate(X_test, y_test, batch_size=32)
+        results = self.model.evaluate(X_test, y_test, batch_size=32, verbose=0)
 
-        if len(y_test.shape) == 1:
-            try:
-                confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
-            except:
-                print('c matrix failed')
+        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
 
         return results
 

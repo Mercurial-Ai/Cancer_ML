@@ -140,7 +140,7 @@ class data_pipeline:
         X_test = [self.split_modalities(X_test)]
         X_val = [self.split_modalities(X_val)]
 
-        target = list(self.filtered_df).index(self.target)
+  #      target = list(self.filtered_df).index(self.target)
 
         self.image_clinical.X_train = X_train
         self.image_clinical.X_test = X_test
