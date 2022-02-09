@@ -2,6 +2,7 @@ import os
 from keras.backend import argmax, expand_dims
 from keras.models import load_model
 import numpy as np
+from src.class_loss import class_loss
 from src.confusion_matrix import confusion_matrix
 from src.cancer_ml import cancer_ml
 import pandas as pd
@@ -159,7 +160,7 @@ class voting_ensemble:
 
         models = list()
         for path in model_paths:
-            model = load_model(path)
+            model = load_model(path, custom_objects={"loss":class_loss})
             models.append(model)
 
         return models

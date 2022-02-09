@@ -74,7 +74,6 @@ class image_model:
                             loss={k: class_loss(v) for k, v in class_weights.items()},
                             metrics=['accuracy'])
 
-            print("len x train index 0:", len(X_train[0]))
             self.fit = model.fit(X_train[0], y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val), verbose=0)
         else:
             self.model.compile(optimizer='SGD',

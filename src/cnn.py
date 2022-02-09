@@ -2,6 +2,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import Sequential
 import pandas as pd
+from src.class_loss import class_loss
 from src.confusion_matrix import confusion_matrix
 from src.get_weight_dict import get_weight_dict
 
@@ -53,25 +54,41 @@ class cnn:
         x = layers.Dense(32)(x)
         x = layers.Activation('relu')(x)
 
-        output = layers.Dense(y_train.shape[-1], activation='relu')(x)
+        outputs = []
+        for i in range(y_train.shape[-1]):
+            output = layers.Dense(1, activation='linear')(x)
 
-        self.model = keras.Model(input, output)
+            outputs.append(output)
+
+        self.model = keras.Model(input, outputs)
+
+        output_names = []
+        for layer in self.model.layers:
+            if type(layer) == layers.Dense:
+                if layer.units == 1:
+                    output_names.append(layer.name)
 
         search = grid_search()
 
-        if self.multi_target:
-            search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=12)
-        else:
-            print("weights applied")
-            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=12)
+        #  if self.multi_target:
+        #     search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=12)
+        #else:
+        #   print("weights applied")
+        #  search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=12)
 
-        self.model.compile(loss=loss,
+        class_weights = get_weight_dict(y_train, output_names)
+
+        if self.multi_target:
+            self.model.compile(optimizer='adam',
+                                loss={k: class_loss(v) for k, v in class_weights.items()},
+                                metrics=['accuracy'])
+
+            self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
+        else:
+            self.model.compile(loss=loss,
                     optimizer=opt,
                     metrics=['accuracy'])
 
-        if self.multi_target:
-            self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
-        else:
             self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         try:
