@@ -140,8 +140,6 @@ class data_pipeline:
         X_test = [self.split_modalities(X_test)]
         X_val = [self.split_modalities(X_val)]
 
-  #      target = list(self.filtered_df).index(self.target)
-
         self.image_clinical.X_train = X_train
         self.image_clinical.X_test = X_test
         self.image_clinical.y_train = y_train
@@ -179,7 +177,7 @@ class data_pipeline:
         self.image_only.y_val = y_val
 
     def slice_data(self):
-        slice_size = 1
+        slice_size = 0.25
 
         self.img_array = self.img_array[0:int(round(self.img_array.shape[0]*slice_size, 0))]
 

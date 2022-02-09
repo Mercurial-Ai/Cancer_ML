@@ -7,7 +7,6 @@ from collections import Counter
 import math
 import pickle
 from src.isolation_forest import isolation_forest
-from src.u_net import u_net
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from src.random_crop import random_crop
@@ -44,10 +43,14 @@ class cancer_ml:
             self.image_clinical = True
 
             self.data_pipe.image_clinical.X_train = self.tuple_to_list(self.data_pipe.image_clinical.X_train)
+            self.data_pipe.image_clinical.X_test = self.tuple_to_list(self.data_pipe.image_clinical.X_test)
+            self.data_pipe.image_clinical.X_val = self.tuple_to_list(self.data_pipe.image_clinical.X_val)
 
             self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train)
 
-            self.data_pipe.image_clinical.X_train[0] = self.tuple_to_list(self.data_pipe.image_clinical.X_train[0])
+            self.data_pipe.image_clinical.X_train[0][1] = random_crop(list(self.data_pipe.image_clinical.X_train[0][1]), (self.crop_size[0], self.crop_size[1], 1))
+            self.data_pipe.image_clinical.X_test[0][1] = random_crop(list(self.data_pipe.image_clinical.X_test[0][1]), (self.crop_size[0], self.crop_size[1], 1))
+            self.data_pipe.image_clinical.X_val[0][1] = random_crop(list(self.data_pipe.image_clinical.X_val[0][1]), (self.crop_size[0], self.crop_size[1], 1))
 
             self.data_pipe.image_clinical.X_train[0][1] = self.data_pipe.image_clinical.X_train[0][1][self.non_outlier_indices]
 
@@ -83,7 +86,7 @@ class cancer_ml:
             self.model = image_model(load_model=False)
             self.model.get_model(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train, self.data_pipe.image_clinical.X_val, self.data_pipe.image_clinical.y_val)
         elif self.cnn:
-            self.model = u_net()
+            self.model = cnn(load_model=False)
             self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
 
     def test_model(self):
@@ -119,8 +122,7 @@ class cancer_ml:
                 X[i] = array
 
                 i = i + 1
-        
-            X = tuple(X)
+
         else:
             if str(type(X)) == "<class 'numpy.ndarray'>":
                 X = X[self.non_outlier_indices]
