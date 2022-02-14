@@ -95,8 +95,10 @@ class voting_ensemble:
         all_data = [clinical_metabric_test, clinical_duke_test, image_clinical_test, image_only_test]
 
         i = 0
-        predictions = []
+        all_predictions = []
         for models in all_models:
+
+            predictions = []
 
             # filter out empty model lists
             if len(models) >= 1:
@@ -105,37 +107,120 @@ class voting_ensemble:
                 testX = data[0]
                 testY = data[1]
 
+                # differentiate between image clinical and other submodels
                 if type(testX) == list:
-                    testX = testX[0]
+                    testX_clinical = testX[0][0]
+                    testX_image = testX[0][1]
+
+                    first_dim = len(testX_clinical)
+                    second_dim = len(testX_clinical[0])
+
+                    print("first dim clinical:", first_dim)
+                    print("second dim clinical:", second_dim)
+
+                    array_testX_clinical = np.empty(shape=(first_dim, second_dim), dtype=np.float16)
+
+                    j = 0
+                    for example in testX_clinical:
+                        example = np.asarray(example, dtype=np.float16)
+                        array_testX_clinical[j] = example 
+                        j = j + 1
+
+                    first_dim = len(testX_image)
+                    second_dim = len(testX_image[0])
+
+                    print("first dim image:", first_dim)
+                    print("second dim image:", second_dim)
+
+                    array_testX_image = np.empty(shape=(first_dim, second_dim, second_dim, 1), dtype=np.float16)
+
+                    j = 0
+                    for example in testX_image:
+                        example = np.asarray(example, dtype=np.float16)
+                        array_testX_image[j] = example 
+                        j = j + 1
+
+                    testX = [array_testX_clinical, array_testX_image]
                 
-                if type(testX) != tuple:
-                    for example in testX:
-                        ensemble_prediction = self.predict(example, models)
-                        predictions.append(ensemble_prediction)
+                    # make sure model input shape matches x shape
+                    print(models[0].layers[0].get_output_at(0).get_shape())
+                    if models[0].layers[0].get_output_at(0).get_shape()[1:] == testX[0].shape[1:] or models[0].layers[0].get_output_at(0).get_shape()[1:] == testX[1].shape[1:]:
 
-                        ensemble_prediction = np.flip(ensemble_prediction)
-                        confusion_matrix(testY, ensemble_prediction)
+                        # differentiate between image-clinical and other submodels
+                        if type(testX) != list:
+                            for example in testX:
+                                ensemble_prediction = self.predict(example, models)
+                                predictions.append(ensemble_prediction)
+
+                            predictions = np.flip(predictions)
+                            confusion_matrix(testY, predictions)
+                        else:
+                            for j in range(testX[0].shape[0]):
+                                clinical_example = testX[0][j]
+                                img_example = testX[1][j]
+
+                                clinical_example = np.expand_dims(clinical_example, 0)
+                                img_example = np.expand_dims(img_example, 0)
+
+                                example = [clinical_example, img_example]
+                                ensemble_prediction = self.predict(example, models)
+                                predictions.append(ensemble_prediction)
+
+                                ensemble_prediction = np.flip(ensemble_prediction)
+                                confusion_matrix(testY, ensemble_prediction)
+
                 else:
-                    for j in range(testX[0].shape[0]):
-                        clinical_example = testX[0][j]
-                        img_example = testX[1][j]
+                    # make sure model input shape matches x shape
+                    if models[0].layers[0].get_output_at(0).get_shape() == testX.shape[1:]:
 
-                        clinical_example = np.expand_dims(clinical_example, 0)
-                        img_example = np.expand_dims(img_example, 0)
+                        # differentiate between image-clinical and other submodels
+                        if type(testX) != list:
+                            for example in testX:
+                                ensemble_prediction = self.predict(example, models)
+                                predictions.append(ensemble_prediction)
 
-                        example = [clinical_example, img_example]
-                        ensemble_prediction = self.predict(example, models)
-                        predictions.append(ensemble_prediction)
+                            predictions = np.flip(predictions)
+                            confusion_matrix(testY, predictions)
+                        else:
+                            for j in range(testX[0].shape[0]):
+                                clinical_example = testX[0][j]
+                                img_example = testX[1][j]
 
-                        ensemble_prediction = np.flip(ensemble_prediction)
-                        confusion_matrix(testY, ensemble_prediction)
+                                clinical_example = np.expand_dims(clinical_example, 0)
+                                img_example = np.expand_dims(img_example, 0)
+
+                                example = [clinical_example, img_example]
+                                ensemble_prediction = self.predict(example, models)
+                                predictions.append(ensemble_prediction)
+
+                                ensemble_prediction = np.flip(ensemble_prediction)
+                                confusion_matrix(testY, ensemble_prediction)
+
+                all_predictions.append(predictions)
 
             i = i + 1
 
-        self.ensembled_prediction = predictions
+        self.ensembled_prediction = all_predictions
+
+        print(self.ensembled_prediction)
+
+        first_dim = len(self.ensembled_prediction)
+        second_dim = len(self.ensembled_prediction[0])
+
+        array_prediction = np.empty(shape=(first_dim, second_dim), dtype=np.float16)
+
+        i = 0
+        for example in self.ensembled_prediction:
+            example = np.asarray(example, dtype=np.float16)
+            array_prediction[i] = example
+
+            i = i + 1
+
+        self.ensembled_prediction = array_prediction
 
         duke_image_predictions = []
         for prediction in self.ensembled_prediction:
+            print(prediction.shape)
             if prediction.shape[-1] == 24:
                 duke_image_predictions.append(prediction)
 
@@ -172,11 +257,9 @@ class voting_ensemble:
 
         y = []
         for model in models:
-            try:
-                prediction = model.predict(testX)
-                y.append(prediction)
-            except ValueError:
-                print("invalid model input found")
+            print(model.summary())
+            prediction = model.predict(testX)
+            y.append(prediction)
 
         y = np.concatenate(y, axis=0)
 

@@ -16,9 +16,6 @@ def confusion_matrix(y_true, y_pred):
                             'Adjuvant Endocrine Therapy Medications ', 'Therapeutic or Prophylactic Oophorectomy as part of Endocrine Therapy ', 'Neoadjuvant Anti-Her2 Neu Therapy', 'Adjuvant Anti-Her2 Neu Therapy ', 'Received Neoadjuvant Therapy or Not', 'Pathologic response to Neoadjuvant therapy: Pathologic stage (T) following neoadjuvant therapy ',
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
-    # convert y_pred to a NumPy array from a list
-    y_pred = np.concatenate(y_pred, axis=1)
-
     if len(y_true.shape) == 1:
 
         print(y_true)
@@ -40,6 +37,9 @@ def confusion_matrix(y_true, y_pred):
 
             col1 = y_true[:, i]
             col2 = y_pred[:, i]
+
+            print(col1)
+            print(col2)
 
             c_matrix = c_mat(col1, col2.round())
             disp = ConfusionMatrixDisplay(c_matrix)
