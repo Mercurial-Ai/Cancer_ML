@@ -95,13 +95,14 @@ class voting_ensemble:
         all_data = [clinical_metabric_test, clinical_duke_test, image_clinical_test, image_only_test]
 
         i = 0
-        all_predictions = []
+        all_predictions = np.array([])
         for models in all_models:
-
-            predictions = []
 
             # filter out empty model lists
             if len(models) >= 1:
+
+                predictions = []
+
                 data = all_data[i]
 
                 testX = data[0]
@@ -109,6 +110,7 @@ class voting_ensemble:
 
                 # differentiate between image clinical and other submodels
                 if type(testX) == list:
+                    image_clinical_active = True
                     testX_clinical = testX[0][0]
                     testX_image = testX[0][1]
 
@@ -153,23 +155,18 @@ class voting_ensemble:
                                 predictions.append(ensemble_prediction)
 
                             predictions = np.flip(predictions)
-                            confusion_matrix(testY, predictions)
                         else:
                             for j in range(testX[0].shape[0]):
                                 clinical_example = testX[0][j]
                                 img_example = testX[1][j]
-
-                                clinical_example = np.expand_dims(clinical_example, 0)
-                                img_example = np.expand_dims(img_example, 0)
 
                                 example = [clinical_example, img_example]
                                 ensemble_prediction = self.predict(example, models)
                                 predictions.append(ensemble_prediction)
 
                                 ensemble_prediction = np.flip(ensemble_prediction)
-                                confusion_matrix(testY, ensemble_prediction)
-
                 else:
+                    image_clinical_active = False
                     # make sure model input shape matches x shape
                     if models[0].layers[0].get_output_at(0).get_shape() == testX.shape[1:]:
 
@@ -180,7 +177,6 @@ class voting_ensemble:
                                 predictions.append(ensemble_prediction)
 
                             predictions = np.flip(predictions)
-                            confusion_matrix(testY, predictions)
                         else:
                             for j in range(testX[0].shape[0]):
                                 clinical_example = testX[0][j]
@@ -194,9 +190,62 @@ class voting_ensemble:
                                 predictions.append(ensemble_prediction)
 
                                 ensemble_prediction = np.flip(ensemble_prediction)
-                                confusion_matrix(testY, ensemble_prediction)
 
-                all_predictions.append(predictions)
+                all_predictions = np.append(all_predictions, predictions)
+            
+            # convert all_predictions to NumPy array
+            if image_clinical_active:
+                print(all_predictions)
+
+                first_dim = all_predictions.shape[0]
+                print("first dim:", first_dim)
+                second_dim = all_predictions.shape[1]
+                print("second dim:", second_dim)
+                third_dim = all_predictions.shape[2]
+                print("third_dim:", third_dim)
+
+                k = 0
+                all_predictions_array = np.empty(shape=(first_dim, second_dim, third_dim), dtype=np.float16)
+                for predictions in all_predictions:
+                    first_dim = len(predictions)
+                    second_dim = len(predictions)
+
+                    j = 0
+                    predictions_array = np.empty(shape=(first_dim, second_dim), dtype=np.float16)
+                    for prediction in predictions:
+                        predictions_array[j] = np.asarray(prediction, dtype=np.float16)
+
+                        j = j + 1
+
+                    all_predictions_array[k] = np.asarray(predictions_array, dtype=np.float16)
+
+                    k = k + 1
+
+                all_predictions = all_predictions_array
+
+            else:
+                print(all_predictions)
+                first_dim = all_predictions.shape[0]
+                if first_dim > 0:
+                    second_dim = all_predictions.shape[1]
+                else:
+                    second_dim = 0
+
+                print("first dim:", first_dim)
+                print("second dim:", second_dim)
+
+                all_predictions_array = np.empty(shape=(first_dim, second_dim), dtype=np.float16)
+
+                j = 0
+                for example in all_predictions:
+                    example = np.asarray(example, dtype=np.float16)
+                    all_predictions_array[j] = example 
+                    j = j + 1
+
+                all_predictions = all_predictions_array
+
+            if second_dim != 0:
+                confusion_matrix(testY, all_predictions)
 
             i = i + 1
 
@@ -252,8 +301,20 @@ class voting_ensemble:
 
     def predict(self, testX, models):
 
-        if type(testX) != list:
+        if type(testX) == list:
+            i = 0
+            for array in testX:
+                array = np.expand_dims(array, 0)
+                testX[i] = array
+
+                i = i + 1
+
+            for array in testX:
+                print("test x array shape:", array.shape)
+        else:
             testX = np.expand_dims(testX, 0)
+
+            print("test x array shape:", testX.shape)
 
         y = []
         for model in models:
@@ -261,25 +322,9 @@ class voting_ensemble:
             prediction = model.predict(testX)
             y.append(prediction)
 
-        y = np.concatenate(y, axis=0)
+        results = np.concatenate(y, axis=0)
 
-        results = []
-        # sum across models
-        for i in range(y.shape[-1]):
-            var = y[:, i]
-            sum = np.sum(var, axis=0)
-
-            if type(sum) == np.array:
-                # argmax across models
-                result = argmax(sum, axis=1)
-            else:
-                result = sum
-
-            results.append(result)
-
-        results = np.array(results)
-
-        results = np.expand_dims(results, 0)
+        print("results shape:", results.shape)
 
         return results
 

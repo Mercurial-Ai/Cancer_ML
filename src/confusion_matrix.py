@@ -18,8 +18,8 @@ def confusion_matrix(y_true, y_pred):
 
     if len(y_true.shape) == 1:
 
-        print(y_true)
-        print(y_pred)
+        print(y_true.shape)
+        print(y_pred.shape)
 
         c_matrix = c_mat(y_true, y_pred.round())
         disp = ConfusionMatrixDisplay(c_matrix)
@@ -35,11 +35,11 @@ def confusion_matrix(y_true, y_pred):
 
         for i in range(y_true.shape[-1]):
 
+            print(y_true.shape)
+            print(y_pred.shape)
+
             col1 = y_true[:, i]
             col2 = y_pred[:, i]
-
-            print(col1)
-            print(col2)
 
             c_matrix = c_mat(col1, col2.round())
             disp = ConfusionMatrixDisplay(c_matrix)
