@@ -95,7 +95,7 @@ class voting_ensemble:
         all_data = [clinical_metabric_test, clinical_duke_test, image_clinical_test, image_only_test]
 
         i = 0
-        all_predictions = np.array([])
+        all_predictions = np.array([[]])
         for models in all_models:
 
             # filter out empty model lists
@@ -176,7 +176,6 @@ class voting_ensemble:
                                 ensemble_prediction = self.predict(example, models)
                                 predictions.append(ensemble_prediction)
 
-                            predictions = np.flip(predictions)
                         else:
                             for j in range(testX[0].shape[0]):
                                 clinical_example = testX[0][j]
@@ -189,87 +188,23 @@ class voting_ensemble:
                                 ensemble_prediction = self.predict(example, models)
                                 predictions.append(ensemble_prediction)
 
-                                ensemble_prediction = np.flip(ensemble_prediction)
-
                 all_predictions = np.append(all_predictions, predictions)
-            
-            # convert all_predictions to NumPy array
-            if image_clinical_active:
-                print(all_predictions)
 
-                first_dim = all_predictions.shape[0]
-                print("first dim:", first_dim)
-                second_dim = all_predictions.shape[1]
-                print("second dim:", second_dim)
-                third_dim = all_predictions.shape[2]
-                print("third_dim:", third_dim)
+            if len(all_predictions) != 0:
 
-                k = 0
-                all_predictions_array = np.empty(shape=(first_dim, second_dim, third_dim), dtype=np.float16)
-                for predictions in all_predictions:
-                    first_dim = len(predictions)
-                    second_dim = len(predictions)
+                all_predictions = np.expand_dims(all_predictions, 0)
 
-                    j = 0
-                    predictions_array = np.empty(shape=(first_dim, second_dim), dtype=np.float16)
-                    for prediction in predictions:
-                        predictions_array[j] = np.asarray(prediction, dtype=np.float16)
+                if all_predictions.shape[0] != testY.shape[0]:
+                    all_predictions = np.reshape(all_predictions, (testY.shape[0], -1))
 
-                        j = j + 1
-
-                    all_predictions_array[k] = np.asarray(predictions_array, dtype=np.float16)
-
-                    k = k + 1
-
-                all_predictions = all_predictions_array
-
-            else:
-                print(all_predictions)
-                first_dim = all_predictions.shape[0]
-                if first_dim > 0:
-                    second_dim = all_predictions.shape[1]
-                else:
-                    second_dim = 0
-
-                print("first dim:", first_dim)
-                print("second dim:", second_dim)
-
-                all_predictions_array = np.empty(shape=(first_dim, second_dim), dtype=np.float16)
-
-                j = 0
-                for example in all_predictions:
-                    example = np.asarray(example, dtype=np.float16)
-                    all_predictions_array[j] = example 
-                    j = j + 1
-
-                all_predictions = all_predictions_array
-
-            if second_dim != 0:
                 confusion_matrix(testY, all_predictions)
 
             i = i + 1
 
         self.ensembled_prediction = all_predictions
 
-        print(self.ensembled_prediction)
-
-        first_dim = len(self.ensembled_prediction)
-        second_dim = len(self.ensembled_prediction[0])
-
-        array_prediction = np.empty(shape=(first_dim, second_dim), dtype=np.float16)
-
-        i = 0
-        for example in self.ensembled_prediction:
-            example = np.asarray(example, dtype=np.float16)
-            array_prediction[i] = example
-
-            i = i + 1
-
-        self.ensembled_prediction = array_prediction
-
         duke_image_predictions = []
         for prediction in self.ensembled_prediction:
-            print(prediction.shape)
             if prediction.shape[-1] == 24:
                 duke_image_predictions.append(prediction)
 
