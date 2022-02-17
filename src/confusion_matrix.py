@@ -32,6 +32,15 @@ def confusion_matrix(y_true, y_pred):
 
         for i in range(y_true.shape[-1]):
 
+            if len(y_pred[0].shape) == 1:
+                y_pred = np.expand_dims(y_pred, 0)
+
+            for array in y_pred:
+                print(array.shape)
+
+            y_pred = np.concatenate(y_pred, axis=1)
+            print(y_pred.shape)
+
             col1 = y_true[:, i]
             col2 = y_pred[:, i]
 

@@ -210,7 +210,7 @@ class voting_ensemble:
 
         duke_image_predictions = np.concatenate(duke_image_predictions, axis=0)
 
-        duke_image_true = np.concatenate([all_data[1][1], all_data[2][1], all_data[3][1]], axis=0)
+        duke_image_true = all_data[3][1]
 
         accuracy = self.eval(duke_image_predictions, duke_image_true)
 
@@ -243,13 +243,8 @@ class voting_ensemble:
                 testX[i] = array
 
                 i = i + 1
-
-            for array in testX:
-                print("test x array shape:", array.shape)
         else:
             testX = np.expand_dims(testX, 0)
-
-            print("test x array shape:", testX.shape)
 
         y = []
         for model in models:
@@ -259,14 +254,18 @@ class voting_ensemble:
 
         results = np.concatenate(y, axis=0)
 
-        print("results shape:", results.shape)
-
         return results
 
     def eval(self, prediction, testY):
         
         if type(testY) == pd.DataFrame:
             testY = testY.to_numpy()
+
+        if prediction.shape[0] != testY.shape[0]:
+            prediction = np.reshape(prediction, (testY.shape[0], -1))
+
+        print("prediction shape:", prediction.shape)
+        print("test y shape:", testY.shape)
 
         accuracies = []
         for j in range(testY.shape[-1]):
