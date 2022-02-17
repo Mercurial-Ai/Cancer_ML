@@ -100,8 +100,9 @@ class clinical_only:
             #    search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
 
             class_weights = get_weight_dict(y_train, output_names)
+            print("class weights:", class_weights)
             if self.multi_target:
-                self.model.compile(optimizer='SGD',
+                self.model.compile(optimizer='adam',
                                     loss={k: class_loss(v) for k, v, in class_weights.items()},
                                     metrics=['accuracy'])
 

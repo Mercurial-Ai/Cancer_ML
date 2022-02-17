@@ -9,7 +9,7 @@ def class_loss(class_weight):
         hothot = tf.one_hot(tf.reshape(y_true, [-1]), depth=class_weight.shape[0])
         weight = tf.math.multiply(class_weight, hothot)
         weight = tf.reduce_sum(weight, axis=-1)
-        losses = tf.keras.losses.mean_absolute_error(y_true, y_pred)
+        losses = tf.keras.losses.mean_squared_error(y_true, y_pred)
 
         return losses
 
