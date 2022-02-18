@@ -52,7 +52,7 @@ class clinical_only:
 
             class_weights = get_weight_dict(y_train, output_names)
             if self.multi_target:
-                self.model.compile(optimizer='SGD',
+                self.model.compile(optimizer='adam',
                                     loss={k: class_loss(v) for k, v, in class_weights.items()},
                                     metrics=['accuracy'])
 
