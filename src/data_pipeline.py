@@ -63,7 +63,7 @@ class data_pipeline:
         return concatenated_array
 
     def split_data(self, x, y):
-        X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.1, random_state=84)
+        X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=84)
 
         # split test data into validation and test
         X_test, X_val = train_test_split(X_test, test_size=0.5, random_state=73)
