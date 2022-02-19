@@ -277,6 +277,7 @@ class voting_ensemble:
             prediction = np.reshape(prediction, (testY.shape[0], -1))
 
         print("prediction shape:", prediction.shape)
+        print(prediction)
         print("test y shape:", testY.shape)
 
         accuracies = []

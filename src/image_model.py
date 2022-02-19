@@ -45,7 +45,7 @@ class image_model:
 
         outputs = []
         for i in range(y_train.shape[-1]):
-            output = Dense(1, activation='linear')(x)
+            output = Dense(1, activation='sigmoid')(x)
 
             outputs.append(output)
 

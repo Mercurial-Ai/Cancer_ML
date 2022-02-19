@@ -56,7 +56,7 @@ class cnn:
 
         outputs = []
         for i in range(y_train.shape[-1]):
-            output = layers.Dense(1, activation='linear')(x)
+            output = layers.Dense(1, activation='sigmoid')(x)
 
             outputs.append(output)
 
