@@ -7,6 +7,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 def isolation_forest(features, target):
+    print("isolation forest starting")
 
     isolated_forest=IsolationForest(n_estimators=10, n_jobs=-1, random_state=42) 
 
@@ -64,5 +65,7 @@ def isolation_forest(features, target):
     ax.legend()
 
     plt.savefig("3d_outlier_pca" + str(features.shape) + ".png")
+
+    print("isolation foreset ending")
 
     return predicted

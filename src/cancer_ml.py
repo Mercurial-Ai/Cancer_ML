@@ -8,6 +8,7 @@ import math
 import pickle
 from src.isolation_forest import isolation_forest
 import numpy as np
+import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 from src.random_crop import random_crop
 
@@ -222,9 +223,9 @@ class cancer_ml:
         self.data_pipe.image_clinical.X_test = new_test
         self.data_pipe.image_clinical.X_val = new_val
 
-        self.data_pipe.image_clinical.y_train = self.data_pipe.image_clinical.y_train.iloc[self.collected_indices_train]
-        self.data_pipe.image_clinical.y_test = self.data_pipe.image_clinical.y_test.iloc[self.collected_indices_test]
-        self.data_pipe.image_clinical.y_val = self.data_pipe.image_clinical.y_val.iloc[self.collected_indices_val]
+        self.data_pipe.image_clinical.y_train = self.data_pipe.image_clinical.y_train[self.collected_indices_train]
+        self.data_pipe.image_clinical.y_test = self.data_pipe.image_clinical.y_test[self.collected_indices_test]
+        self.data_pipe.image_clinical.y_val = self.data_pipe.image_clinical.y_val[self.collected_indices_val]
 
     def equalize_test(self, img_array):
 
@@ -273,7 +274,7 @@ class cancer_ml:
                         
                 class_array_dict[label] = class_array 
 
-                if type(self.target) == list:
+                if type(y_test) == pd.DataFrame:
                     y = y_test.iloc[collected_indices]
                 else:
                     y = y_test[collected_indices]
@@ -373,7 +374,7 @@ class cancer_ml:
                         
                 class_array_dict[label] = class_array 
 
-                if type(self.target) == list:
+                if type(y_val) == pd.DataFrame:
                     y = y_val.iloc[collected_indices]
                 else:
                     y = y_val[collected_indices]
@@ -464,7 +465,7 @@ class cancer_ml:
                         
                 class_array_dict[label] = class_array
 
-                if type(self.target) == list:
+                if type(y_train) == pd.DataFrame:
                     y = y_train.iloc[collected_indices]
                 else:
                     y = y_train[collected_indices]

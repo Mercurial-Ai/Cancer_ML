@@ -85,6 +85,8 @@ class data_pipeline:
         # check if METABRIC
         if y.shape[-1] == 7:
             x, y = balance_y_classes(x, y, 1, shuffle_data=True)
+        else:
+            x, y = balance_y_classes(x, y, 11, shuffle_data=True)
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
@@ -132,6 +134,8 @@ class data_pipeline:
 
         x = self.concatenate_image_clinical(self.clinical_x)
 
+        x, y = balance_y_classes(x, y, 11, shuffle_data=True)
+
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
         # normalize data
@@ -155,6 +159,8 @@ class data_pipeline:
 
         x = self.img_array
         y = self.filtered_df[self.target]
+
+        x, y = balance_y_classes(x, y, 11, shuffle_data=True)
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
@@ -181,7 +187,7 @@ class data_pipeline:
         self.image_only.y_val = y_val
 
     def slice_data(self):
-        slice_size = 0.25
+        slice_size = 1
 
         self.img_array = self.img_array[0:int(round(self.img_array.shape[0]*slice_size, 0))]
 
