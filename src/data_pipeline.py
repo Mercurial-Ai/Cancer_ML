@@ -3,9 +3,9 @@ from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
 import math
-from src.equalize_clinical_classes import equalize_clinical_classes
 from src.image_tools.import_numpy import import_numpy
 from src.tokenize_dataset import tokenize_dataset
+from src.balance_y_classes import balance_y_classes
 
 class data_pod:
     def __init__(self):
@@ -81,6 +81,10 @@ class data_pipeline:
             x = self.df.drop(self.target, axis=1)
         
         y = self.df[self.target]
+
+        # check if METABRIC
+        if y.shape[-1] == 7:
+            x, y = balance_y_classes(x, y, 1, shuffle_data=True)
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 

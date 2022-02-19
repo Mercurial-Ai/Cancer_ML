@@ -254,6 +254,18 @@ class voting_ensemble:
 
         results = np.concatenate(y, axis=0)
 
+        if len(models) > 1:
+            rounded_results = results.round()
+            ensembled_results = np.empty(shape=(rounded_results.shape[0]), dtype=np.float16)
+            for i in range(rounded_results.shape[0]):
+                var = rounded_results[i]
+                result = np.bincount(var).argmax()
+                ensembled_results[i] = result
+
+            print("ensembled result:", ensembled_results)
+
+            results = ensembled_results
+
         return results
 
     def eval(self, prediction, testY):
