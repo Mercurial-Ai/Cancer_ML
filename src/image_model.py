@@ -93,6 +93,8 @@ class image_model:
 
         results = self.model.evaluate(X_test, y_test, batch_size=32)
 
+        print(self.model.predict(X_test))
+
         confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
 
         return results
