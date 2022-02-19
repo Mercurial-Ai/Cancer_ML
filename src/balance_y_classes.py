@@ -20,7 +20,6 @@ def balance_y_classes(x, y, var_to_balance=0, shuffle_data=True):
     var = y[:, var_to_balance]
 
     var_dist = get_distribution(var)
-    print('var dist:', var_dist)
 
     overrepresented = max(var_dist.values())
 
@@ -46,13 +45,8 @@ def balance_y_classes(x, y, var_to_balance=0, shuffle_data=True):
 
         i = i + 1
 
-    print('x shape:', x.shape)
-    print('y shape:', y.shape)
-
     x = np.delete(x, indices_to_remove, axis=0)
     y = np.delete(y, indices_to_remove, axis=0)
-
-    print("var dist after metabric:", get_distribution(y[:, 1]))
 
     return x, y
         
