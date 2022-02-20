@@ -77,8 +77,7 @@ class clinical_only:
             x = Dense(256, activation='relu')(x)
             x = Dense(128, activation='relu')(x)
             x = Dense(64, activation='relu')(x)
-            x = Dense(32, activation='relu')(x)
-            x = Dense(16, activation='relu')(x)
+            x = Dense(28, activation='relu')(x)
 
             if self.multi_target:
                 outputs = []

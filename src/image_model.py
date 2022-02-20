@@ -29,19 +29,17 @@ class image_model:
 
         image_input = keras.layers.Input(shape=X_train[0][1].shape[1:])
 
-        x = Conv2D(64, kernel_size=5, activation='relu')(image_input)
-        x = MaxPooling2D(pool_size=(5, 5))(x)
+        x = Conv2D(64, kernel_size=4, activation='relu')(image_input)
+        x = MaxPooling2D(pool_size=(4, 4))(x)
         x = Conv2D(32, kernel_size=5, activation='relu')(x)
-        x = MaxPooling2D(pool_size=(5, 5))(x)
+        x = MaxPooling2D(pool_size=(4, 5))(x)
         x = Conv2D(8, kernel_size=5, activation='relu')(x)
-        x = MaxPooling2D(pool_size=(5, 5))(x)
+        x = MaxPooling2D(pool_size=(4, 4))(x)
         flat2 = keras.layers.Flatten()(x)
 
         merge = concatenate([flat1, flat2])
 
-        x = Dense(80, activation='relu')(merge)
-        x = Dense(64, activation='relu')(x)
-        x = Dense(32, activation='relu')(x)
+        x = Dense(26, activation='relu')(merge)
 
         if self.multi_target:
             outputs = []
@@ -95,8 +93,6 @@ class image_model:
     def test_model(self, X_test, y_test):
 
         results = self.model.evaluate(X_test, y_test, batch_size=32)
-
-        print(self.model.predict(X_test))
 
         confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
 

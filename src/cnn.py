@@ -25,15 +25,15 @@ class cnn:
 
         input = layers.Input(shape=(X_train.shape[1:]))
 
-        x = layers.Conv2D(64, (6, 6))(input)
+        x = layers.Conv2D(64, (4, 4))(input)
         x = layers.Activation('relu')(x)
         x = layers.MaxPooling2D(pool_size=(4, 4))(x)
 
-        x = layers.Conv2D(32, (6, 6))(x)
+        x = layers.Conv2D(32, (4, 4))(x)
         x = layers.Activation('relu')(x)
         x = layers.MaxPooling2D(pool_size=(3, 3))(x)
 
-        x = layers.Conv2D(16, (6, 6))(x)
+        x = layers.Conv2D(16, (4, 4))(x)
         x = layers.Activation('relu')(x)
         x = layers.MaxPooling2D(pool_size=(2, 2))(x)
 
