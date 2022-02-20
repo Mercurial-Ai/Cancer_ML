@@ -1,7 +1,7 @@
 from src.get_distribution import get_distribution
 import pandas as pd
 
-def get_weight_dict(array, output_names):
+def get_weight_dict(array, output_names=None):
 
     if type(array) == pd.DataFrame:
         array = array.to_numpy()

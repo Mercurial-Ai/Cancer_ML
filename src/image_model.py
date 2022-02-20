@@ -43,11 +43,14 @@ class image_model:
         x = Dense(64, activation='relu')(x)
         x = Dense(32, activation='relu')(x)
 
-        outputs = []
-        for i in range(y_train.shape[-1]):
-            output = Dense(1, activation='sigmoid')(x)
+        if self.multi_target:
+            outputs = []
+            for i in range(y_train.shape[-1]):
+                output = Dense(1, activation='sigmoid')(x)
 
-            outputs.append(output)
+                outputs.append(output)
+        else:
+            outputs = Dense(1, activation='sigmoid')(x)
 
         model = keras.Model([clinical_input, image_input], outputs)
 
@@ -71,16 +74,16 @@ class image_model:
         if self.multi_target:
 
             model.compile(optimizer='adam',
-                            loss={k: class_loss(v) for k, v in class_weights.items()},
+                            loss="mse",
                             metrics=['accuracy'])
 
-            self.fit = model.fit(X_train[0], y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val), verbose=0)
+            self.fit = model.fit(X_train[0], y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val))
         else:
-            self.model.compile(optimizer='SGD',
+            model.compile(optimizer='adam',
                                     loss='mae',
                                     metrics=['accuracy'])
 
-            self.fit = model.fit(X_train, y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val), class_weight=class_weights, verbose=0)
+            self.fit = model.fit(X_train, y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val), class_weight=class_weights)
 
         try:
             model.save('data/saved_models/image_clinical/keras_image_clinical_model.h5')

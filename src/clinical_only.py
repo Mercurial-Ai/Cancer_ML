@@ -28,11 +28,14 @@ class clinical_only:
             x = Dense(64, activation='relu')(input)
             x = Dense(32, activation='relu')(x)
             
-            outputs = []
-            for i in range(y_train.shape[-1]):
-                output = Dense(1, activation='sigmoid')(x)
+            if self.multi_target:
+                outputs = []
+                for i in range(y_train.shape[-1]):
+                    output = Dense(1, activation='sigmoid')(x)
 
-                outputs.append(output)
+                    outputs.append(output)
+            else:
+                outputs = Dense(1, activation='sigmoid')(x)
 
             self.model = keras.Model(input, outputs)
 
@@ -54,17 +57,17 @@ class clinical_only:
             class_weights = get_weight_dict(y_train, output_names)
             if self.multi_target:
                 self.model.compile(optimizer='adam',
-                                    loss='mean_squared_error',
+                                    loss='binary_crossentropy',
                                     metrics=['accuracy'])
 
-                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), verbose=0)
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
             else:
-                self.model.compile(optimizer='SGD',
-                                    loss='mae',
+                self.model.compile(optimizer='adam',
+                                    loss='binary_crossentropy',
                                     metrics=['accuracy'])
 
                 print("weight dict:", class_weights)
-                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights, verbose=0)
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
 
         else:
    
@@ -77,11 +80,14 @@ class clinical_only:
             x = Dense(32, activation='relu')(x)
             x = Dense(16, activation='relu')(x)
 
-            outputs = []
-            for i in range(y_train.shape[-1]):
-                output = Dense(1, activation='sigmoid')(x)
+            if self.multi_target:
+                outputs = []
+                for i in range(y_train.shape[-1]):
+                    output = Dense(1, activation='sigmoid')(x)
 
-                outputs.append(output)
+                    outputs.append(output)
+            else:
+                outputs = Dense(1, activation='sigmoid')(x)
 
             self.model = keras.Model(input, outputs)
 

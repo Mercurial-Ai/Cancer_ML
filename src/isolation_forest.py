@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 def isolation_forest(features, target):
     print("isolation forest starting")
 
-    isolated_forest=IsolationForest(n_estimators=10, n_jobs=-1, random_state=42) 
+    isolated_forest=IsolationForest(n_estimators=2, n_jobs=-1, random_state=42) 
 
     if type(features) == tuple or type(features) == list:
         # concatenate features for image clinical

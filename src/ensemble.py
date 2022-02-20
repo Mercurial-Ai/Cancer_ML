@@ -55,13 +55,13 @@ class voting_ensemble:
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
         print("metabric starting")
-        clinical_metabric = cancer_ml("metabric", metabric_dependent, model="clinical_only")
+        clinical_metabric = cancer_ml("metabric", 'chemotherapy', model="clinical_only")
         print("duke clinical only starting")
-        clinical_duke = cancer_ml("duke", duke_dependent, model="clinical_only")
+        clinical_duke = cancer_ml("duke", 'Adjuvant Chemotherapy', model="clinical_only")
         print("duke image clinical starting")
-        image_clinical = cancer_ml("duke", duke_dependent, model="image_clinical")
+        image_clinical = cancer_ml("duke", "Adjuvant Chemotherapy", model="image_clinical")
         print("duke image only starting")
-        image_only = cancer_ml("duke", duke_dependent, model="cnn")
+        image_only = cancer_ml("duke", "Adjuvant Chemotherapy", model="cnn")
 
         if not load_models:
             clinical_metabric.run_model()
@@ -204,17 +204,23 @@ class voting_ensemble:
         self.ensembled_prediction = all_predictions
 
         duke_image_predictions = []
-        for prediction in self.ensembled_prediction:
-            if prediction.shape[-1] == 24:
-                duke_image_predictions.append(prediction)
+        # if multi target
+        if len(self.ensembled_prediction[0].shape) != 1:
+            for prediction in self.ensembled_prediction:
+                if prediction.shape[-1] == 24:
+                    duke_image_predictions.append(prediction)
 
-        duke_image_predictions = np.concatenate(duke_image_predictions, axis=0)
+            duke_image_predictions = np.concatenate(duke_image_predictions, axis=0)
+        
+        else:
+            duke_image_predictions = self.ensembled_prediction
 
         duke_image_true = all_data[3][1]
 
         accuracy = self.eval(duke_image_predictions, duke_image_true)
 
-        accuracy = dict(zip(duke_dependent, accuracy))
+        if len(self.ensembled_prediction[0].shape) != 1:
+            accuracy = dict(zip(duke_dependent, accuracy))
 
         print("Accuracy:", accuracy)
 
@@ -279,14 +285,17 @@ class voting_ensemble:
         print("prediction shape:", prediction.shape)
         print("test y shape:", testY.shape)
 
-        accuracies = []
-        for j in range(testY.shape[-1]):
+        if len(testY.shape) == 1:
+            accuracies = accuracy_score(testY, prediction.round())
+        else:
+            accuracies = []
+            for j in range(testY.shape[-1]):
 
-            pred = prediction[:, j]
-            true = testY[:, j]
+                pred = prediction[:, j]
+                true = testY[:, j]
 
-            accuracy = accuracy_score(true, pred.round())
+                accuracy = accuracy_score(true, pred.round())
 
-            accuracies.append(accuracy)
+                accuracies.append(accuracy)
         
         return accuracies

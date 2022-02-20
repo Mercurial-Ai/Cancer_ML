@@ -38,7 +38,7 @@ class cancer_ml:
         if self.model == "clinical_only":
             self.clinical = True
             
-            self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
+        #    self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
 
         elif self.model == "image_clinical":
             self.image_clinical = True
@@ -47,13 +47,13 @@ class cancer_ml:
             self.data_pipe.image_clinical.X_test = self.tuple_to_list(self.data_pipe.image_clinical.X_test)
             self.data_pipe.image_clinical.X_val = self.tuple_to_list(self.data_pipe.image_clinical.X_val)
 
-            self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train)
+        #    self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train)
 
             self.data_pipe.image_clinical.X_train[0][1] = random_crop(list(self.data_pipe.image_clinical.X_train[0][1]), (self.crop_size[0], self.crop_size[1], 1))
             self.data_pipe.image_clinical.X_test[0][1] = random_crop(list(self.data_pipe.image_clinical.X_test[0][1]), (self.crop_size[0], self.crop_size[1], 1))
             self.data_pipe.image_clinical.X_val[0][1] = random_crop(list(self.data_pipe.image_clinical.X_val[0][1]), (self.crop_size[0], self.crop_size[1], 1))
 
-            self.data_pipe.image_clinical.X_train[0][1] = self.data_pipe.image_clinical.X_train[0][1][self.non_outlier_indices]
+        #    self.data_pipe.image_clinical.X_train[0][1] = self.data_pipe.image_clinical.X_train[0][1][self.non_outlier_indices]
 
         elif self.model == "cnn":
             self.cnn = True

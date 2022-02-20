@@ -8,16 +8,16 @@ def balance_y_classes(x, y, var_to_balance=0, shuffle_data=True):
     if type(x) == pd.DataFrame:
         x = x.to_numpy()
 
-    if type(y) == pd.DataFrame:
+    if type(y) == pd.DataFrame or type(y) == pd.Series:
         y = y.to_numpy()
 
     if shuffle_data:
         x, y = shuffle(x, y, random_state=31)
 
     if len(y.shape) == 1:
-        y = np.expand_dims(y, axis=0)
-
-    var = y[:, var_to_balance]
+        var = y
+    else:
+        var = y[:, var_to_balance]
 
     var_dist = get_distribution(var)
 

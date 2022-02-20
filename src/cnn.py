@@ -54,11 +54,14 @@ class cnn:
         x = layers.Dense(32)(x)
         x = layers.Activation('relu')(x)
 
-        outputs = []
-        for i in range(y_train.shape[-1]):
-            output = layers.Dense(1, activation='sigmoid')(x)
+        if self.multi_target:
+            outputs = []
+            for i in range(y_train.shape[-1]):
+                output = layers.Dense(1, activation='sigmoid')(x)
 
-            outputs.append(output)
+                outputs.append(output)
+        else:
+            outputs = layers.Dense(1, activation='sigmoid')(x)
 
         self.model = keras.Model(input, outputs)
 
@@ -80,7 +83,7 @@ class cnn:
 
         if self.multi_target:
             self.model.compile(optimizer='adam',
-                                loss={k: class_loss(v) for k, v in class_weights.items()},
+                                loss="mse",
                                 metrics=['accuracy'])
 
             self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))

@@ -18,6 +18,8 @@ def confusion_matrix(y_true, y_pred):
 
     if len(y_true.shape) == 1:
 
+        y_pred = np.asarray(y_pred)
+
         c_matrix = c_mat(y_true, y_pred.round())
         disp = ConfusionMatrixDisplay(c_matrix)
 
@@ -26,7 +28,6 @@ def confusion_matrix(y_true, y_pred):
         disp.plot()
 
         plt.savefig("confusion_matrix")
-        plt.show()
 
     else:
 
