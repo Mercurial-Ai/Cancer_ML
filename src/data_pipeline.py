@@ -19,8 +19,9 @@ class data_pod:
 
 class data_pipeline:
 
-    def __init__(self, clinical_path, image_path, target):
+    def __init__(self, clinical_path, image_features_path, image_path, target):
         self.clinical_path = clinical_path
+        self.image_features_path = image_features_path
         self.image_path = image_path
         self.target = target
 
@@ -30,10 +31,18 @@ class data_pipeline:
 
     def load_data(self):
         self.df = pd.read_csv(self.clinical_path, low_memory=False)
+        if self.image_features_path != None:
+            self.image_features = pd.read_csv(self.image_features_path, low_memory=False)
+
+            # drop ids from image features to prevent duplicates
+            self.image_features = self.image_features.drop("Patient ID", axis=1)
 
         self.clinical_ids = self.df[list(self.df.columns)[0]]
 
-        self.df = self.df.set_index(list(self.df.columns)[0])
+        if self.image_features_path != None:
+            self.df = pd.concat([self.df, self.image_features], axis=1)
+
+        self.df = self.df.set_index(str(list(self.df.columns)[0]))
 
         self.df = tokenize_dataset(self.df)
 

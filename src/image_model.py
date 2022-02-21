@@ -18,7 +18,7 @@ class image_model:
         else:
             self.multi_target = False
 
-        print("X train shape:", X_train[0][1].shape)
+        print("X train shape clinical:", X_train[0][0].shape)
 
         clinical_input = keras.layers.Input(shape=(X_train[0][0].shape[1]))
 
@@ -72,7 +72,7 @@ class image_model:
         if self.multi_target:
 
             model.compile(optimizer='adam',
-                            loss="mse",
+                            loss={k: class_loss(v) for k, v, in class_weights.items()},
                             metrics=['accuracy'])
 
             self.fit = model.fit(X_train[0], y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val))

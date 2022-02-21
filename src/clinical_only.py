@@ -57,7 +57,7 @@ class clinical_only:
             class_weights = get_weight_dict(y_train, output_names)
             if self.multi_target:
                 self.model.compile(optimizer='adam',
-                                    loss='binary_crossentropy',
+                                    loss={k: class_loss(v) for k, v, in class_weights.items()},
                                     metrics=['accuracy'])
 
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))

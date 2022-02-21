@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 from src.random_crop import random_crop
+from src.gan import gan
 
 class cancer_ml:
 
@@ -25,8 +26,6 @@ class cancer_ml:
 
         if self.dataset == "duke":
             self.collect_duke()
-        elif self.dataset == "hn1":
-            self.collect_HN1()
         elif self.dataset == "metabric":
             self.collect_METABRIC()
 
@@ -38,7 +37,7 @@ class cancer_ml:
         if self.model == "clinical_only":
             self.clinical = True
             
-        #    self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
+            self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
 
         elif self.model == "image_clinical":
             self.image_clinical = True
@@ -47,13 +46,18 @@ class cancer_ml:
             self.data_pipe.image_clinical.X_test = self.tuple_to_list(self.data_pipe.image_clinical.X_test)
             self.data_pipe.image_clinical.X_val = self.tuple_to_list(self.data_pipe.image_clinical.X_val)
 
-        #    self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train)
+            self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train = self.remove_outliers(self.data_pipe.image_clinical.X_train[0], self.data_pipe.image_clinical.y_train)
 
             self.data_pipe.image_clinical.X_train[0][1] = random_crop(list(self.data_pipe.image_clinical.X_train[0][1]), (self.crop_size[0], self.crop_size[1], 1))
             self.data_pipe.image_clinical.X_test[0][1] = random_crop(list(self.data_pipe.image_clinical.X_test[0][1]), (self.crop_size[0], self.crop_size[1], 1))
             self.data_pipe.image_clinical.X_val[0][1] = random_crop(list(self.data_pipe.image_clinical.X_val[0][1]), (self.crop_size[0], self.crop_size[1], 1))
 
-        #    self.data_pipe.image_clinical.X_train[0][1] = self.data_pipe.image_clinical.X_train[0][1][self.non_outlier_indices]
+            non_outlier_indices_image_clinical = []
+            for index in self.non_outlier_indices:
+                if index in list(self.data_pipe.image_clinical.X_train.index):
+                    non_outlier_indices_image_clinical.append(index)
+                    
+            self.data_pipe.image_clinical.X_train[0][1] = self.data_pipe.image_clinical.X_train[0][1][non_outlier_indices_image_clinical]
 
         elif self.model == "cnn":
             self.cnn = True
@@ -64,18 +68,14 @@ class cancer_ml:
     def collect_duke(self):
 
         if self.model !="clinical_only":
-            self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", "data/Duke-Breast-Cancer-MRI/img_array_duke.npy", self.target)
+            self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", "data/Duke-Breast-Cancer-MRI/Imaging_Features.csv", "data/Duke-Breast-Cancer-MRI/img_array_duke.npy", self.target)
         else: 
-            self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", None, self.target)
+            self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", None, None, self.target)
 
-        self.data_pipe.load_data()
-    
-    def collect_HN1(self):
-        self.data_pipe = data_pipeline("data/HNSCC-HN1/Copy of HEAD-NECK-RADIOMICS-HN1 Clinical data updated July 2020 (adjusted chemotherapy var).csv", "data/HNSCC-HN1/img_array.npy", self.target)
         self.data_pipe.load_data()
 
     def collect_METABRIC(self):
-        self.data_pipe = data_pipeline("data/METABRIC_RNA_Mutation/METABRIC_RNA_Mutation.csv", None, self.target)
+        self.data_pipe = data_pipeline("data/METABRIC_RNA_Mutation/METABRIC_RNA_Mutation.csv", None, None, self.target)
         self.data_pipe.load_data()
 
     def run_model(self):

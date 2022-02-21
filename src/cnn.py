@@ -83,7 +83,7 @@ class cnn:
 
         if self.multi_target:
             self.model.compile(optimizer='adam',
-                                loss="mse",
+                                loss={k: class_loss(v) for k, v, in class_weights.items()},
                                 metrics=['accuracy'])
 
             self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
