@@ -52,13 +52,6 @@ class cancer_ml:
             self.data_pipe.image_clinical.X_test[0][1] = random_crop(list(self.data_pipe.image_clinical.X_test[0][1]), (self.crop_size[0], self.crop_size[1], 1))
             self.data_pipe.image_clinical.X_val[0][1] = random_crop(list(self.data_pipe.image_clinical.X_val[0][1]), (self.crop_size[0], self.crop_size[1], 1))
 
-            non_outlier_indices_image_clinical = []
-            for index in self.non_outlier_indices:
-                if index in list(self.data_pipe.image_clinical.X_train.index):
-                    non_outlier_indices_image_clinical.append(index)
-                    
-            self.data_pipe.image_clinical.X_train[0][1] = self.data_pipe.image_clinical.X_train[0][1][non_outlier_indices_image_clinical]
-
         elif self.model == "cnn":
             self.cnn = True
 

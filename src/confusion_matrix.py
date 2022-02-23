@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 def confusion_matrix(y_true, y_pred):
+    print("confusion matrix started!")
 
     if type(y_true) == pd.DataFrame:
         vars = list(y_true.columns)
