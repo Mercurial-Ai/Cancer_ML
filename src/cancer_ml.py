@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 from src.random_crop import random_crop
-from src.gan import gan
 
 class cancer_ml:
 
