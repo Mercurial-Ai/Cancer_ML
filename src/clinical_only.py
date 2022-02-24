@@ -5,7 +5,7 @@ from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
 from src.confusion_matrix import confusion_matrix
 from src.class_loss import class_loss
-import pandas as pd
+from src.metrics import recall_m, precision_m, f1_m
 
 class clinical_only:
 
@@ -58,13 +58,13 @@ class clinical_only:
             if self.multi_target:
                 self.model.compile(optimizer='adam',
                                     loss={k: class_loss(v) for k, v, in class_weights.items()},
-                                    metrics=['accuracy'])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m])
 
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
             else:
                 self.model.compile(optimizer='adam',
                                     loss='binary_crossentropy',
-                                    metrics=['accuracy'])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m])
 
                 print("weight dict:", class_weights)
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
@@ -110,15 +110,15 @@ class clinical_only:
             if self.multi_target:
                 self.model.compile(optimizer='adam',
                                     loss={k: class_loss(v) for k, v, in class_weights.items()},
-                                    metrics=['accuracy'])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m])
 
-                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), verbose=0)
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
             else:
                 self.model.compile(optimizer='SGD',
                                     loss='mae',
-                                    metrics=['accuracy'])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m])
 
-                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights, verbose=0)
+                self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
 
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
         if X_train.shape[-1] != 691:

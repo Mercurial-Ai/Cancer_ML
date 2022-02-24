@@ -7,6 +7,7 @@ from src.confusion_matrix import confusion_matrix
 from src.cancer_ml import cancer_ml
 import pandas as pd
 from sklearn.metrics import accuracy_score
+from src.metrics import recall_m, precision_m, f1_m
 
 class voting_ensemble:
 
@@ -55,13 +56,13 @@ class voting_ensemble:
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
         print("metabric starting")
-        clinical_metabric = cancer_ml("metabric", 'chemotherapy', model="clinical_only")
+        clinical_metabric = cancer_ml("metabric", 'hormone_therapy', model="clinical_only")
         print("duke clinical only starting")
-        clinical_duke = cancer_ml("duke", 'Adjuvant Chemotherapy', model="clinical_only")
+        clinical_duke = cancer_ml("duke", 'Adjuvant Endocrine Therapy Medications ', model="clinical_only")
         print("duke image clinical starting")
-        image_clinical = cancer_ml("duke", "Adjuvant Chemotherapy", model="image_clinical")
+        image_clinical = cancer_ml("duke", "Adjuvant Endocrine Therapy Medications ", model="image_clinical")
         print("duke image only starting")
-        image_only = cancer_ml("duke", "Adjuvant Chemotherapy", model="cnn")
+        image_only = cancer_ml("duke", "Adjuvant Endocrine Therapy Medications ", model="cnn")
 
         if not load_models:
             clinical_metabric.run_model()
@@ -235,7 +236,7 @@ class voting_ensemble:
 
         models = list()
         for path in model_paths:
-            model = load_model(path, custom_objects={"loss":class_loss})
+            model = load_model(path, custom_objects={"loss":class_loss, "f1_m": f1_m, "recall_m": recall_m, "precision_m": precision_m})
             models.append(model)
 
         return models
