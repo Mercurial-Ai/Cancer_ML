@@ -8,18 +8,20 @@ from sklearn.metrics import calinski_harabasz_score
 from scipy.interpolate import UnivariateSpline
 import math
 
-def PeakCluster(images):
+def PeakCluster(data):
 
-    clusters=range(2,20) 
+    data_shape = data.shape
+
+    clusters=range(3,20) 
 
     summed_square_distance=[]
     calinski_score=[]
 
     for i in clusters: 
         kmeans=KMeans(n_clusters=i,init='random',random_state=1)
-        kmeans=kmeans.fit(images)
+        kmeans=kmeans.fit(data)
         summed_square_distance.append(kmeans.inertia_)
-        calinski_score.append(calinski_harabasz_score(images,kmeans.labels_))
+        calinski_score.append(calinski_harabasz_score(data,kmeans.labels_))
 
     #2nd derivative of elbow curve to find optimal number of clusters 
     spline    = UnivariateSpline(clusters,summed_square_distance)
@@ -35,12 +37,12 @@ def PeakCluster(images):
 
     print(n_clusters)
     model = KMeans(n_clusters=n_clusters, random_state=0)
-    model.fit(images)
+    model.fit(data)
     Y = model.labels_ 
 
     #PCA to 2D 
     pca           = PCA(n_components=2)
-    pca_transform = pca.fit_transform(images)
+    pca_transform = pca.fit_transform(data)
 
     plt.figure()
     fig=plt.figure()
@@ -83,30 +85,33 @@ def PeakCluster(images):
 
     centroids = model.cluster_centers_
 
-    images = centroids.reshape(n_clusters, int(math.sqrt(centroids.shape[1])), int(math.sqrt(centroids.shape[1])))
-    images *= 255
-    images = images.astype(np.uint8)
+    # check if data is imagery or tabular
+    if len(data_shape) == 3:
+        images = centroids.reshape(n_clusters, int(math.sqrt(centroids.shape[1])), int(math.sqrt(centroids.shape[1])))
+        images *= 255
+        images = images.astype(np.uint8)
 
     # determine cluster labels
     cluster_labels = infer_cluster_labels(model, Y)
 
-    # create figure with subplots using matplotlib.pyplot
-    fig, axs = plt.subplots(int(n_clusters/int(np.sqrt(n_clusters))), int(np.sqrt(n_clusters)), figsize = (20, 20))
-    plt.gray()
+    if len(data_shape) == 3:
+        # create figure with subplots using matplotlib.pyplot
+        fig, axs = plt.subplots(int(n_clusters/int(np.sqrt(n_clusters))), int(np.sqrt(n_clusters)), figsize = (20, 20))
+        plt.gray()
 
-    # loop through subplots and add centroid images
-    for i, ax in enumerate(axs.flat):
-        
-        # determine inferred label using cluster_labels dictionary
-        for key, value in cluster_labels.items():
-            if i in value:
-                ax.set_title('Inferred Label: {}'.format(key))
-        
-        # add image to subplot
-        ax.matshow(images[i])
-        ax.axis('off')
-        
-    # display the figure
-    fig.savefig("centroid_img.png")
+        # loop through subplots and add centroid images
+        for i, ax in enumerate(axs.flat):
+            
+            # determine inferred label using cluster_labels dictionary
+            for key, value in cluster_labels.items():
+                if i in value:
+                    ax.set_title('Inferred Label: {}'.format(key))
+            
+            # add image to subplot
+            ax.matshow(images[i])
+            ax.axis('off')
+            
+        # display the figure
+        fig.savefig("centroid_img.png")
 
     return model
