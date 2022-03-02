@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 from src.random_crop import random_crop
+from src.tabular_k_means import tabular_k_means
 
 class cancer_ml:
 
@@ -37,6 +38,8 @@ class cancer_ml:
             self.clinical = True
             
             self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = self.remove_outliers(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
+
+            self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train = tabular_k_means(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train)
 
         elif self.model == "image_clinical":
             self.image_clinical = True
