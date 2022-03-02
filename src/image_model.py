@@ -5,6 +5,7 @@ from src.class_loss import class_loss
 from src.grid_search.grid_search import grid_search
 from src.get_weight_dict import get_weight_dict
 from src.confusion_matrix import confusion_matrix
+from src.metrics import recall_m, precision_m, f1_m
 
 class image_model:
 
@@ -73,13 +74,13 @@ class image_model:
 
             model.compile(optimizer='adam',
                             loss={k: class_loss(v) for k, v, in class_weights.items()},
-                            metrics=['accuracy'])
+                            metrics=['accuracy', f1_m, precision_m, recall_m])
 
             self.fit = model.fit(X_train[0], y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val))
         else:
             model.compile(optimizer='adam',
                                     loss='mae',
-                                    metrics=['accuracy'])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m])
 
             self.fit = model.fit(X_train, y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val), class_weight=class_weights)
 
