@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-def confusion_matrix(y_true, y_pred):
+def confusion_matrix(y_true, y_pred, save_name="confusion_matrix.png"):
     print("confusion matrix started!")
 
     if type(y_true) == pd.DataFrame:
@@ -28,7 +28,7 @@ def confusion_matrix(y_true, y_pred):
 
         disp.plot()
 
-        plt.savefig("confusion_matrix")
+        plt.savefig(save_name)
 
     else:
 
@@ -50,4 +50,4 @@ def confusion_matrix(y_true, y_pred):
             
             disp.plot()
 
-            plt.savefig("confusion_matrices/confusion_matrix " + vars[i])
+            plt.savefig(save_name)

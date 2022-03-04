@@ -63,10 +63,10 @@ class image_model:
 
         search = grid_search()
 
-#        if self.multi_target:
-#            search.test_model(model, X_train, y_train, X_val, y_val, num_combs=12)
-#        else:
-#            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=12)
+        if self.multi_target:
+            search.test_model(model, X_train, y_train, X_val, y_val, num_combs=12)
+        else:
+            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=12)
 
         class_weights = get_weight_dict(y_train, output_names)
 
@@ -95,7 +95,7 @@ class image_model:
 
         results = self.model.evaluate(X_test, y_test, batch_size=32)
 
-        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
+        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test), save_name="image_clinical_c_mat.png")
 
         return results
 

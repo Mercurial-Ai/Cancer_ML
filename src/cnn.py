@@ -58,11 +58,11 @@ class cnn:
 
         search = grid_search()
 
-        #  if self.multi_target:
-        #     search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=12)
-        #else:
-        #   print("weights applied")
-        #  search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=12)
+        if self.multi_target:
+            search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=12)
+        else:
+            print("weights applied")
+            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=12)
 
         class_weights = get_weight_dict(y_train, output_names)
 
@@ -89,10 +89,7 @@ class cnn:
     def test_model(self, X_test, y_test):
         results = self.model.evaluate(X_test, y_test, batch_size=32)
 
-        print(self.model.predict(X_test))
-
-        if len(y_test.shape) == 1:
-            confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test))
+        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test), save_name="image_only_c_mat.png")
 
         return results
 
