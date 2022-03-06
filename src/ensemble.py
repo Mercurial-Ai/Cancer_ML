@@ -300,3 +300,4 @@ class voting_ensemble:
                 accuracies.append(accuracy)
         
         return accuracies
+        

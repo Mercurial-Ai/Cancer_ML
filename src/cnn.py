@@ -27,7 +27,7 @@ class cnn:
 
         x = layers.Conv2D(64, (5, 5))(input)
         x = layers.Activation('relu')(x)
-        x = layers.MaxPooling2D(pool_size=(5, 5))(x)
+        x = layers.MaxPooling2D(pool_size=(4, 4))(x)
 
         x = layers.Conv2D(32, (5, 5))(x)
         x = layers.Activation('relu')(x)
@@ -38,6 +38,9 @@ class cnn:
         x = layers.MaxPooling2D(pool_size=(2, 2))(x)
 
         x = layers.Flatten()(x)
+
+        x = layers.Dense(16)(x)
+        x = layers.Activation('relu')(x)
 
         if self.multi_target:
             outputs = []
@@ -56,6 +59,8 @@ class cnn:
                 if layer.units == 1:
                     output_names.append(layer.name)
 
+        {'batch size': 32, 'epochs': 25, 'loss': 'mean_squared_error', 'lr': 0.01, 'optimizer': 'adam'}
+
         search = grid_search()
 
         if self.multi_target:
@@ -73,11 +78,12 @@ class cnn:
 
             self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
         else:
-            self.model.compile(loss=loss,
+            opt = keras.optimizers.Adam(lr=0.01)
+            self.model.compile(loss='mean_squared_error',
                     optimizer=opt,
                     metrics=['accuracy', f1_m, precision_m, recall_m])
 
-            self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+            self.fit = self.model.fit(X_train, y_train, epochs=25, batch_size=32, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         try:
             self.model.save('data/saved_models/image_only/keras_cnn_model.h5')
