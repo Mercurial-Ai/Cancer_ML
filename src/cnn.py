@@ -8,6 +8,7 @@ from src.confusion_matrix import confusion_matrix
 from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
 from src.metrics import recall_m, precision_m, f1_m
+from tensorflow.keras.metrics import AUC
 
 class cnn:
 
@@ -30,7 +31,7 @@ class cnn:
         self.model = keras.models.Sequential()
         self.model.add(self.res)
         self.model.add(keras.layers.Flatten())
-        output = layers.Dense(1, activation='sigmoid')
+        self.model.add(layers.Dense(1, activation='sigmoid'))
 
         search = grid_search()
 
@@ -40,21 +41,13 @@ class cnn:
             print("weights applied")
             search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=12)
 
-        class_weights = get_weight_dict(y_train, output_names)
+        opt = keras.optimizers.Adam(lr=0.01)
+        auc_m = AUC()
+        self.model.compile(loss='mse',
+                optimizer=opt,
+                metrics=['accuracy', f1_m, precision_m, recall_m, auc_m])
 
-        if self.multi_target:
-            self.model.compile(optimizer='adam',
-                                loss={k: class_loss(v) for k, v, in class_weights.items()},
-                                metrics=['accuracy', f1_m, precision_m, recall_m])
-
-            self.fit = self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
-        else:
-            opt = keras.optimizers.Adam(lr=0.01)
-            self.model.compile(loss='mse',
-                    optimizer=opt,
-                    metrics=['accuracy', f1_m, precision_m, recall_m])
-
-            self.fit = self.model.fit(X_train, y_train, epochs=25, batch_size=32, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+        self.fit = self.model.fit(X_train, y_train, epochs=25, batch_size=32, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 
         try:
             self.model.save('data/saved_models/image_only/keras_cnn_model.h5')

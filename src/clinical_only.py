@@ -1,3 +1,4 @@
+from sunau import AUDIO_FILE_ENCODING_ADPCM_G722
 from matplotlib.pyplot import get
 from tensorflow import keras
 from tensorflow.keras.layers import Dense
@@ -6,6 +7,7 @@ from src.grid_search.grid_search import grid_search
 from src.confusion_matrix import confusion_matrix
 from src.class_loss import class_loss
 from src.metrics import recall_m, precision_m, f1_m
+from tensorflow.keras.metrics import AUC
 
 class clinical_only:
 
@@ -55,16 +57,17 @@ class clinical_only:
                 search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=1)
 
             class_weights = get_weight_dict(y_train, output_names)
+            auc_m = AUC()
             if self.multi_target:
                 self.model.compile(optimizer='adam',
                                     loss={k: class_loss(v) for k, v, in class_weights.items()},
-                                    metrics=['accuracy', f1_m, precision_m, recall_m])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m])
 
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
             else:
                 self.model.compile(optimizer='adam',
                                     loss='binary_crossentropy',
-                                    metrics=['accuracy', f1_m, precision_m, recall_m])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m])
 
                 print("weight dict:", class_weights)
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
@@ -107,16 +110,18 @@ class clinical_only:
 
             class_weights = get_weight_dict(y_train, output_names)
             print("class weights:", class_weights)
+
+            auc_m = AUC()
             if self.multi_target:
                 self.model.compile(optimizer='adam',
                                     loss={k: class_loss(v) for k, v, in class_weights.items()},
-                                    metrics=['accuracy', f1_m, precision_m, recall_m])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m])
 
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
             else:
                 self.model.compile(optimizer='SGD',
                                     loss='mae',
-                                    metrics=['accuracy', f1_m, precision_m, recall_m])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m])
 
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
 
