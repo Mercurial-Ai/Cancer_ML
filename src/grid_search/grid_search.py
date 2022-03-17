@@ -4,7 +4,8 @@ import numpy as np
 from itertools import combinations, product
 from random import shuffle
 from src.grid_search.write_excel import write_excel
-from src.metrics import recall_m, precision_m, f1_m
+from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
+from tensorflow.keras.metrics import AUC
 
 class grid_search:
 
@@ -51,7 +52,9 @@ class grid_search:
         for comb in combs:
             if i < num_combs:
                 model_copy = model
-                model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy', f1_m, precision_m, recall_m])
+                auc_m = AUC()
+                balanced_acc_m = BalancedSparseCategoricalAccuracy()
+                model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy', f1_m, precision_m, recall_m, auc_m, balanced_acc_m])
 
                 fit = model_copy.fit(X_train, y_train, epochs=int(comb['epochs']), batch_size=comb['batch size'], validation_data=(X_val, y_val), class_weight=weight_dict, verbose=0)
 
@@ -62,8 +65,10 @@ class grid_search:
                 f1 = results[2]
                 p_m = results[3]
                 recall = results[4]
+                auc = results[5]
+                balanced_acc = results[6]
 
-                hyp_acc_pair = (comb, (percentAcc, f1, p_m, recall))
+                hyp_acc_pair = (comb, (percentAcc, f1, p_m, recall, auc, balanced_acc))
 
                 hyp_acc_list.append(hyp_acc_pair)
                 print(hyp_acc_list)

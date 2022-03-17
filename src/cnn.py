@@ -7,7 +7,7 @@ from src.class_loss import class_loss
 from src.confusion_matrix import confusion_matrix
 from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
-from src.metrics import recall_m, precision_m, f1_m
+from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 from tensorflow.keras.metrics import AUC
 
 class cnn:
@@ -43,9 +43,10 @@ class cnn:
 
         opt = keras.optimizers.Adam(lr=0.01)
         auc_m = AUC()
+        balanced_acc_m = BalancedSparseCategoricalAccuracy()
         self.model.compile(loss='mse',
                 optimizer=opt,
-                metrics=['accuracy', f1_m, precision_m, recall_m, auc_m])
+                metrics=['accuracy', f1_m, precision_m, recall_m, auc_m, balanced_acc_m])
 
         self.fit = self.model.fit(X_train, y_train, epochs=25, batch_size=32, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
 

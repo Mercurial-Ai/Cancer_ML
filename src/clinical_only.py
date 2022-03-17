@@ -6,7 +6,7 @@ from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
 from src.confusion_matrix import confusion_matrix
 from src.class_loss import class_loss
-from src.metrics import recall_m, precision_m, f1_m
+from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 from tensorflow.keras.metrics import AUC
 
 class clinical_only:
@@ -58,16 +58,17 @@ class clinical_only:
 
             class_weights = get_weight_dict(y_train, output_names)
             auc_m = AUC()
+            balanced_acc_m = BalancedSparseCategoricalAccuracy()
             if self.multi_target:
                 self.model.compile(optimizer='adam',
                                     loss={k: class_loss(v) for k, v, in class_weights.items()},
-                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m, balanced_acc_m])
 
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
             else:
                 self.model.compile(optimizer='adam',
                                     loss='binary_crossentropy',
-                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m, balanced_acc_m])
 
                 print("weight dict:", class_weights)
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
@@ -112,16 +113,17 @@ class clinical_only:
             print("class weights:", class_weights)
 
             auc_m = AUC()
+            balanced_acc_m = BalancedSparseCategoricalAccuracy()
             if self.multi_target:
                 self.model.compile(optimizer='adam',
                                     loss={k: class_loss(v) for k, v, in class_weights.items()},
-                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m, balanced_acc_m])
 
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val))
             else:
                 self.model.compile(optimizer='SGD',
                                     loss='mae',
-                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m])
+                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m, balanced_acc_m])
 
                 self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_val, y_val), class_weight=class_weights)
 
