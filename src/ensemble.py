@@ -7,7 +7,7 @@ from src.confusion_matrix import confusion_matrix
 from src.cancer_ml import cancer_ml
 import pandas as pd
 from sklearn.metrics import accuracy_score
-from src.metrics import recall_m, precision_m, f1_m
+from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 
 class voting_ensemble:
 
@@ -240,7 +240,7 @@ class voting_ensemble:
 
         models = list()
         for path in model_paths:
-            model = load_model(path, custom_objects={"loss":class_loss, "f1_m": f1_m, "recall_m": recall_m, "precision_m": precision_m})
+            model = load_model(path, custom_objects={"loss":class_loss, "f1_m": f1_m, "recall_m": recall_m, "precision_m": precision_m, 'BalancedSparseCategoricalAccuracy': BalancedSparseCategoricalAccuracy})
             models.append(model)
 
         return models
