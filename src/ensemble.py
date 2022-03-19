@@ -226,8 +226,8 @@ class voting_ensemble:
             recall = dict(zip(duke_dependent, recall))
 
         print("Accuracy:", accuracy)
-        print("F1:", f1)
-        print("Recall:", recall)
+        print("F1:", float(f1))
+        print("Recall:", float(recall))
 
     def load_models(self, model_dir):
 
@@ -287,14 +287,8 @@ class voting_ensemble:
         if prediction.shape[0] != testY.shape[0]:
             prediction = np.reshape(prediction, (testY.shape[0], -1))
 
-        print("prediction shape:", prediction.shape)
-        print("test y shape:", testY.shape)
-
-        testY = testY.astype(np.int8)
-        prediction = prediction.round().astype(np.int8)
-
-        print(testY.dtype)
-        print(prediction.dtype)
+        testY = testY.astype(np.float32)
+        prediction = prediction.round().astype(np.float32)
 
         if len(testY.shape) == 1:
             accuracies = accuracy_score(testY, prediction)
@@ -307,11 +301,8 @@ class voting_ensemble:
             recall_scores = []
             for j in range(testY.shape[-1]):
 
-                pred = prediction[:, j].round().astype(np.int8)
-                true = testY[:, j].round().astype(np.int8)
-
-                print(pred.dtype)
-                print(true.dtype)
+                pred = prediction[:, j].round().astype(np.float32)
+                true = testY[:, j].round().astype(np.float32)
 
                 # try installing earlier version of tf
                 accuracy = accuracy_score(true, pred)
