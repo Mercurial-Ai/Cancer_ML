@@ -218,16 +218,18 @@ class voting_ensemble:
 
         duke_image_true = all_data[3][1]
 
-        accuracy, f1, recall = self.eval(duke_image_predictions, duke_image_true)
+        accuracy, f1, recall, balanced_acc = self.eval(duke_image_predictions, duke_image_true)
 
         if len(self.ensembled_prediction[0].shape) != 1:
             accuracy = dict(zip(duke_dependent, accuracy))
             f1 = dict(zip(duke_dependent, f1))
             recall = dict(zip(duke_dependent, recall))
+            balanced_acc = dict(zip(duke_dependent, balanced_acc))
 
         print("Accuracy:", accuracy)
         print("F1:", float(f1))
         print("Recall:", float(recall))
+        print("Balanced Accuracy:", float(balanced_acc))
 
     def load_models(self, model_dir):
 
@@ -294,11 +296,13 @@ class voting_ensemble:
             accuracies = accuracy_score(testY, prediction)
             f1_scores = f1_m(testY, prediction)
             recall_scores = recall_m(testY, prediction)
+            balanced_acc_scores = BalancedSparseCategoricalAccuracy(testY, prediction)
 
         else:
             accuracies = []
             f1_scores = []
             recall_scores = []
+            balanced_acc_scores = []
             for j in range(testY.shape[-1]):
 
                 pred = prediction[:, j].round().astype(np.float32)
@@ -308,9 +312,11 @@ class voting_ensemble:
                 accuracy = accuracy_score(true, pred)
                 f1_score = f1_m(true, pred)
                 recall = recall_m(true, pred)
+                balanced_acc = BalancedSparseCategoricalAccuracy(true, pred)
 
                 accuracies.append(accuracy)
                 f1_scores.append(f1_score)
                 recall_scores.append(recall)
+                balanced_acc_scores.append(balanced_acc)
 
-        return accuracies, f1_scores, recall_scores
+        return accuracies, f1_scores, recall_scores, balanced_acc_scores
