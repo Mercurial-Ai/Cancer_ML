@@ -6,7 +6,7 @@ from src.class_loss import class_loss
 from src.confusion_matrix import confusion_matrix
 from src.cancer_ml import cancer_ml
 import pandas as pd
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 
 class voting_ensemble:
@@ -296,7 +296,7 @@ class voting_ensemble:
             accuracies = accuracy_score(testY, prediction)
             f1_scores = f1_m(testY, prediction)
             recall_scores = recall_m(testY, prediction)
-            balanced_acc_scores = BalancedSparseCategoricalAccuracy(testY, prediction)
+            balanced_acc_scores = balanced_accuracy_score(testY, prediction)
 
         else:
             accuracies = []
@@ -312,7 +312,7 @@ class voting_ensemble:
                 accuracy = accuracy_score(true, pred)
                 f1_score = f1_m(true, pred)
                 recall = recall_m(true, pred)
-                balanced_acc = BalancedSparseCategoricalAccuracy(true, pred)
+                balanced_acc = balanced_accuracy_score(true, pred)
 
                 accuracies.append(accuracy)
                 f1_scores.append(f1_score)
