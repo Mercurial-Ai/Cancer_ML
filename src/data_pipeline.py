@@ -54,6 +54,10 @@ class data_pipeline:
 
             self.image_ids = self.img_array[:, -1]
 
+            self.train_ids, self.test_ids = train_test_split(self.image_ids, test_size=0.2, random_state=84)
+
+            self.test_ids, self.val_ids = train_test_split(self.test_ids, test_size=0.2, random_state=84)
+
             # remove ids from img_array
             self.img_array = np.delete(self.img_array, -1, axis=1)
 
@@ -75,8 +79,8 @@ class data_pipeline:
         X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=84)
 
         # split test data into validation and test
-        X_test, X_val = train_test_split(X_test, test_size=0.5, random_state=73)
-        y_test, y_val = train_test_split(y_test, test_size=0.5, random_state=35)
+        X_test, X_val = train_test_split(X_test, test_size=0.5, random_state=84)
+        y_test, y_val = train_test_split(y_test, test_size=0.5, random_state=84)
 
         return X_train, X_test, y_train, y_test, X_val, y_val
     

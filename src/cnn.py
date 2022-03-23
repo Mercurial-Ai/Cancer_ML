@@ -25,13 +25,14 @@ class cnn:
         opt = keras.optimizers.SGD(learning_rate=0.007)
         loss = keras.losses.BinaryCrossentropy()
 
-        self.res = tf.keras.applications.resnet50.ResNet50(input_shape=(256, 256, 1), include_top=False, weights=None)
-        print(self.res.summary())
+        self.res = tf.keras.applications.vgg16.VGG16(input_shape=(256, 256, 1), include_top=False, weights=None)
 
         self.model = keras.models.Sequential()
         self.model.add(self.res)
         self.model.add(keras.layers.Flatten())
         self.model.add(layers.Dense(1, activation='sigmoid'))
+
+        print(self.model.summary())
 
         search = grid_search()
 
