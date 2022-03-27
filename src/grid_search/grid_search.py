@@ -4,6 +4,7 @@ import numpy as np
 from itertools import combinations, product
 from random import shuffle
 from src.grid_search.write_excel import write_excel
+from src.confusion_matrix import confusion_matrix
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 from tensorflow.keras.metrics import AUC
 
@@ -59,6 +60,8 @@ class grid_search:
                 fit = model_copy.fit(X_train, y_train, epochs=int(comb['epochs']), batch_size=comb['batch size'], validation_data=(X_val, y_val), class_weight=weight_dict, verbose=0)
 
                 results = model_copy.evaluate(X_val, y_val, batch_size=comb['batch size'])
+
+                confusion_matrix(y_true=y_val, y_pred=model_copy.predict(X_val), save_name="src\\grid_search\\confusion_matrices\\" + str(comb['epochs']) + str(comb['batch size']) + str(comb['loss']) + str(comb['optimizer']) + ".png")
 
                 print("Results:", results)
                 percentAcc = results[1]
