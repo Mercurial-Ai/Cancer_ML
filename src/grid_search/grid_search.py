@@ -61,7 +61,7 @@ class grid_search:
 
                 results = model_copy.evaluate(X_val, y_val, batch_size=comb['batch size'])
 
-                confusion_matrix(y_true=y_val, y_pred=model_copy.predict(X_val), save_name="src\\grid_search\\confusion_matrices\\" + str(comb['epochs']) + str(comb['batch size']) + str(comb['loss']) + str(comb['optimizer']) + ".png")
+                confusion_matrix(y_true=y_val, y_pred=model_copy.predict(X_val), save_name="src/grid_search/confusion_matrices/" + str(comb['epochs']) + str(comb['batch size']) + str(comb['loss']) + str(comb['optimizer']) + ".png")
 
                 print("Results:", results)
                 percentAcc = results[1]
