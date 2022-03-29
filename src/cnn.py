@@ -25,7 +25,7 @@ class cnn:
         opt = keras.optimizers.SGD(learning_rate=0.007)
         loss = keras.losses.BinaryCrossentropy()
 
-        self.res = tf.keras.applications.vgg16.VGG16(input_shape=(256, 256, 1), include_top=False, weights=None)
+        self.res = tf.keras.applications.vgg16.VGG16(input_shape=(256, 256, 1), include_top=False, weights='imagenet')
 
         self.model = keras.models.Sequential()
         self.model.add(self.res)

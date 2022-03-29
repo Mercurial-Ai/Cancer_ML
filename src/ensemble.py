@@ -55,45 +55,20 @@ class voting_ensemble:
                             'Adjuvant Endocrine Therapy Medications ', 'Therapeutic or Prophylactic Oophorectomy as part of Endocrine Therapy ', 'Neoadjuvant Anti-Her2 Neu Therapy', 'Adjuvant Anti-Her2 Neu Therapy ', 'Received Neoadjuvant Therapy or Not', 'Pathologic response to Neoadjuvant therapy: Pathologic stage (T) following neoadjuvant therapy ',
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
-        print("metabric starting")
-        clinical_metabric = cancer_ml("metabric", 'hormone_therapy', model="clinical_only")
-        print("duke clinical only starting")
-        clinical_duke = cancer_ml("duke", 'Adjuvant Endocrine Therapy Medications ', model="clinical_only")
-        print("duke image clinical starting")
-        image_clinical = cancer_ml("duke", "Adjuvant Endocrine Therapy Medications ", model="image_clinical")
-        print("duke image only starting")
         image_only = cancer_ml("duke", "Adjuvant Endocrine Therapy Medications ", model="cnn")
 
         if not load_models:
-            clinical_metabric.run_model()
-            clinical_metabric.test_model()
-
-            clinical_duke.run_model()
-            clinical_duke.test_model()
-
-            image_clinical.run_model()
-            image_clinical.test_model()
 
             image_only.run_model()
             image_only.test_model()
 
-        self.clinical_metabric_models = self.load_models('data/saved_models/clinical_metabric')
-        self.clinical_duke_models = self.load_models('data/saved_models/clinical_duke')
-        self.image_clinical_models = self.load_models('data/saved_models/image_clinical')
         self.image_only_models = self.load_models('data/saved_models/image_only')
 
-        all_models = [self.clinical_metabric_models, self.clinical_duke_models, self.image_clinical_models, self.image_only_models]
+        all_models = [self.image_only_models]
 
-        for models in all_models:
-            for model in models:
-                print(model.summary())
-
-        clinical_metabric_test = [clinical_metabric.data_pipe.only_clinical.X_test, clinical_metabric.data_pipe.only_clinical.y_test]
-        clinical_duke_test = [clinical_duke.data_pipe.only_clinical.X_test, clinical_duke.data_pipe.only_clinical.y_test]
-        image_clinical_test = [image_clinical.data_pipe.image_clinical.X_test, image_clinical.data_pipe.image_clinical.y_test]
         image_only_test = [image_only.data_pipe.image_only.X_test, image_only.data_pipe.image_only.y_test]
 
-        all_data = [clinical_metabric_test, clinical_duke_test, image_clinical_test, image_only_test]
+        all_data = [image_only_test]
 
         i = 0
         all_predictions = np.array([[]])
