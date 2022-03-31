@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import Sequential
@@ -25,7 +26,13 @@ class cnn:
         opt = keras.optimizers.SGD(learning_rate=0.007)
         loss = keras.losses.BinaryCrossentropy()
 
-        self.res = tf.keras.applications.vgg16.VGG16(input_shape=(256, 256, 1), include_top=False, weights='imagenet')
+        # make black and white images have 3 channels
+        X_train = np.squeeze(X_train)
+        X_val = np.squeeze(X_val)
+        X_train = np.stack((X_train,)*3, axis=-1)
+        X_val = np.stack((X_val,)*3, axis=-1)
+
+        self.res = tf.keras.applications.vgg16.VGG16(input_shape=(256, 256, 3), include_top=False, weights='imagenet')
 
         self.model = keras.models.Sequential()
         self.model.add(self.res)
@@ -59,6 +66,9 @@ class cnn:
         return self.model
 
     def test_model(self, X_test, y_test):
+
+        X_test = np.squeeze(X_test)
+        X_test = np.stack((X_test,)*3, axis=-1)
         results = self.model.evaluate(X_test, y_test, batch_size=32)
 
         confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test), save_name="image_only_c_mat.png")
