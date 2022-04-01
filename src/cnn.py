@@ -1,3 +1,4 @@
+from http.client import ResponseNotReady
 import tensorflow as tf
 import numpy as np
 from tensorflow import keras
@@ -10,6 +11,7 @@ from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 from tensorflow.keras.metrics import AUC
+from src.resnet18 import ResNet18
 
 class cnn:
 
@@ -32,7 +34,8 @@ class cnn:
         X_train = np.stack((X_train,)*3, axis=-1)
         X_val = np.stack((X_val,)*3, axis=-1)
 
-        self.res = tf.keras.applications.vgg16.VGG16(input_shape=(256, 256, 3), include_top=False, weights='imagenet')
+        self.res = ResNet18()
+        self.res = self.res.build(input_shape=(256, 256, 3), num_classes=3)
 
         self.model = keras.models.Sequential()
         self.model.add(self.res)
