@@ -502,30 +502,9 @@ class cancer_ml:
             nums_saved.append(num_saved)
 
             indices_removed = list(range(num_saved, len(class_array[lowest_count:])))
-            label_indices_removed.append(indices_removed)
 
             class_array_dict[label] = new_array
             class_y_dict[label] = new_y
-
-        # add number of indices saved from each label to the next indices in order to get the indices that are removed from the entire data array
-        for j in range(1, len(label_indices_removed)):
-            i = 0
-            for indice in label_indices_removed[j]:
-                indice = indice + nums_saved[i]
-
-                label_indices_removed[j][i] = indice
-
-                i = i + 1
-                
-        # flatten nested list
-        new_label_indices_removed = []
-        for nested in label_indices_removed:
-            for element in nested:
-                new_label_indices_removed.append(element)
-
-        indices_removed = new_label_indices_removed
-
-        print("Indices Removed to Equalize Labels:", indices_removed)
 
         arrays = []
         for data in list(class_y_dict.values()):
