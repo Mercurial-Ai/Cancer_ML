@@ -10,6 +10,18 @@ from src.grid_search.grid_search import grid_search
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 from tensorflow.keras.metrics import AUC
 import torch
+import torch.nn as nn
+import math
+
+class torch_cnn(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.weights = nn.Parameter(torch.randn(784, 10) / math.sqrt(784))
+        self.bias = nn.Parameter(torch.zeros(10))
+
+    def forward(self, xb):
+        xb = torch.Tensor([xb], dtype=tf.float16)
+        return xb @ self.weights + self.bias
 
 class cnn:
 
@@ -23,7 +35,7 @@ class cnn:
         else:
             self.multi_target = False
 
-        self.model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
+        self.model = torch_cnn()
 
         criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
