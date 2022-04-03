@@ -1,6 +1,5 @@
 import os
 from keras.backend import argmax, expand_dims
-from keras.models import load_model
 import numpy as np
 from src.class_loss import class_loss
 from src.confusion_matrix import confusion_matrix
@@ -8,6 +7,8 @@ from src.cancer_ml import cancer_ml
 import pandas as pd
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
+import torch
+from src.cnn import torch_cnn
 
 class voting_ensemble:
 
@@ -120,49 +121,43 @@ class voting_ensemble:
 
                     testX = [array_testX_clinical, array_testX_image]
 
-                    # make sure model input shape matches x shape
-                    print(models[0].layers[0].get_output_at(0).get_shape())
-                    if models[0].layers[0].get_output_at(0).get_shape()[1:] == testX[0].shape[1:] or models[0].layers[0].get_output_at(0).get_shape()[1:] == testX[1].shape[1:]:
+                    # differentiate between image-clinical and other submodels
+                    if type(testX) != list:
+                        for example in testX:
+                            ensemble_prediction = self.predict(example, models)
+                            predictions.append(ensemble_prediction)
 
-                        # differentiate between image-clinical and other submodels
-                        if type(testX) != list:
-                            for example in testX:
-                                ensemble_prediction = self.predict(example, models)
-                                predictions.append(ensemble_prediction)
+                        predictions = np.flip(predictions)
+                    else:
+                        for j in range(testX[0].shape[0]):
+                            clinical_example = testX[0][j]
+                            img_example = testX[1][j]
 
-                            predictions = np.flip(predictions)
-                        else:
-                            for j in range(testX[0].shape[0]):
-                                clinical_example = testX[0][j]
-                                img_example = testX[1][j]
+                            example = [clinical_example, img_example]
+                            ensemble_prediction = self.predict(example, models)
+                            predictions.append(ensemble_prediction)
 
-                                example = [clinical_example, img_example]
-                                ensemble_prediction = self.predict(example, models)
-                                predictions.append(ensemble_prediction)
-
-                                ensemble_prediction = np.flip(ensemble_prediction)
+                            ensemble_prediction = np.flip(ensemble_prediction)
                 else:
                     image_clinical_active = False
-                    # make sure model input shape matches x shape
-                    if models[0].layers[0].get_output_at(0).get_shape() == testX.shape[1:]:
 
-                        # differentiate between image-clinical and other submodels
-                        if type(testX) != list:
-                            for example in testX:
-                                ensemble_prediction = self.predict(example, models)
-                                predictions.append(ensemble_prediction)
+                    # differentiate between image-clinical and other submodels
+                    if type(testX) != list:
+                        for example in testX:
+                            ensemble_prediction = self.predict(example, models)
+                            predictions.append(ensemble_prediction)
 
-                        else:
-                            for j in range(testX[0].shape[0]):
-                                clinical_example = testX[0][j]
-                                img_example = testX[1][j]
+                    else:
+                        for j in range(testX[0].shape[0]):
+                            clinical_example = testX[0][j]
+                            img_example = testX[1][j]
 
-                                clinical_example = np.expand_dims(clinical_example, 0)
-                                img_example = np.expand_dims(img_example, 0)
+                            clinical_example = np.expand_dims(clinical_example, 0)
+                            img_example = np.expand_dims(img_example, 0)
 
-                                example = [clinical_example, img_example]
-                                ensemble_prediction = self.predict(example, models)
-                                predictions.append(ensemble_prediction)
+                            example = [clinical_example, img_example]
+                            ensemble_prediction = self.predict(example, models)
+                            predictions.append(ensemble_prediction)
 
                 all_predictions = np.append(all_predictions, predictions)
 
@@ -172,8 +167,6 @@ class voting_ensemble:
 
                 if all_predictions.shape[0] != testY.shape[0]:
                     all_predictions = np.reshape(all_predictions, (testY.shape[0], -1))
-
-                confusion_matrix(testY, all_predictions)
 
             i = i + 1
 
@@ -217,7 +210,8 @@ class voting_ensemble:
 
         models = list()
         for path in model_paths:
-            model = load_model(path, custom_objects={"loss":class_loss, "f1_m": f1_m, "recall_m": recall_m, "precision_m": precision_m, 'BalancedSparseCategoricalAccuracy': BalancedSparseCategoricalAccuracy})
+            model = torch_cnn()
+            model.load_state_dict(torch.load(path))
             models.append(model)
 
         return models
@@ -236,8 +230,9 @@ class voting_ensemble:
 
         y = []
         for model in models:
-            print(model.summary())
-            prediction = model.predict(testX)
+            testX = np.reshape(testX, (testX.shape[0], 1, 256, 256))
+            testX = torch.from_numpy(testX).type(torch.float)
+            prediction = model(testX).detach().numpy()
             y.append(prediction)
 
         results = np.concatenate(y, axis=0)

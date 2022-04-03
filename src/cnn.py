@@ -4,6 +4,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import Sequential
 import pandas as pd
+import numpy as np
 from src.class_loss import class_loss
 from src.confusion_matrix import confusion_matrix
 from src.get_weight_dict import get_weight_dict
@@ -53,7 +54,7 @@ class cnn:
 
         self.model = torch_cnn()
 
-        criterion = torch.nn.CrossEntropyLoss()
+        self.criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
         for epoch in range(epochs):
@@ -61,8 +62,6 @@ class cnn:
             for i in range((X_train.shape[0]-1)//batch_size + 1):
                 start_i = i*batch_size
                 end_i = start_i+batch_size
-
-                print(X_train.shape)
 
                 xb = X_train[start_i:end_i]
                 yb = y_train[start_i:end_i]
@@ -78,7 +77,7 @@ class cnn:
 
                 pred = pred.to(torch.float)
                 yb = yb.to(torch.long)
-                loss = criterion(pred, yb)
+                loss = self.criterion(pred, yb)
         
                 loss.backward()
                 optimizer.step()
@@ -88,7 +87,7 @@ class cnn:
 
                 # print stats
                 running_loss += loss.item()
-                if i % 2000 == 1999: # print every 2000 mini-batches
+                if i % 100 == 1999: # print every 100 mini-batches
                     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
                     running_loss = 0.0
 
@@ -99,11 +98,15 @@ class cnn:
         return self.model
 
     def test_model(self, X_test, y_test):
-        results = self.model.evaluate(X_test, y_test, batch_size=32)
+        X_test = np.reshape(X_test, (X_test.shape[0], 1, 256, 256))
+        X_test = torch.from_numpy(X_test).type(torch.float)
+        y_test = torch.from_numpy(y_test).type(torch.long)
+        with torch.no_grad():
+            self.model.eval()
+            y_pred = self.model(X_test)
+            test_loss = self.criterion(y_pred, y_test)
 
-        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test), save_name="image_only_c_mat.png")
-
-        return results
+        return test_loss
 
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=32):
 
