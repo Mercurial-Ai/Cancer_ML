@@ -525,8 +525,6 @@ class cancer_ml:
 
         indices_removed = new_label_indices_removed
 
-        print("Indices Removed to Equalize Labels:", indices_removed)
-
         arrays = []
         for data in list(class_y_dict.values()):
             arrays.append(data)

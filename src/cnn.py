@@ -1,3 +1,4 @@
+from tracemalloc import start
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -8,27 +9,42 @@ from src.confusion_matrix import confusion_matrix
 from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
-from tensorflow.keras.metrics import AUC
 import torch
 import torch.nn as nn
-import math
+import torch.nn.functional as F
 
 class torch_cnn(nn.Module):
     def __init__(self):
-        super().__init__()
-        self.weights = nn.Parameter(torch.randn(784, 10) / math.sqrt(784))
-        self.bias = nn.Parameter(torch.zeros(10))
+        super(torch_cnn, self).__init__()
+        self.conv1 = nn.Conv2d(1, 6, kernel_size=5, device='cpu', dtype=torch.float)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, kernel_size=5)
+        self.fc1 = nn.Linear(16 * 61 * 61, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 2)
 
-    def forward(self, xb):
-        xb = torch.Tensor([xb], dtype=tf.float16)
-        return xb @ self.weights + self.bias
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+        x = F.relu(x)
+        x = self.fc3(x)
+
+        return x
 
 class cnn:
 
     def __init__(self, load_model=True):
         self.load_model=load_model
 
-    def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=128):
+    def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=32):
 
         if len(y_train.shape) > 1:
             self.multi_target = True
@@ -41,19 +57,34 @@ class cnn:
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
         for epoch in range(epochs):
-
             running_loss = 0.0
-            for i, data in enumerate(X_train, 0):
-                inputs, labels = data, y_train[i]
+            for i in range((X_train.shape[0]-1)//batch_size + 1):
+                start_i = i*batch_size
+                end_i = start_i+batch_size
+
+                print(X_train.shape)
+
+                xb = X_train[start_i:end_i]
+                yb = y_train[start_i:end_i]
+
+                xb_shape = xb.shape
+
+                xb = torch.from_numpy(xb)
+                yb = torch.from_numpy(yb)
+
+                xb = torch.reshape(xb, (xb_shape[0], 1, 256, 256))
+                xb = xb.type(torch.float)
+                pred = self.model(xb)
+
+                pred = pred.to(torch.float)
+                yb = yb.to(torch.long)
+                loss = criterion(pred, yb)
+        
+                loss.backward()
+                optimizer.step()
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
-
-                # forward + backward + optimize
-                outputs = self.model(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
 
                 # print stats
                 running_loss += loss.item()
