@@ -72,6 +72,7 @@ class cnn:
 
         X_test = np.squeeze(X_test)
         X_test = np.stack((X_test,)*3, axis=-1)
+        
         results = self.model.evaluate(X_test, y_test, batch_size=32)
 
         confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test), save_name="image_only_c_mat.png")

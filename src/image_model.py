@@ -7,6 +7,8 @@ from src.get_weight_dict import get_weight_dict
 from src.confusion_matrix import confusion_matrix
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 from tensorflow.keras.metrics import AUC
+from src.resnet18 import ResNet18
+import numpy as np
 
 class image_model:
 
@@ -22,6 +24,16 @@ class image_model:
 
         print("X train shape clinical:", X_train[0][0].shape)
 
+        # make black and white images have 3 channels
+        X_train[0][1] = np.stack((X_train[0][1],)*3, axis=-1)
+        X_val[0][1] = np.stack((X_val[0][1],)*3, axis=-1)
+        X_train[0][1] = np.squeeze(X_train[0][1])
+        X_val[0][1] = np.squeeze(X_val[0][1])
+
+        res = ResNet18()
+        res = res.build(input_shape=(256, 256, 3), num_classes=3)
+        res.trainable = False
+
         clinical_input = keras.layers.Input(shape=(X_train[0][0].shape[1]))
 
         x = Dense(50, activation="relu")(clinical_input)
@@ -31,13 +43,7 @@ class image_model:
 
         image_input = keras.layers.Input(shape=X_train[0][1].shape[1:])
 
-        x = Conv2D(64, kernel_size=4, activation='relu')(image_input)
-        x = MaxPooling2D(pool_size=(4, 4))(x)
-        x = Conv2D(32, kernel_size=5, activation='relu')(x)
-        x = MaxPooling2D(pool_size=(4, 5))(x)
-        x = Conv2D(8, kernel_size=5, activation='relu')(x)
-        x = MaxPooling2D(pool_size=(4, 4))(x)
-        flat2 = keras.layers.Flatten()(x)
+        flat2 = res(image_input)
 
         merge = concatenate([flat1, flat2])
 
@@ -95,6 +101,9 @@ class image_model:
         return model
 
     def test_model(self, X_test, y_test):
+
+        X_test[0][1] = np.stack((X_test[0][1],)*3, axis=-1)
+        X_test[0][1] = np.squeeze(X_test[0][1])
 
         results = self.model.evaluate(X_test, y_test, batch_size=32)
 

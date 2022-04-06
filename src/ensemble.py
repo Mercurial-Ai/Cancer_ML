@@ -55,9 +55,13 @@ class voting_ensemble:
                             'Adjuvant Endocrine Therapy Medications ', 'Therapeutic or Prophylactic Oophorectomy as part of Endocrine Therapy ', 'Neoadjuvant Anti-Her2 Neu Therapy', 'Adjuvant Anti-Her2 Neu Therapy ', 'Received Neoadjuvant Therapy or Not', 'Pathologic response to Neoadjuvant therapy: Pathologic stage (T) following neoadjuvant therapy ',
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
+        image_clinical = cancer_ml("duke", "Adjuvant Endocrine Therapy Medications ", model="image_clinical")
         image_only = cancer_ml("duke", "Adjuvant Endocrine Therapy Medications ", model="cnn")
 
         if not load_models:
+
+            image_clinical.run_model()
+            image_clinical.test_model()
 
             image_only.run_model()
             image_only.test_model()
