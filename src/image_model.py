@@ -93,9 +93,8 @@ class image_model:
 
                 # print stats
                 running_loss += loss.item()
-                if i % 100 == 1999: # print every 100 mini-batches
-                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
-                    running_loss = 0.0
+                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss)
+                running_loss = 0.0
 
         print("Finished Training")
 
