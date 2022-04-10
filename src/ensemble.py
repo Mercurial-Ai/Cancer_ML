@@ -268,8 +268,6 @@ class voting_ensemble:
 
         if len(testY.shape) == 1:
             accuracies = accuracy_score(testY, prediction)
-            print(testY.dtype)
-            print(prediction.dtype)
             f1_scores = f1_m(testY, prediction)
             recall_scores = recall_m(testY, prediction)
             balanced_acc_scores = balanced_accuracy_score(testY, prediction)

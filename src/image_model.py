@@ -6,7 +6,8 @@ from src.class_loss import class_loss
 from src.grid_search.grid_search import grid_search
 from src.get_weight_dict import get_weight_dict
 from src.confusion_matrix import confusion_matrix
-from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
+from sklearn.metrics import accuracy_score, balanced_accuracy_score
+from src.metrics import recall_m, precision_m, f1_m
 from tensorflow.keras.metrics import AUC
 import torch
 import torch.nn as nn
@@ -73,6 +74,7 @@ class image_model:
 
                 xb = [torch.from_numpy(X_train[0][0][start_i:end_i]), torch.from_numpy(X_train[0][1][start_i:end_i])]
                 yb = torch.from_numpy(y_train[start_i:end_i])
+                y_val = torch.from_numpy(y_train[start_i:end_i]).detach().numpy()
 
                 xb_image_shape = xb[1].shape
 
@@ -93,7 +95,14 @@ class image_model:
 
                 # print stats
                 running_loss += loss.item()
-                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss)
+                pred = pred.detach().numpy()
+                y_val = y_val.astype(np.float)
+                pred = np.argmax(pred, axis=1).astype(np.float)
+                accuracy = accuracy_score(y_val, pred)
+                f1_score = f1_m(y_val, pred)
+                recall = recall_m(y_val, pred)
+                balanced_acc = balanced_accuracy_score(y_val, pred)
+                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss, 'Accuracy: %.4f' %accuracy, 'F1: %.4f' %f1_score, 'Recall: %.4f' %recall, 'Balanced Accuracy: %.4f' %balanced_acc)
                 running_loss = 0.0
 
         print("Finished Training")
