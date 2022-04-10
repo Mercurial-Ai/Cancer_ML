@@ -188,7 +188,7 @@ class voting_ensemble:
         else:
             duke_image_predictions = self.ensembled_prediction
 
-        duke_image_true = all_data[3][1]
+        duke_image_true = all_data[0][1]
 
         accuracy, f1, recall, balanced_acc = self.eval(duke_image_predictions, duke_image_true)
 
@@ -263,11 +263,13 @@ class voting_ensemble:
         if prediction.shape[0] != testY.shape[0]:
             prediction = np.reshape(prediction, (testY.shape[0], -1))
 
-        testY = testY.astype(np.float32)
-        prediction = prediction.round().astype(np.float32)
+        testY = testY.astype(np.float)
+        prediction = np.argmax(prediction, axis=1).astype(np.float)
 
         if len(testY.shape) == 1:
             accuracies = accuracy_score(testY, prediction)
+            print(testY.dtype)
+            print(prediction.dtype)
             f1_scores = f1_m(testY, prediction)
             recall_scores = recall_m(testY, prediction)
             balanced_acc_scores = balanced_accuracy_score(testY, prediction)
