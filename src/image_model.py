@@ -1,4 +1,3 @@
-from tracemalloc import start
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense
 from tensorflow.keras.layers import concatenate
