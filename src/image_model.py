@@ -124,7 +124,7 @@ class image_model:
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=128):
         
         if self.load_model:
-            self.model = keras.models.load_model('data\\saved_models\\keras_image_clinical_model.h5')
+            self.model = torch.load('data\\saved_models\\torch_image_clinical_model.h5')
         else:
             self.model = self.train_model(X_train, y_train, X_val, y_val, epochs, batch_size)
 

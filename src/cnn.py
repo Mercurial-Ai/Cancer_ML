@@ -110,7 +110,7 @@ class cnn:
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=32):
 
         if self.load_model:
-            self.model = keras.models.load_model('data\\saved_models\\keras_cnn_model.h5')
+            self.model = torch.load('data\\saved_models\\torch_cnn_model.h5')
         else:
             self.model = self.train_model(X_train, y_train, X_val, y_val, epochs, batch_size)
 

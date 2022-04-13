@@ -7,8 +7,10 @@ from src.confusion_matrix import confusion_matrix
 from src.class_loss import class_loss
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 from tensorflow.keras.metrics import AUC
+from sklearn.metrics import accuracy_score, balanced_accuracy_score
 import torch
 import torch.nn as nn
+import numpy as np
 
 class metabric_model(nn.Module):
     def __init__(self):
@@ -59,10 +61,10 @@ class clinical_only:
         # use shape of data to determine which dataset is being utilized (METABRIC or Duke)
         if X_train.shape[-1] != 691:
             model = duke_model()
-            save_path = 'data/saved_models/clinical_duke/keras_clinical_only_model.h5'
+            save_path = 'data/saved_models/clinical_duke/torch_clinical_only_model.h5'
         else:
             model = metabric_model()
-            save_path = 'data/saved_models/clinical_metabric/keras_clinical_only_model.h5'
+            save_path = 'data/saved_models/clinical_metabric/torch_clinical_only_model.h5'
 
         self.criterion = nn.MSELoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
@@ -109,12 +111,12 @@ class clinical_only:
             y_pred = self.model(X_test)
             test_loss = self.criterion(y_pred, y_test)
 
-        return results
+        return test_loss
 
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=32):
         
         if self.load_model:
-            self.model = keras.models.load_model('data\\saved_models\\keras_clinical_only_model.h5')
+            self.model = torch.load('data\\saved_models\\torch_clinical_only_model.h5')
         else:
             self.model = self.train_model(X_train, y_train, X_val, y_val, epochs, batch_size)
 
