@@ -109,6 +109,7 @@ class clinical_only:
         with torch.no_grad():
             self.model.eval()
             y_pred = self.model(X_test)
+            confusion_matrix(y_test, y_pred, save_path="image_clinical_c_mat_torch")
             test_loss = self.criterion(y_pred, y_test)
 
         return test_loss

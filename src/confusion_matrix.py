@@ -20,8 +20,10 @@ def confusion_matrix(y_true, y_pred, save_name="confusion_matrix.png"):
     if len(y_true.shape) == 1:
 
         y_pred = np.asarray(y_pred)
+        y_pred = np.argmax(y_pred, axis=1).astype(np.float)
+        y_true = np.asarray(y_true, dtype=np.int8)
 
-        c_matrix = c_mat(y_true, y_pred.round())
+        c_matrix = c_mat(y_true.round(), y_pred.round())
         disp = ConfusionMatrixDisplay(c_matrix)
 
         plt.close('all')

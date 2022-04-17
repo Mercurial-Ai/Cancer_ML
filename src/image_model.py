@@ -117,6 +117,7 @@ class image_model:
         with torch.no_grad():
             self.model.eval()
             y_pred = self.model(X_test)
+            confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
             test_loss = self.criterion(y_pred, y_test)
 
         return test_loss
