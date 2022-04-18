@@ -101,12 +101,6 @@ class data_pipeline:
         
         y = self.df[self.target]
 
-        # check if METABRIC
-        if y.shape[-1] == 7:
-            x, y = balance_y_classes(x, y, 1, shuffle_data=True)
-        else:
-            x, y = balance_y_classes(x, y, 11, shuffle_data=True)
-
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
         # normalize data
