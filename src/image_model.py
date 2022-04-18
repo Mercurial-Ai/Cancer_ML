@@ -48,23 +48,7 @@ class image_clinical(nn.Module):
 
         return x
 
-class image_model:
-
-    def __init__(self, load_model=True):
-        self.load_model = load_model
-
-    def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
-
-        if len(y_train.shape) > 1:
-            self.multi_target = True
-        else:
-            self.multi_target = False
-
-        self.model = image_clinical()
-
-        self.criterion = torch.nn.MSELoss()
-        optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
-
+    def train_func(self, X_train, y_train, epochs, batch_size, optimizer, criterion):
         for epoch in range(epochs):
             running_loss = 0.0
             for i in range((X_train[0][1].shape[0]-1)//batch_size + 1):
@@ -80,11 +64,11 @@ class image_model:
                 xb[1] = torch.reshape(xb[1], (xb_image_shape[0], 1, 256, 256))
                 xb[1] = xb[1].type(torch.float)
                 xb[0] = xb[0].type(torch.float)
-                pred = self.model(xb)
+                pred = self(xb)
                 pred = pred.to(torch.float)
 
                 yb = torch.reshape(yb, (yb.shape[0], 1)).type(torch.float)
-                loss = self.criterion(pred, yb)
+                loss = criterion(pred, yb)
         
                 loss.backward()
                 optimizer.step()
@@ -106,7 +90,26 @@ class image_model:
 
         print("Finished Training")
 
-        torch.save(self.model.state_dict(), "data/saved_models/image_clinical/torch_image_clinical_model.h5")
+        torch.save(self.state_dict(), "data/saved_models/image_clinical/torch_image_clinical_model.h5")
+
+class image_model:
+
+    def __init__(self, load_model=True):
+        self.load_model = load_model
+
+    def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
+
+        if len(y_train.shape) > 1:
+            self.multi_target = True
+        else:
+            self.multi_target = False
+
+        self.model = image_clinical()
+
+        self.criterion = torch.nn.MSELoss()
+        optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
+
+        self.model.train_func(X_train, y_train, epochs, batch_size, optimizer, self.criterion)
 
         return self.model
 

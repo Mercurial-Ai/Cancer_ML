@@ -40,6 +40,44 @@ class torch_cnn(nn.Module):
 
         return x
 
+    def train_func(self, X_train, y_train, epochs, batch_size, optimizer, criterion):
+        for epoch in range(epochs):
+            running_loss = 0.0
+            for i in range((X_train.shape[0]-1)//batch_size + 1):
+                start_i = i*batch_size
+                end_i = start_i+batch_size
+
+                xb = X_train[start_i:end_i]
+                yb = y_train[start_i:end_i]
+
+                xb_shape = xb.shape
+
+                xb = torch.from_numpy(xb)
+                yb = torch.from_numpy(yb)
+
+                xb = torch.reshape(xb, (xb_shape[0], 1, 256, 256))
+                xb = xb.type(torch.float)
+                pred = self(xb)
+
+                pred = pred.to(torch.float)
+                yb = yb.to(torch.long)
+                loss = criterion(pred, yb)
+        
+                loss.backward()
+                optimizer.step()
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # print stats
+                running_loss += loss.item()
+                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss)
+                running_loss = 0.0
+
+        print("Finished Training")
+
+        torch.save(self.state_dict(), "data/saved_models/image_only/torch_cnn_model.h5")
+
 class cnn:
 
     def __init__(self, load_model=True):
@@ -57,42 +95,7 @@ class cnn:
         self.criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
-        for epoch in range(epochs):
-            running_loss = 0.0
-            for i in range((X_train.shape[0]-1)//batch_size + 1):
-                start_i = i*batch_size
-                end_i = start_i+batch_size
-
-                xb = X_train[start_i:end_i]
-                yb = y_train[start_i:end_i]
-
-                xb_shape = xb.shape
-
-                xb = torch.from_numpy(xb)
-                yb = torch.from_numpy(yb)
-
-                xb = torch.reshape(xb, (xb_shape[0], 1, 256, 256))
-                xb = xb.type(torch.float)
-                pred = self.model(xb)
-
-                pred = pred.to(torch.float)
-                yb = yb.to(torch.long)
-                loss = self.criterion(pred, yb)
-        
-                loss.backward()
-                optimizer.step()
-
-                # zero the parameter gradients
-                optimizer.zero_grad()
-
-                # print stats
-                running_loss += loss.item()
-                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss)
-                running_loss = 0.0
-
-        print("Finished Training")
-
-        torch.save(self.model.state_dict(), "data/saved_models/image_only/torch_cnn_model.h5")
+        self.model.train_func(X_train, y_train, epochs, batch_size, optimizer, self.criterion)
 
         return self.model
 
