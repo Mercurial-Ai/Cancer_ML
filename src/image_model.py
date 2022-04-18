@@ -5,10 +5,48 @@ from src.class_loss import class_loss
 from src.grid_search.grid_search import grid_search
 from src.get_weight_dict import get_weight_dict
 from src.confusion_matrix import confusion_matrix
-from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
+from sklearn.metrics import accuracy_score, balanced_accuracy_score
+from src.metrics import recall_m, precision_m, f1_m
 from tensorflow.keras.metrics import AUC
-from src.resnet18 import ResNet18
+import torch
+import torch.nn as nn
+from src.resnet import resnet18
 import numpy as np
+
+class image_clinical(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.relu = nn.ReLU()
+        self.clinical_track()
+        self.image_track()
+
+    def clinical_track(self):
+        self.fc1 = nn.Linear(603, 50)
+        self.fc2 = nn.Linear(50, 25)
+        self.fc3 = nn.Linear(25, 15)
+
+    def image_track(self):
+        self.res = resnet18(pretrained=False)
+
+    def forward(self, data):
+        clinical_data = data[0]
+        image_data = data[1]
+
+        # clinical
+        clinical_x = self.relu(self.fc1(clinical_data))
+        clinical_x = self.relu(self.fc2(clinical_x))
+        clinical_x = self.relu(self.fc3(clinical_x))
+
+        # image
+        image_x = self.res(image_data)
+
+        x = torch.cat([clinical_x, image_x], dim=1)
+        self.fc1_cat = nn.Linear(x.shape[-1], 26)
+        x = self.relu(self.fc1_cat(x))
+        self.fc2_cat = nn.Linear(26, 1)
+        x = self.fc2_cat(x)
+
+        return x
 
 class image_model:
 
@@ -22,99 +60,72 @@ class image_model:
         else:
             self.multi_target = False
 
-        print("X train shape clinical:", X_train[0][0].shape)
+        self.model = image_clinical()
 
-        # make black and white images have 3 channels
-        X_train[0][1] = np.stack((X_train[0][1],)*3, axis=-1)
-        X_val[0][1] = np.stack((X_val[0][1],)*3, axis=-1)
-        X_train[0][1] = np.squeeze(X_train[0][1])
-        X_val[0][1] = np.squeeze(X_val[0][1])
+        self.criterion = torch.nn.MSELoss()
+        optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
-        res = ResNet18()
-        res = res.build(input_shape=(256, 256, 3), num_classes=3)
-        res.trainable = False
+        for epoch in range(epochs):
+            running_loss = 0.0
+            for i in range((X_train[0][1].shape[0]-1)//batch_size + 1):
+                start_i = i*batch_size
+                end_i = start_i+batch_size
 
-        clinical_input = keras.layers.Input(shape=(X_train[0][0].shape[1]))
+                xb = [torch.from_numpy(X_train[0][0][start_i:end_i]), torch.from_numpy(X_train[0][1][start_i:end_i])]
+                yb = torch.from_numpy(y_train[start_i:end_i])
+                y_val = torch.from_numpy(y_train[start_i:end_i]).detach().numpy()
 
-        x = Dense(50, activation="relu")(clinical_input)
-        x = Dense(25, activation='relu')(x)
-        x = Dense(15, activation='relu')(x)
-        flat1 = keras.layers.Flatten()(x)
+                xb_image_shape = xb[1].shape
 
-        image_input = keras.layers.Input(shape=X_train[0][1].shape[1:])
+                xb[1] = torch.reshape(xb[1], (xb_image_shape[0], 1, 256, 256))
+                xb[1] = xb[1].type(torch.float)
+                xb[0] = xb[0].type(torch.float)
+                pred = self.model(xb)
+                pred = pred.to(torch.float)
 
-        flat2 = res(image_input)
+                yb = torch.reshape(yb, (yb.shape[0], 1)).type(torch.float)
+                loss = self.criterion(pred, yb)
+        
+                loss.backward()
+                optimizer.step()
 
-        merge = concatenate([flat1, flat2])
+                # zero the parameter gradients
+                optimizer.zero_grad()
 
-        x = Dense(26, activation='relu')(merge)
+                # print stats
+                running_loss += loss.item()
+                pred = pred.detach().numpy()
+                y_val = y_val.astype(np.float)
+                pred = np.argmax(pred, axis=1).astype(np.float)
+                accuracy = accuracy_score(y_val, pred)
+                f1_score = f1_m(y_val, pred)
+                recall = recall_m(y_val, pred)
+                balanced_acc = balanced_accuracy_score(y_val, pred)
+                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss, 'Accuracy: %.4f' %accuracy, 'F1: %.4f' %f1_score, 'Recall: %.4f' %recall, 'Balanced Accuracy: %.4f' %balanced_acc)
+                running_loss = 0.0
 
-        if self.multi_target:
-            outputs = []
-            for i in range(y_train.shape[-1]):
-                output = Dense(1, activation='sigmoid')(x)
+        print("Finished Training")
 
-                outputs.append(output)
-        else:
-            outputs = Dense(1, activation='sigmoid')(x)
+        torch.save(self.model.state_dict(), "data/saved_models/image_clinical/torch_image_clinical_model.h5")
 
-        model = keras.Model([clinical_input, image_input], outputs)
-
-        print(model.summary())
-
-        output_names = []
-        for layer in model.layers:
-            if type(layer) == Dense:
-                if layer.units == 1:
-                    output_names.append(layer.name)
-
-        search = grid_search()
-
-        if self.multi_target:
-            search.test_model(model, X_train, y_train, X_val, y_val, num_combs=12)
-        else:
-            search.test_model(model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=12)
-
-        class_weights = get_weight_dict(y_train, output_names)
-
-        auc_m = AUC()
-        balanced_acc_m = BalancedSparseCategoricalAccuracy()
-        if self.multi_target:
-
-            model.compile(optimizer='adam',
-                            loss={k: class_loss(v) for k, v, in class_weights.items()},
-                            metrics=['accuracy', f1_m, precision_m, recall_m, auc_m, balanced_acc_m])
-
-            self.fit = model.fit(X_train[0], y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val))
-        else:
-            model.compile(optimizer='adam',
-                                    loss='mae',
-                                    metrics=['accuracy', f1_m, precision_m, recall_m, auc_m, balanced_acc_m])
-
-            self.fit = model.fit(X_train, y_train, epochs=10, batch_size=128, validation_data=(X_val, y_val), class_weight=class_weights)
-
-        try:
-            model.save('data/saved_models/image_clinical/keras_image_clinical_model.h5')
-        except:
-            print("image clinical model could not be saved")
-
-        return model
+        return self.model
 
     def test_model(self, X_test, y_test):
+        X_test[0][1] = np.reshape(X_test[0][1], (X_test[0][1].shape[0], 1, 256, 256))
+        X_test = [torch.from_numpy(X_test[0][0]).type(torch.float), torch.from_numpy(X_test[0][1]).type(torch.float)]
+        y_test = torch.from_numpy(y_test).type(torch.float)
+        with torch.no_grad():
+            self.model.eval()
+            y_pred = self.model(X_test)
+            confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
+            test_loss = self.criterion(y_pred, y_test)
 
-        X_test[0][1] = np.stack((X_test[0][1],)*3, axis=-1)
-        X_test[0][1] = np.squeeze(X_test[0][1])
-
-        results = self.model.evaluate(X_test, y_test, batch_size=32)
-
-        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test), save_name="image_clinical_c_mat.png")
-
-        return results
+        return test_loss
 
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=128):
         
         if self.load_model:
-            self.model = keras.models.load_model('data\\saved_models\\keras_image_clinical_model.h5')
+            self.model = torch.load('data\\saved_models\\torch_image_clinical_model.h5')
         else:
             self.model = self.train_model(X_train, y_train, X_val, y_val, epochs, batch_size)
 

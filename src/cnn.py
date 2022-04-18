@@ -1,88 +1,118 @@
-from http.client import ResponseNotReady
+from tracemalloc import start
 import tensorflow as tf
-import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import Sequential
 import pandas as pd
+import numpy as np
 from src.class_loss import class_loss
 from src.confusion_matrix import confusion_matrix
 from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
-from tensorflow.keras.metrics import AUC
-from src.resnet18 import ResNet18
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class torch_cnn(nn.Module):
+    def __init__(self):
+        super(torch_cnn, self).__init__()
+        self.conv1 = nn.Conv2d(1, 6, kernel_size=5, device='cpu', dtype=torch.float)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, kernel_size=5)
+        self.fc1 = nn.Linear(16 * 61 * 61, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 2)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+        x = F.relu(x)
+        x = self.fc3(x)
+
+        return x
 
 class cnn:
 
     def __init__(self, load_model=True):
         self.load_model=load_model
 
-    def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=128):
+    def train_model(self, X_train, y_train, X_val, y_val, epochs=20, batch_size=32):
 
         if len(y_train.shape) > 1:
             self.multi_target = True
         else:
             self.multi_target = False
 
-        opt = keras.optimizers.SGD(learning_rate=0.007)
-        loss = keras.losses.BinaryCrossentropy()
+        self.model = torch_cnn()
 
-        # make black and white images have 3 channels
-        X_train = np.squeeze(X_train)
-        X_val = np.squeeze(X_val)
-        X_train = np.stack((X_train,)*3, axis=-1)
-        X_val = np.stack((X_val,)*3, axis=-1)
+        self.criterion = torch.nn.CrossEntropyLoss()
+        optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
-        self.res = ResNet18()
-        self.res = self.res.build(input_shape=(256, 256, 3), num_classes=3)
+        for epoch in range(epochs):
+            running_loss = 0.0
+            for i in range((X_train.shape[0]-1)//batch_size + 1):
+                start_i = i*batch_size
+                end_i = start_i+batch_size
 
-        self.model = keras.models.Sequential()
-        self.model.add(self.res)
-        self.model.add(keras.layers.Flatten())
-        self.model.add(layers.Dense(1, activation='sigmoid'))
+                xb = X_train[start_i:end_i]
+                yb = y_train[start_i:end_i]
 
-        print(self.model.summary())
+                xb_shape = xb.shape
 
-        search = grid_search()
+                xb = torch.from_numpy(xb)
+                yb = torch.from_numpy(yb)
 
-        if self.multi_target:
-            search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=12)
-        else:
-            print("weights applied")
-            search.test_model(self.model, X_train, y_train, X_val, y_val, get_weight_dict(y_train), num_combs=12)
+                xb = torch.reshape(xb, (xb_shape[0], 1, 256, 256))
+                xb = xb.type(torch.float)
+                pred = self.model(xb)
 
-        opt = keras.optimizers.Adam(lr=0.01)
-        auc_m = AUC()
-        balanced_acc_m = BalancedSparseCategoricalAccuracy()
-        self.model.compile(loss='mse',
-                optimizer=opt,
-                metrics=['accuracy', f1_m, precision_m, recall_m, auc_m, balanced_acc_m])
+                pred = pred.to(torch.float)
+                yb = yb.to(torch.long)
+                loss = self.criterion(pred, yb)
+        
+                loss.backward()
+                optimizer.step()
 
-        self.fit = self.model.fit(X_train, y_train, epochs=25, batch_size=32, validation_data=(X_val, y_val), class_weight=get_weight_dict(y_train))
+                # zero the parameter gradients
+                optimizer.zero_grad()
 
-        try:
-            self.model.save('data/saved_models/image_only/keras_cnn_model.h5')
-        except:
-            print("image only model could not be saved")
+                # print stats
+                running_loss += loss.item()
+                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss)
+                running_loss = 0.0
+
+        print("Finished Training")
+
+        torch.save(self.model.state_dict(), "data/saved_models/image_only/torch_cnn_model.h5")
 
         return self.model
 
     def test_model(self, X_test, y_test):
+        X_test = np.reshape(X_test, (X_test.shape[0], 1, 256, 256))
+        X_test = torch.from_numpy(X_test).type(torch.float)
+        y_test = torch.from_numpy(y_test).type(torch.long)
+        with torch.no_grad():
+            self.model.eval()
+            y_pred = self.model(X_test)
 
-        X_test = np.squeeze(X_test)
-        X_test = np.stack((X_test,)*3, axis=-1)
-        
-        results = self.model.evaluate(X_test, y_test, batch_size=32)
+            confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
+            test_loss = self.criterion(y_pred, y_test)
 
-        confusion_matrix(y_true=y_test, y_pred=self.model.predict(X_test), save_name="image_only_c_mat.png")
-
-        return results
+        return test_loss
 
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=32):
 
         if self.load_model:
-            self.model = keras.models.load_model('data\\saved_models\\keras_cnn_model.h5')
+            self.model = torch.load('data\\saved_models\\torch_cnn_model.h5')
         else:
             self.model = self.train_model(X_train, y_train, X_val, y_val, epochs, batch_size)
 
