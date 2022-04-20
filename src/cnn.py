@@ -13,6 +13,7 @@ from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAc
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from pytorch_summary.torchsummary import summary
 
 class torch_cnn(nn.Module):
     def __init__(self):
@@ -96,6 +97,8 @@ class cnn:
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
         self.model.train_func(X_train, y_train, epochs, batch_size, optimizer, self.criterion)
+
+        summary(self.model, input_size=(1, 256, 256))
 
         return self.model
 
