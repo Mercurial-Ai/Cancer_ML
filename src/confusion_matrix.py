@@ -3,6 +3,7 @@ from sklearn.metrics import ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import torch
 
 def confusion_matrix(y_true, y_pred, save_name="confusion_matrix.png"):
     print("confusion matrix started!")
@@ -19,7 +20,8 @@ def confusion_matrix(y_true, y_pred, save_name="confusion_matrix.png"):
 
     if len(y_true.shape) == 1:
 
-        y_pred = np.asarray(y_pred)
+        if type(y_pred) == torch.Tensor:
+            y_pred = y_pred.detach().numpy()
         y_pred = np.argmax(y_pred, axis=1).astype(np.float)
         y_true = np.asarray(y_true, dtype=np.int8)
 

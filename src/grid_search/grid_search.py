@@ -7,6 +7,7 @@ from src.grid_search.write_excel import write_excel
 from src.confusion_matrix import confusion_matrix
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 from tensorflow.keras.metrics import AUC
+import torch
 
 class grid_search:
 
@@ -41,6 +42,12 @@ class grid_search:
 
     def test_model(self, model, X_train, y_train, X_val, y_val, weight_dict=None, num_combs=None):
 
+        if len(X_val) == 1:
+            X_val = X_val[0]
+
+        X_val = [torch.from_numpy(X_val[0]).type(torch.float), torch.from_numpy(X_val[1]).type(torch.float)]
+        X_val[1] = torch.reshape(X_val[1], (-1, 1, 256, 256))
+
         combs = self.read_grid()
 
         print(len(combs), "possible combinations")
@@ -52,26 +59,35 @@ class grid_search:
         i = 0
         for comb in combs:
             if i < num_combs:
-                model_copy = model
                 auc_m = AUC()
                 balanced_acc_m = BalancedSparseCategoricalAccuracy()
-                model_copy.compile(loss=comb['loss'], optimizer=comb['optimizer'], metrics=['accuracy', f1_m, precision_m, recall_m, auc_m, balanced_acc_m])
 
-                fit = model_copy.fit(X_train, y_train, epochs=int(comb['epochs']), batch_size=comb['batch size'], validation_data=(X_val, y_val), class_weight=weight_dict, verbose=0)
+                if comb['loss'] == 'mean_absolute_error':
+                    self.criterion = torch.nn.L1Loss()
+                elif comb['loss'] == 'mean_squared_error':
+                    self.criterion = torch.nn.MSELoss()
+                elif comb['loss'] == 'binary_crossentropy':
+                    self.criterion = torch.nn.CrossEntropyLoss()
 
-                results = model_copy.evaluate(X_val, y_val, batch_size=comb['batch size'])
+                if comb['optimizer'] == 'adam':
+                    optimizer = torch.optim.Adam(model.parameters())
+                elif comb['optimizer'] == 'SGD':
+                    optimizer = torch.optim.SGD(model.parameters())
 
-                confusion_matrix(y_true=y_val, y_pred=model_copy.predict(X_val), save_name="src/grid_search/confusion_matrices/" + str(comb['epochs']) + str(comb['batch size']) + str(comb['loss']) + str(comb['optimizer']) + ".png")
+                model.train_func(X_train, y_train, comb['epochs'], comb['batch size'], optimizer, self.criterion)
+
+                results = [model.loss, float(model.accuracy), float(model.f1_score), float(model.recall), float(model.balanced_acc)]
+
+                confusion_matrix(y_true=y_val, y_pred=model(X_val), save_name="src/grid_search/confusion_matrices/" + str(comb['epochs']) + str(comb['batch size']) + str(comb['loss']) + str(comb['optimizer']) + ".png")
 
                 print("Results:", results)
+                loss = results[0]
                 percentAcc = results[1]
                 f1 = results[2]
-                p_m = results[3]
-                recall = results[4]
-                auc = results[5]
-                balanced_acc = results[6]
+                recall = results[3]
+                balanced_acc = results[4]
 
-                hyp_acc_pair = (comb, (percentAcc, f1, p_m, recall, auc, balanced_acc))
+                hyp_acc_pair = (comb, {"Loss": loss, "Accuracy": percentAcc, "F1": f1, "Recall": recall, "Balanced Acc": balanced_acc})
 
                 hyp_acc_list.append(hyp_acc_pair)
                 print(hyp_acc_list)

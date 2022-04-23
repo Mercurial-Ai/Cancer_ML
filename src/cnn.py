@@ -13,6 +13,7 @@ from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAc
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from pytorch_summary.torchsummary import summary
 
 class torch_cnn(nn.Module):
@@ -72,7 +73,16 @@ class torch_cnn(nn.Module):
 
                 # print stats
                 running_loss += loss.item()
-                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss)
+                pred = pred.detach().numpy()
+                y_val = y_val.astype(np.float)
+                pred = np.argmax(pred, axis=1).astype(np.float)
+                pred = pred.flatten()
+                self.loss = running_loss
+                self.accuracy = accuracy_score(y_val, pred)
+                self.f1_score = f1_m(y_val, pred)
+                self.recall = recall_m(y_val, pred)
+                self.balanced_acc = balanced_accuracy_score(y_val, pred)
+                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss, 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 running_loss = 0.0
 
         print("Finished Training")
@@ -92,6 +102,10 @@ class cnn:
             self.multi_target = False
 
         self.model = torch_cnn()
+
+        search = grid_search()
+
+        search.test_model(self.model, X_train, y_train, X_val, y_val)
 
         self.criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)

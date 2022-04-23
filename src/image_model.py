@@ -29,6 +29,8 @@ class image_clinical(nn.Module):
         self.res = resnet18(pretrained=False)
 
     def forward(self, data):
+        if len(data) == 1:
+            data = data[0]
         clinical_data = data[0]
         image_data = data[1]
 
@@ -56,18 +58,20 @@ class image_clinical(nn.Module):
                 end_i = start_i+batch_size
 
                 xb = [torch.from_numpy(X_train[0][0][start_i:end_i]), torch.from_numpy(X_train[0][1][start_i:end_i])]
-                yb = torch.from_numpy(y_train[start_i:end_i])
-                y_val = torch.from_numpy(y_train[start_i:end_i]).detach().numpy()
+                yb = torch.from_numpy(y_train[start_i:end_i]).type(torch.float)
+                y_val = torch.from_numpy(y_train[start_i:end_i]).detach()
 
-                xb_image_shape = xb[1].shape
-
-                xb[1] = torch.reshape(xb[1], (xb_image_shape[0], 1, 256, 256))
+                xb[1] = torch.reshape(xb[1], (-1, 1, 256, 256))
                 xb[1] = xb[1].type(torch.float)
                 xb[0] = xb[0].type(torch.float)
+                yb = yb.type(torch.float)
+                y_val = y_val.type(torch.float)
                 pred = self(xb)
-                pred = pred.to(torch.float)
 
-                yb = torch.reshape(yb, (yb.shape[0], 1)).type(torch.float)
+                if type(criterion) == type(nn.CrossEntropyLoss()):
+                    yb = yb.to(torch.long)
+
+                yb = torch.flatten(yb)
                 loss = criterion(pred, yb)
         
                 loss.backward()
@@ -79,13 +83,15 @@ class image_clinical(nn.Module):
                 # print stats
                 running_loss += loss.item()
                 pred = pred.detach().numpy()
-                y_val = y_val.astype(np.float)
+                y_val = y_val.detach().numpy().astype(np.float)
                 pred = np.argmax(pred, axis=1).astype(np.float)
-                accuracy = accuracy_score(y_val, pred)
-                f1_score = f1_m(y_val, pred)
-                recall = recall_m(y_val, pred)
-                balanced_acc = balanced_accuracy_score(y_val, pred)
-                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss, 'Accuracy: %.4f' %accuracy, 'F1: %.4f' %f1_score, 'Recall: %.4f' %recall, 'Balanced Accuracy: %.4f' %balanced_acc)
+                self.loss = running_loss
+                pred = pred.flatten()
+                self.accuracy = accuracy_score(y_val, pred)
+                self.f1_score = f1_m(y_val, pred)
+                self.recall = recall_m(y_val, pred)
+                self.balanced_acc = balanced_accuracy_score(y_val, pred)
+                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss, 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 running_loss = 0.0
 
         print("Finished Training")
@@ -105,6 +111,9 @@ class image_model:
             self.multi_target = False
 
         self.model = image_clinical()
+
+        search = grid_search()
+        search.test_model(self.model, X_train, y_train, X_val, y_val)
 
         self.criterion = torch.nn.MSELoss()
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
