@@ -119,8 +119,8 @@ class image_model:
 
         self.model = image_clinical()
 
-        search = grid_search(num_combs=5)
-        search.test_model(self.model, X_train, y_train, X_val, y_val)
+        search = grid_search()
+        search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=5)
 
         self.criterion = torch.nn.MSELoss()
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)

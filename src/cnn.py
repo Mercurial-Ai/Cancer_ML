@@ -106,9 +106,9 @@ class cnn:
 
         self.model = torch_cnn()
 
-        search = grid_search(num_combs=5)
+        search = grid_search()
 
-        search.test_model(self.model, X_train, y_train, X_val, y_val)
+        search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=5)
 
         self.criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
