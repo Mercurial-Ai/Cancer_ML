@@ -1,6 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense
 from tensorflow.keras.layers import concatenate
+from torch.nn.modules.loss import BCELoss
 from src.class_loss import class_loss
 from src.grid_search.grid_search import grid_search
 from src.get_weight_dict import get_weight_dict
@@ -51,7 +52,7 @@ class image_clinical(nn.Module):
         return x
 
     def train_func(self, X_train, y_train, epochs, batch_size, optimizer, criterion):
-        for epoch in range(epochs):
+        for epoch in range(int(epochs)):
             running_loss = 0.0
             for i in range((X_train[0][1].shape[0]-1)//batch_size + 1):
                 start_i = i*batch_size
@@ -71,8 +72,14 @@ class image_clinical(nn.Module):
                 if type(criterion) == type(nn.CrossEntropyLoss()):
                     yb = yb.to(torch.long)
 
-                yb = torch.flatten(yb)
-                loss = criterion(pred, yb)
+                # if variable is binary BCE should be used instead of Cross-Entropy
+                if torch.unique(yb).shape[0] > 2:
+                    loss = criterion(pred, yb)
+                else:
+                    yb = yb.unsqueeze(1).type(torch.float)
+                    pred = torch.abs(torch.round(pred))
+                    criterion = BCELoss()
+                    loss = criterion(pred, yb)
         
                 loss.backward()
                 optimizer.step()
@@ -112,7 +119,7 @@ class image_model:
 
         self.model = image_clinical()
 
-        search = grid_search()
+        search = grid_search(num_combs=5)
         search.test_model(self.model, X_train, y_train, X_val, y_val)
 
         self.criterion = torch.nn.MSELoss()

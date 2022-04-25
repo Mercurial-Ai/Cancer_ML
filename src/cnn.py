@@ -14,7 +14,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
-from pytorch_summary.torchsummary import summary
 
 class torch_cnn(nn.Module):
     def __init__(self):
@@ -43,7 +42,7 @@ class torch_cnn(nn.Module):
         return x
 
     def train_func(self, X_train, y_train, epochs, batch_size, optimizer, criterion):
-        for epoch in range(epochs):
+        for epoch in range(int(epochs)):
             running_loss = 0.0
             for i in range((X_train.shape[0]-1)//batch_size + 1):
                 start_i = i*batch_size
@@ -63,7 +62,11 @@ class torch_cnn(nn.Module):
 
                 pred = pred.to(torch.float)
                 yb = yb.to(torch.long)
-                loss = criterion(pred, yb)
+
+                try:
+                    loss = criterion(pred, yb)
+                except UserWarning as e:
+                    pass
         
                 loss.backward()
                 optimizer.step()
@@ -103,7 +106,7 @@ class cnn:
 
         self.model = torch_cnn()
 
-        search = grid_search()
+        search = grid_search(num_combs=5)
 
         search.test_model(self.model, X_train, y_train, X_val, y_val)
 
