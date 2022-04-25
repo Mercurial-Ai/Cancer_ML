@@ -506,16 +506,6 @@ class cancer_ml:
 
             class_array_dict[label] = new_array
             class_y_dict[label] = new_y
-
-        # add number of indices saved from each label to the next indices in order to get the indices that are removed from the entire data array
-        for j in range(1, len(label_indices_removed)):
-            i = 0
-            for indice in label_indices_removed[j]:
-                indice = indice + nums_saved[i]
-
-                label_indices_removed[j][i] = indice
-
-                i = i + 1
                 
         # flatten nested list
         new_label_indices_removed = []
