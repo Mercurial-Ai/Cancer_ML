@@ -98,7 +98,8 @@ class image_clinical(nn.Module):
                 self.f1_score = f1_m(y_val, pred)
                 self.recall = recall_m(y_val, pred)
                 self.balanced_acc = balanced_accuracy_score(y_val, pred)
-                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss, 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
+                if i % 2000 == 1999: # print every 2000 mini-batches
+                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 running_loss = 0.0
 
         print("Finished Training")
