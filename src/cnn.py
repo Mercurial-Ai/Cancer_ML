@@ -15,6 +15,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class torch_cnn(nn.Module):
     def __init__(self):
         super(torch_cnn, self).__init__()
@@ -55,6 +57,9 @@ class torch_cnn(nn.Module):
 
                 xb = torch.from_numpy(xb)
                 yb = torch.from_numpy(yb)
+
+                xb = xb.to(device)
+                yb = yb.to(device)
 
                 xb = torch.reshape(xb, (xb_shape[0], 1, 256, 256))
                 xb = xb.type(torch.float)
@@ -105,6 +110,7 @@ class cnn:
             self.multi_target = False
 
         self.model = torch_cnn()
+        self.model.to(device)
 
         search = grid_search()
 
@@ -114,8 +120,6 @@ class cnn:
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
         self.model.train_func(X_train, y_train, epochs, batch_size, optimizer, self.criterion)
-
-        summary(self.model, input_size=(1, 256, 256))
 
         return self.model
 

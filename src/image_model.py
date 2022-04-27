@@ -14,6 +14,8 @@ import torch.nn as nn
 from src.resnet import resnet18
 import numpy as np
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class image_clinical(nn.Module):
     def __init__(self):
         super().__init__()
@@ -58,15 +60,13 @@ class image_clinical(nn.Module):
                 start_i = i*batch_size
                 end_i = start_i+batch_size
 
-                xb = [torch.from_numpy(X_train[0][0][start_i:end_i]), torch.from_numpy(X_train[0][1][start_i:end_i])]
-                yb = torch.from_numpy(y_train[start_i:end_i]).type(torch.float)
-                y_val = torch.from_numpy(y_train[start_i:end_i]).detach()
+                xb = [torch.from_numpy(X_train[0][0][start_i:end_i]).to(device), torch.from_numpy(X_train[0][1][start_i:end_i]).to(device)]
+                yb = torch.from_numpy(y_train[start_i:end_i]).type(torch.float).to(device)
 
                 xb[1] = torch.reshape(xb[1], (-1, 1, 256, 256))
                 xb[1] = xb[1].type(torch.float)
                 xb[0] = xb[0].type(torch.float)
                 yb = yb.type(torch.float)
-                y_val = y_val.type(torch.float)
                 pred = self(xb)
 
                 if type(criterion) == type(nn.CrossEntropyLoss()):
@@ -90,14 +90,14 @@ class image_clinical(nn.Module):
                 # print stats
                 running_loss += loss.item()
                 pred = pred.detach().numpy()
-                y_val = y_val.detach().numpy().astype(np.float)
                 pred = np.argmax(pred, axis=1).astype(np.float)
+                yb = np.asarray(yb).astype(np.float)
                 self.loss = running_loss
                 pred = pred.flatten()
-                self.accuracy = accuracy_score(y_val, pred)
-                self.f1_score = f1_m(y_val, pred)
-                self.recall = recall_m(y_val, pred)
-                self.balanced_acc = balanced_accuracy_score(y_val, pred)
+                self.accuracy = accuracy_score(yb, pred)
+                self.f1_score = f1_m(yb, pred)
+                self.recall = recall_m(yb, pred)
+                self.balanced_acc = balanced_accuracy_score(yb, pred)
                 if i % 2000 == 1999: # print every 2000 mini-batches
                     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 running_loss = 0.0
@@ -119,6 +119,7 @@ class image_model:
             self.multi_target = False
 
         self.model = image_clinical()
+        self.model.to(device)
 
         search = grid_search()
         search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=5)
