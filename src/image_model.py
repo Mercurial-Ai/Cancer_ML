@@ -22,6 +22,7 @@ class image_clinical(nn.Module):
         self.relu = nn.ReLU()
         self.clinical_track()
         self.image_track()
+        self.to(device)
 
     def clinical_track(self):
         self.fc1 = nn.Linear(603, 50)
@@ -67,7 +68,7 @@ class image_clinical(nn.Module):
                 xb[1] = xb[1].type(torch.float)
                 xb[0] = xb[0].type(torch.float)
                 yb = yb.type(torch.float)
-                pred = self(xb).to(device)
+                pred = self(xb)
 
                 if type(criterion) == type(nn.CrossEntropyLoss()):
                     yb = yb.to(torch.long)
