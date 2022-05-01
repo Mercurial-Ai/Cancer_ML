@@ -3,7 +3,6 @@ import keras
 import numpy as np
 from itertools import combinations, product
 from random import shuffle
-from src.grid_search.write_excel import write_excel
 from src.confusion_matrix import confusion_matrix
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 from tensorflow.keras.metrics import AUC
@@ -95,6 +94,3 @@ class grid_search:
                 break
 
             i = i + 1
-
-        writer = write_excel('results.xls', hyp_acc_list)
-        writer.run()
