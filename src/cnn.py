@@ -115,8 +115,6 @@ class cnn:
 
         self.model.train_func(X_train, y_train, epochs, batch_size, optimizer, self.criterion)
 
-        summary(self.model, input_size=(1, 256, 256))
-
         return self.model
 
     def test_model(self, X_test, y_test):

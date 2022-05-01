@@ -63,8 +63,10 @@ class voting_ensemble:
 
             if not load_models:
 
-                image_clinical.run_model()
-                image_clinical.test_model()
+                # skip surgery bc results have already been collected
+                if target != 'Surgery':
+                    image_clinical.run_model()
+                    image_clinical.test_model()
 
                 image_only.run_model()
                 image_only.test_model()
