@@ -35,6 +35,56 @@ class data_pipeline:
         self.image_clinical = data_pod()
         self.image_only = data_pod()
 
+    def organize_images(self, img_array, y):
+        print("img array shape:", img_array.shape)
+        ids = img_array[:, -1]
+
+        #remove diplicates
+        ids = np.unique(ids)
+        print(y)
+        y = y[~y.index.duplicated()]
+        print(y)
+
+        all_id_imgs = {}
+        all_id_y = {}
+        for id in ids:
+            id_imgs = np.array([])
+            id_y = y[id]
+            for img in img_array:
+                if img[-1] == id:
+                    id_imgs = np.append(id_imgs, img)
+            
+            all_id_imgs[id] = id_imgs
+            all_id_y[id] = id_y
+
+        # find lowest number of images a single id has
+        lengths = []
+        for id_img in list(all_id_imgs.values()):
+            length = id_img.shape[0]
+            lengths.append(length)
+
+        shortest_length = min(lengths)
+        num_images = int(shortest_length/(512**2+1))
+        x = np.empty(shape=(len(ids), num_images*512*512))
+        i = 0
+        for id in ids:
+            id_imgs = np.array([])
+            num_appended = 0
+            for img in img_array:
+                if img[-1] == id and num_appended < num_images:
+                    # remove id from img before appending
+                    img = np.delete(img, -1)
+                    id_imgs = np.append(id_imgs, img)
+                    num_appended = num_appended + 1
+
+            x[i] = id_imgs
+
+            i = i + 1
+
+        y = np.asarray(list(all_id_y.values()))
+
+        return x, y
+
     def load_data(self):
         self.df = pd.read_csv(self.clinical_path, low_memory=False)
         if self.image_features_path != None:
@@ -64,9 +114,6 @@ class data_pipeline:
 
             self.test_ids, self.val_ids = train_test_split(self.test_ids, test_size=0.2, random_state=84)
 
-            # remove ids from img_array
-            self.img_array = np.delete(self.img_array, -1, axis=1)
-
             # get patients in clinical data with ids that correspond with image ids
             self.filtered_df = self.df.loc[self.image_ids]
 
@@ -76,8 +123,10 @@ class data_pipeline:
         self.partition_clinical_only_data()
 
     def concatenate_image_clinical(self, clinical_array):
+        # remove ids from img_array
+        img_array = np.delete(self.img_array, -1, axis=1)
 
-        concatenated_array = np.concatenate((clinical_array, self.img_array), axis=1)
+        concatenated_array = np.concatenate((clinical_array, img_array), axis=1)
 
         return concatenated_array
 
@@ -173,7 +222,7 @@ class data_pipeline:
         x = self.img_array
         y = self.filtered_df[self.target]
 
-        x, y = balance_y_classes(x, y, 11, shuffle_data=True)
+        x, y = self.organize_images(x, y)
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
@@ -183,9 +232,9 @@ class data_pipeline:
         X_val = min_max_scaler.fit_transform(X_val)
 
         # reshape back into 2d images
-        X_train = np.reshape(X_train, (X_train.shape[0], int(math.sqrt(X_train.shape[1])), int(math.sqrt(X_train.shape[1]))))
-        X_test = np.reshape(X_test, (X_test.shape[0], int(math.sqrt(X_test.shape[1])), int(math.sqrt(X_test.shape[1]))))
-        X_val = np.reshape(X_val, (X_val.shape[0], int(math.sqrt(X_val.shape[1])), int(math.sqrt(X_val.shape[1]))))
+        X_train = np.reshape(X_train, (X_train.shape[0], -1, 512, 512))
+        X_test = np.reshape(X_test, (X_test.shape[0], -1, 512, 512))
+        X_val = np.reshape(X_val, (X_val.shape[0], -1, 512, 512))
 
         # add additional dimension at the end of the shape to each partition
         X_train = np.expand_dims(X_train, axis=-1)

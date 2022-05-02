@@ -57,8 +57,8 @@ class cancer_ml:
         elif self.model == "cnn":
             self.cnn = True
 
-            self.setup_cluster()
-            self.k_neighbors()
+            #self.setup_cluster()
+            #self.k_neighbors()
 
     def collect_duke(self):
 
@@ -134,10 +134,19 @@ class cancer_ml:
 
     def setup_cluster(self):
         X = self.data_pipe.image_only.X_train
+        print("X shape:", X.shape)
 
-        X = random_crop(X, (self.crop_size[0], self.crop_size[1], 1))   
+        new_x = np.empty((X.shape[0], X.shape[1], self.crop_size[0], self.crop_size[1], 1))
 
-        X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2]))
+        i = 0
+        for img in X:
+            img = random_crop(img, (self.crop_size[0], self.crop_size[1], 1))
+            new_x[i] = img
+            i = i + 1 
+
+        X = new_x
+
+        X = np.reshape(X, (X.shape[0], X.shape[1]*X.shape[2]*X.shape[3]))
         self.model = PeakCluster(X)
 
         # determine number of each label
