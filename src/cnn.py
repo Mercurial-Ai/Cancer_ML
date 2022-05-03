@@ -18,9 +18,9 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score
 class torch_cnn(nn.Module):
     def __init__(self):
         super(torch_cnn, self).__init__()
-        self.conv1 = nn.Conv2d(1, 6, kernel_size=5, dtype=torch.float)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, kernel_size=5)
+        self.conv1 = nn.Conv3d(1, 36, kernel_size=2)
+        self.pool = nn.MaxPool3d(2, 2)
+        self.conv2 = nn.Conv3d(36, 42, kernel_size=2)
         self.fc1 = nn.Linear(16 * 61 * 61, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 2)
@@ -28,7 +28,9 @@ class torch_cnn(nn.Module):
     def forward(self, x):
         x = self.conv1(x)
         x = F.relu(x)
+        print(x.shape)
         x = self.pool(x)
+        print(x.shape)
         x = self.conv2(x)
         x = F.relu(x)
         x = self.pool(x)
@@ -57,7 +59,8 @@ class torch_cnn(nn.Module):
                 xb = torch.from_numpy(xb)
                 yb = torch.from_numpy(yb)
 
-                xb = torch.reshape(xb, (xb_shape[0], 1, 256*256*5))
+                print(xb_shape)
+                xb = torch.reshape(xb, (xb_shape[0], 1, xb_shape[1], xb_shape[2], xb_shape[3]))
                 xb = xb.type(torch.float)
                 pred = self(xb)
 
