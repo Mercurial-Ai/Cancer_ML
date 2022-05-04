@@ -15,7 +15,7 @@ class grid_search:
 
         grid_cols = list(grid.columns)
 
-        grid_combinations = list(product(grid['batch size'], grid['epochs'], grid['loss'], grid['lr'], grid['optimizer']))
+        grid_combinations = list(product(grid['batch size'], grid['epochs'], grid['lr'], grid['optimizer'], grid['loss']))
         
         comb_dict_list = []
         for comb in grid_combinations:
@@ -40,12 +40,6 @@ class grid_search:
         return comb_dict_list
 
     def test_model(self, model, X_train, y_train, X_val, y_val, weight_dict=None, num_combs=None):
-
-        if len(X_val) == 1:
-            X_val = X_val[0]
-
-        X_val = [torch.from_numpy(X_val[0]).type(torch.float), torch.from_numpy(X_val[1]).type(torch.float)]
-        X_val[1] = torch.reshape(X_val[1], (-1, 1, 256, 256))
 
         combs = self.read_grid()
 
@@ -77,6 +71,8 @@ class grid_search:
 
                 results = [model.loss, float(model.accuracy), float(model.f1_score), float(model.recall), float(model.balanced_acc)]
 
+                if type(X_val) != list:
+                    X_val = X_val.type(torch.float)
                 confusion_matrix(y_true=y_val, y_pred=model(X_val), save_name="src/grid_search/confusion_matrices/" + str(comb['epochs']) + str(comb['batch size']) + str(comb['loss']) + str(comb['optimizer']) + ".png")
 
                 print("Results:", results)

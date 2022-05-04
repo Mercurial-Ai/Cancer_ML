@@ -120,6 +120,12 @@ class image_model:
 
         self.model = image_clinical()
 
+        if len(X_val) == 1:
+            X_val = X_val[0]
+
+        X_val = [torch.from_numpy(X_val[0]).type(torch.float), torch.from_numpy(X_val[1]).type(torch.float)]
+        X_val[1] = torch.reshape(X_val[1], (-1, 1, 256, 256))
+
         search = grid_search()
         search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=5)
 

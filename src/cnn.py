@@ -51,6 +51,9 @@ class torch_cnn(nn.Module):
                 xb = X_train[start_i:end_i]
                 yb = y_train[start_i:end_i]
 
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
                 xb_shape = xb.shape
 
                 xb = torch.from_numpy(xb)
@@ -60,31 +63,25 @@ class torch_cnn(nn.Module):
                 xb = xb.type(torch.float)
                 pred = self(xb)
 
-                pred = pred.to(torch.float)
-                yb = yb.to(torch.long)
+                yb = yb.type(torch.long)
 
-                try:
-                    loss = criterion(pred, yb)
-                except UserWarning as e:
-                    pass
+                loss = criterion(pred, yb)
         
                 loss.backward()
                 optimizer.step()
-
-                # zero the parameter gradients
-                optimizer.zero_grad()
 
                 # print stats
                 running_loss += loss.item()
                 pred = pred.detach().numpy()
                 pred = np.argmax(pred, axis=1).astype(np.float)
-                pred = pred.flatten()
+                yb = np.asarray(yb).astype(np.float)
                 self.loss = running_loss
-                self.accuracy = accuracy_score(y_train, pred)
-                self.f1_score = f1_m(y_train, pred)
-                self.recall = recall_m(y_train, pred)
-                self.balanced_acc = balanced_accuracy_score(y_train, pred)
-                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss, 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
+                self.accuracy = accuracy_score(yb, pred)
+                self.f1_score = f1_m(yb, pred)
+                self.recall = recall_m(yb, pred)
+                self.balanced_acc = balanced_accuracy_score(yb, pred)
+                if i % 2000 == 1999: # print every 2000 mini-batches
+                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 running_loss = 0.0
 
         print("Finished Training")
@@ -106,6 +103,11 @@ class cnn:
         self.model = torch_cnn()
 
         search = grid_search()
+
+        X_val = torch.from_numpy(X_val)
+        y_val = torch.from_numpy(y_val)
+
+        X_val = torch.reshape(X_val, (X_val.shape[0], 1, 256, 256))
 
         search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=5)
 

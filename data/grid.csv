@@ -1,5 +1,5 @@
-batch size,epochs,loss,lr,optimizer
-16,50,mean_absolute_error,0.01,adam
-32,100,mean_squared_error,0.001
-64,150,binary_crossentropy, 0.0001
+batch size,epochs,lr,optimizer,loss
+16,50,0.01,adam,binary_crossentropy
+32,100,0.001
+64,150,0.0001
 128
