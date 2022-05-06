@@ -86,10 +86,10 @@ class torch_cnn(nn.Module):
                 pred = np.argmax(pred, axis=1).astype(np.float)
                 pred = pred.flatten()
                 self.loss = running_loss
-                self.accuracy = accuracy_score(y_val, pred)
-                self.f1_score = f1_m(y_val, pred)
-                self.recall = recall_m(y_val, pred)
-                self.balanced_acc = balanced_accuracy_score(y_val, pred)
+                self.accuracy = accuracy_score(yb, pred)
+                self.f1_score = f1_m(yb, pred)
+                self.recall = recall_m(yb, pred)
+                self.balanced_acc = balanced_accuracy_score(yb, pred)
                 print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss, 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 running_loss = 0.0
 
