@@ -94,10 +94,10 @@ class image_clinical(nn.Module):
                 pred = np.argmax(pred, axis=1).astype(np.float)
                 self.loss = running_loss
                 pred = pred.flatten()
-                self.accuracy = accuracy_score(y_val, pred)
-                self.f1_score = f1_m(y_val, pred)
-                self.recall = recall_m(y_val, pred)
-                self.balanced_acc = balanced_accuracy_score(y_val, pred)
+                self.accuracy = accuracy_score(yb, pred)
+                self.f1_score = f1_m(yb, pred)
+                self.recall = recall_m(yb, pred)
+                self.balanced_acc = balanced_accuracy_score(yb, pred)
                 if i % 2000 == 1999: # print every 2000 mini-batches
                     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 running_loss = 0.0
