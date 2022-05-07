@@ -19,6 +19,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class image_clinical(nn.Module):
     def __init__(self):
         super().__init__()
+        self.to(device)
         self.relu = nn.ReLU()
         self.clinical_track()
         self.image_track()
@@ -68,7 +69,7 @@ class image_clinical(nn.Module):
                 xb[1] = xb[1].type(torch.float)
                 xb[0] = xb[0].type(torch.float)
                 yb = yb.type(torch.float)
-                pred = self(xb)
+                pred = self(xb).to(device)
 
                 if type(criterion) == type(nn.CrossEntropyLoss()):
                     yb = yb.to(torch.long)
