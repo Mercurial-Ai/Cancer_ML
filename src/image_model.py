@@ -14,7 +14,7 @@ import torch.nn as nn
 from src.resnet import resnet18
 import numpy as np
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cpu')
 
 class image_clinical(nn.Module):
     def __init__(self):
@@ -69,7 +69,7 @@ class image_clinical(nn.Module):
                 xb[1] = xb[1].type(torch.float)
                 xb[0] = xb[0].type(torch.float)
                 yb = yb.type(torch.float)
-                pred = self(xb).to(device)
+                pred = self(xb)
 
                 if type(criterion) == type(nn.CrossEntropyLoss()):
                     yb = yb.to(torch.long)
