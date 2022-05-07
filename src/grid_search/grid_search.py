@@ -8,6 +8,7 @@ from src.confusion_matrix import confusion_matrix
 from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
 from tensorflow.keras.metrics import AUC
 import torch
+from sklearn.metrics import accuracy_score, balanced_accuracy_score
 
 class grid_search:
 
@@ -76,18 +77,26 @@ class grid_search:
 
                 model.train_func(X_train, y_train, comb['epochs'], comb['batch size'], optimizer, self.criterion)
 
-                results = [model.loss, float(model.accuracy), float(model.f1_score), float(model.recall), float(model.balanced_acc)]
+                y_pred = model(X_val)
+
+                y_pred = y_pred.detach().numpy().round().astype(np.float)
+                y_val = y_val.astype(np.float)
+                accuracy = accuracy_score(y_val, y_pred)
+                f1 = f1_m(y_val, y_pred)
+                recall = recall_m(y_val, y_pred)
+                balanced_acc = balanced_accuracy_score(y_val, y_pred)
+
+                results = [float(accuracy), float(f1), float(recall), float(balanced_acc)]
 
                 confusion_matrix(y_true=y_val, y_pred=model(X_val), save_name="src/grid_search/confusion_matrices/" + str(comb['epochs']) + str(comb['batch size']) + str(comb['loss']) + str(comb['optimizer']) + ".png")
 
                 print("Results:", results)
-                loss = results[0]
-                percentAcc = results[1]
-                f1 = results[2]
-                recall = results[3]
-                balanced_acc = results[4]
+                percentAcc = results[0]
+                f1 = results[1]
+                recall = results[2]
+                balanced_acc = results[3]
 
-                hyp_acc_pair = (comb, {"Loss": loss, "Accuracy": percentAcc, "F1": f1, "Recall": recall, "Balanced Acc": balanced_acc})
+                hyp_acc_pair = (comb, {"Accuracy": percentAcc, "F1": f1, "Recall": recall, "Balanced Acc": balanced_acc})
 
                 hyp_acc_list.append(hyp_acc_pair)
                 print(hyp_acc_list)
@@ -95,6 +104,3 @@ class grid_search:
                 break
 
             i = i + 1
-
-        writer = write_excel('results.xls', hyp_acc_list)
-        writer.run()

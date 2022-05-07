@@ -141,8 +141,12 @@ class image_model:
             y_pred = self.model(X_test)
             confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
             test_loss = self.criterion(y_pred, y_test)
+            accuracy = accuracy_score(y_test, y_pred)
+            f1_score = f1_m(y_test, y_pred)
+            recall = recall_m(y_test, y_pred)
+            balanced_acc = balanced_accuracy_score(y_test, y_pred)
 
-        return test_loss
+        return test_loss, accuracy, f1_score, recall, balanced_acc
 
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=128):
         
