@@ -2,6 +2,7 @@ from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense
 from tensorflow.keras.layers import concatenate
 from torch.nn.modules.loss import BCELoss
+from torch.autograd import Variable
 from src.class_loss import class_loss
 from src.grid_search.grid_search import grid_search
 from src.get_weight_dict import get_weight_dict
@@ -59,11 +60,13 @@ class image_clinical(nn.Module):
         for epoch in range(int(epochs)):
             running_loss = 0.0
             for i in range((X_train[0][1].shape[0]-1)//batch_size + 1):
+
                 start_i = i*batch_size
                 end_i = start_i+batch_size
 
                 xb = [torch.from_numpy(X_train[0][0][start_i:end_i]).to(device), torch.from_numpy(X_train[0][1][start_i:end_i]).to(device)]
                 yb = torch.from_numpy(y_train[start_i:end_i]).type(torch.float).to(device)
+                yb = Variable(yb)
 
                 xb[1] = torch.reshape(xb[1], (-1, 1, 256, 256))
                 xb[1] = xb[1].type(torch.float)
@@ -76,6 +79,7 @@ class image_clinical(nn.Module):
 
                 # if variable is binary BCE should be used instead of Cross-Entropy
                 if torch.unique(yb).shape[0] > 2:
+                    pred = torch.abs(torch.round(pred))
                     loss = criterion(pred, yb)
                 else:
                     yb = yb.unsqueeze(1).type(torch.float)
@@ -92,10 +96,9 @@ class image_clinical(nn.Module):
                 # print stats
                 running_loss += loss.item()
                 pred = pred.detach().numpy()
-                pred = np.argmax(pred, axis=1).astype(np.float)
                 yb = np.asarray(yb).astype(np.float)
                 self.loss = running_loss
-                pred = pred.flatten()
+                pred = pred.flatten().astype(np.float)
                 self.accuracy = accuracy_score(yb, pred)
                 self.f1_score = f1_m(yb, pred)
                 self.recall = recall_m(yb, pred)
@@ -140,6 +143,7 @@ class image_model:
         with torch.no_grad():
             self.model.eval()
             y_pred = self.model(X_test)
+            y_pred = y_pred.round()
             confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
             test_loss = self.criterion(y_pred, y_test)
             accuracy = accuracy_score(y_test, y_pred)

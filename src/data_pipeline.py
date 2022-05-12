@@ -1,10 +1,9 @@
-
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
 import math
-from src.image_tools.import_numpy import import_numpy
+from src.image_tools.import_numpy import import_numpy_2d
 from src.tokenize_dataset import tokenize_dataset
 from src.balance_y_classes import balance_y_classes
 
@@ -54,7 +53,7 @@ class data_pipeline:
 
         # if image path = None, dataset should be clinical only and imagery does not need to be imported
         if self.image_path != None:
-            self.img_array = import_numpy(self.image_path, self.clinical_ids)
+            self.img_array = import_numpy_2d(self.image_path, self.clinical_ids)
 
             self.slice_data()
 

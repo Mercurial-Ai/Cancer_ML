@@ -3,6 +3,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import Sequential
+from torch.nn.modules.loss import BCELoss
 import pandas as pd
 import numpy as np
 from src.class_loss import class_loss
@@ -25,7 +26,7 @@ class torch_cnn(nn.Module):
         self.conv2 = nn.Conv2d(6, 16, kernel_size=5)
         self.fc1 = nn.Linear(16 * 61 * 61, 120)
         self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 2)
+        self.fc3 = nn.Linear(84, 1)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -65,13 +66,18 @@ class torch_cnn(nn.Module):
                 xb = xb.type(torch.float)
                 pred = self(xb)
 
-                pred = pred.to(torch.float)
-                yb = yb.to(torch.long)
+                if type(criterion) == type(nn.CrossEntropyLoss()):
+                    yb = yb.to(torch.long)
 
-                try:
+                # if variable is binary BCE should be used instead of Cross-Entropy
+                if torch.unique(yb).shape[0] > 2:
                     loss = criterion(pred, yb)
-                except UserWarning as e:
-                    pass
+                else:
+                    yb = yb.type(torch.float)
+                    pred = torch.abs(torch.round(pred))
+                    criterion = BCELoss()
+                    pred = pred.flatten()
+                    loss = criterion(pred, yb)
         
                 loss.backward()
                 optimizer.step()
@@ -82,15 +88,15 @@ class torch_cnn(nn.Module):
                 # print stats
                 running_loss += loss.item()
                 pred = pred.detach().numpy()
-                y_val = y_val.astype(np.float)
-                pred = np.argmax(pred, axis=1).astype(np.float)
-                pred = pred.flatten()
+                yb = np.asarray(yb).astype(np.float)
                 self.loss = running_loss
+                pred = pred.flatten().astype(np.float)
                 self.accuracy = accuracy_score(yb, pred)
                 self.f1_score = f1_m(yb, pred)
                 self.recall = recall_m(yb, pred)
                 self.balanced_acc = balanced_accuracy_score(yb, pred)
-                print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss, 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
+                if i % 2000 == 1999:
+                    print('Completed training batch', epoch, 'Training Loss is: %.4f' %running_loss, 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 running_loss = 0.0
 
         print("Finished Training")
@@ -116,7 +122,11 @@ class cnn:
 
         search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=5)
 
-        self.criterion = torch.nn.CrossEntropyLoss()
+        if np.unique(y_train).shape[0] > 2:
+            self.criterion = torch.nn.CrossEntropyLoss()
+        else:
+            self.criterion = torch.nn.BCELoss()
+
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
         self.model.train_func(X_train, y_train, epochs, batch_size, optimizer, self.criterion)
@@ -126,12 +136,15 @@ class cnn:
     def test_model(self, X_test, y_test):
         X_test = np.reshape(X_test, (X_test.shape[0], 1, 256, 256))
         X_test = torch.from_numpy(X_test).type(torch.float)
-        y_test = torch.from_numpy(y_test).type(torch.long)
+        y_test = torch.from_numpy(y_test).type(torch.float)
         with torch.no_grad():
             self.model.eval()
             y_pred = self.model(X_test)
 
             confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
+            y_pred = y_pred.flatten()
+            print(y_pred)
+            y_pred = torch.abs(torch.round(y_pred))
             test_loss = self.criterion(y_pred, y_test)
 
         return test_loss
@@ -144,3 +157,4 @@ class cnn:
             self.model = self.train_model(X_train, y_train, X_val, y_val, epochs, batch_size)
 
         return self.model
+        

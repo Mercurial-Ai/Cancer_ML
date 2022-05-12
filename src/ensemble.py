@@ -63,11 +63,14 @@ class voting_ensemble:
 
             if not load_models:
 
-                image_clinical.run_model()
-                image_clinical.test_model()
+                # skip surgery bc results have already been collected
+                # skip days to surgery bc it is continuous
+                if target != 'Surgery' or target != 'Days to Surgery (from the date of diagnosis)':
+                    image_clinical.run_model()
+                    image_clinical.test_model()
 
-                image_only.run_model()
-                image_only.test_model()
+                    image_only.run_model()
+                    image_only.test_model()
 
         self.image_only_models = self.load_models('data/saved_models/image_only')
 
