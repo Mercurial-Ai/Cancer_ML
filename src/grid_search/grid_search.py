@@ -43,11 +43,15 @@ class grid_search:
 
     def test_model(self, model, X_train, y_train, X_val, y_val, weight_dict=None, num_combs=None):
 
-        if len(X_val) == 1:
-            X_val = X_val[0]
-
-        X_val = [torch.from_numpy(X_val[0]).type(torch.float), torch.from_numpy(X_val[1]).type(torch.float)]
-        X_val[1] = torch.reshape(X_val[1], (-1, 1, 256, 256))
+        # check if image clinical
+        if type(X_val) == list:
+            if len(X_val) == 1:
+                X_val = X_val[0]
+            X_val = [torch.from_numpy(X_val[0]).type(torch.float), torch.from_numpy(X_val[1]).type(torch.float)]
+            X_val[1] = torch.reshape(X_val[1], (-1, 1, 256, 256))
+        else:
+            X_val = torch.from_numpy(X_val)
+            X_val = torch.reshape(X_val, (-1, 1, 256, 256)).type(torch.float)
 
         combs = self.read_grid()
 
