@@ -1,3 +1,4 @@
+#!/bin/sh
 readarray -d '' paths < <(find . -maxdepth 3 -mindepth 3 -type d)
 for path in ${paths[@]}
 do
