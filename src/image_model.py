@@ -80,6 +80,7 @@ class image_clinical(nn.Module):
                 # if variable is binary BCE should be used instead of Cross-Entropy
                 if torch.unique(yb).shape[0] > 2:
                     pred = torch.abs(torch.round(pred))
+                    pred = pred.flatten()
                     loss = criterion(pred, yb)
                 else:
                     yb = yb.unsqueeze(1).type(torch.float)
