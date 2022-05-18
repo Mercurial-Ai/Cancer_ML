@@ -1,3 +1,4 @@
+from ray.tune.schedulers.async_hyperband import ASHAScheduler
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense
 from tensorflow.keras.layers import concatenate
@@ -14,6 +15,9 @@ import torch
 import torch.nn as nn
 from src.resnet import resnet18
 import numpy as np
+
+import ray
+from ray import tune
 
 device = torch.device('cpu')
 
@@ -56,7 +60,10 @@ class image_clinical(nn.Module):
 
         return x
 
-    def train_func(self, X_train, y_train, epochs, batch_size, optimizer, criterion):
+    def train_func(self, X_train, y_train, config):
+        epochs = config['epochs']
+        batch_size = config['batch_size']
+        lr = config['lr']
         for epoch in range(int(epochs)):
             running_loss = 0.0
             for i in range((X_train[0][1].shape[0]-1)//batch_size + 1):
@@ -74,19 +81,10 @@ class image_clinical(nn.Module):
                 yb = yb.type(torch.float)
                 pred = self(xb)
 
-                if type(criterion) == type(nn.CrossEntropyLoss()):
-                    yb = yb.to(torch.long)
+                criterion = BCELoss()
+                optimizer = torch.optim.Adam(lr=lr)
 
-                # if variable is binary BCE should be used instead of Cross-Entropy
-                if torch.unique(yb).shape[0] > 2:
-                    pred = torch.abs(torch.round(pred))
-                    pred = pred.flatten()
-                    loss = criterion(pred, yb)
-                else:
-                    yb = yb.unsqueeze(1).type(torch.float)
-                    pred = torch.abs(torch.round(pred))
-                    criterion = BCELoss()
-                    loss = criterion(pred, yb)
+                loss = criterion(pred, yb)
         
                 loss.backward()
                 optimizer.step()
@@ -99,7 +97,7 @@ class image_clinical(nn.Module):
                 pred = pred.detach().numpy()
                 yb = np.asarray(yb).astype(np.float)
                 self.loss = running_loss
-                pred = pred.flatten().astype(np.float)
+                pred = pred.flatten()
                 self.accuracy = accuracy_score(yb, pred)
                 self.f1_score = f1_m(yb, pred)
                 self.recall = recall_m(yb, pred)
@@ -117,7 +115,7 @@ class image_model:
     def __init__(self, load_model=True):
         self.load_model = load_model
 
-    def train_model(self, X_train, y_train, X_val, y_val, epochs=10, batch_size=128):
+    def main(self, X_train, y_train, num_samples=10, max_num_epochs=10, gpus_per_trial=2):
 
         if len(y_train.shape) > 1:
             self.multi_target = True
@@ -127,17 +125,40 @@ class image_model:
         self.model = image_clinical()
         self.model.to(device)
 
-        search = grid_search()
-        search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=5)
-
         self.criterion = torch.nn.MSELoss()
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
-        self.model.train_func(X_train, y_train, epochs, batch_size, optimizer, self.criterion)
+        config = {
+            'epochs':tune.choice([50, 100, 150]),
+            'batch_size':tune.choice([8, 16, 32, 64]),
+            'lr':tune.loguniform(1e-4, 1e-1)
+        }      
+        scheduler = ASHAScheduler(
+            max_t=max_num_epochs,
+            grace_period=1,
+            reduction_factor=2)
+        result = tune.run(
+            tune.with_parameters(self.model.train_func),
+            resources_per_trial={"cpu":2, "gpu":gpus_per_trial},
+            config=config,
+            metric="loss",
+            mode="min",
+            num_samples=num_samples,
+            scheduler=scheduler
+        )
+
+        best_trial = result.get_best_trial("loss", "min", "last")
+        print("Best trial config: {}".format(best_trial.config))
+        print("Best trial final validation loss: {}".format(
+            best_trial.last_result["loss"]))
+        print("Best trial final validation accuracy: {}".format(
+            best_trial.last_result['accuracy']))
+
+        self.model.train_func(X_train, y_train, config=config)
 
         return self.model
 
-    def test_model(self, X_test, y_test):
+    def test_model(self, X_test, y_test, trial):
         X_test[0][1] = np.reshape(X_test[0][1], (X_test[0][1].shape[0], 1, 256, 256))
         X_test = [torch.from_numpy(X_test[0][0]).type(torch.float), torch.from_numpy(X_test[0][1]).type(torch.float)]
         y_test = torch.from_numpy(y_test).type(torch.float)
@@ -159,7 +180,7 @@ class image_model:
         if self.load_model:
             self.model = torch.load('data\\saved_models\\torch_image_clinical_model.h5')
         else:
-            self.model = self.train_model(X_train, y_train, X_val, y_val, epochs, batch_size)
+            self.model = self.main(X_train, y_train)
 
         return self.model
         

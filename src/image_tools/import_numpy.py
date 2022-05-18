@@ -10,11 +10,8 @@ from trimesh.voxel import creation
 import os
 import matplotlib.pyplot as plt
 
-#from src.image_tools.filter_ids import filter_ids
-#from src.image_tools.remove_ids import remove_ids
-
-from filter_ids import filter_ids
-from remove_ids import remove_ids
+from src.image_tools.filter_ids import filter_ids
+from src.image_tools.remove_ids import remove_ids
 
 def import_numpy_2d(path, clinical_ids, random_crop=True, crop_size=(512, 512)):
     img_array = np.load(path)

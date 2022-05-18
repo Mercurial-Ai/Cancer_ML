@@ -1,16 +1,8 @@
-from tracemalloc import start
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras import Sequential
 from torch.nn.modules.loss import BCELoss
-import pandas as pd
 import numpy as np
-from src.class_loss import class_loss
 from src.confusion_matrix import confusion_matrix
-from src.get_weight_dict import get_weight_dict
 from src.grid_search.grid_search import grid_search
-from src.metrics import recall_m, precision_m, f1_m, BalancedSparseCategoricalAccuracy
+from src.metrics import recall_m, f1_m, BalancedSparseCategoricalAccuracy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -44,7 +36,10 @@ class torch_cnn(nn.Module):
 
         return x
 
-    def train_func(self, X_train, y_train, epochs, batch_size, optimizer, criterion):
+    def train_func(self, X_train, y_train, config):
+        epochs = config['epochs']
+        batch_size = config['batch_size']
+        lr = config['lr']
         for epoch in range(int(epochs)):
             running_loss = 0.0
             for i in range((X_train.shape[0]-1)//batch_size + 1):
@@ -66,18 +61,10 @@ class torch_cnn(nn.Module):
                 xb = xb.type(torch.float)
                 pred = self(xb)
 
-                if type(criterion) == type(nn.CrossEntropyLoss()):
-                    yb = yb.to(torch.long)
+                criterion = BCELoss()
+                optimizer = torch.optim.Adam(lr=lr)
 
-                # if variable is binary BCE should be used instead of Cross-Entropy
-                if torch.unique(yb).shape[0] > 2:
-                    loss = criterion(pred, yb)
-                else:
-                    yb = yb.type(torch.float)
-                    pred = torch.abs(torch.round(pred))
-                    criterion = BCELoss()
-                    pred = pred.flatten()
-                    loss = criterion(pred, yb)
+                loss = criterion(pred, yb)
         
                 loss.backward()
                 optimizer.step()
@@ -87,10 +74,9 @@ class torch_cnn(nn.Module):
 
                 # print stats
                 running_loss += loss.item()
-                pred = pred.detach().numpy()
                 yb = np.asarray(yb).astype(np.float)
                 self.loss = running_loss
-                pred = pred.flatten().astype(np.float)
+                pred = pred.flatten()
                 self.accuracy = accuracy_score(yb, pred)
                 self.f1_score = f1_m(yb, pred)
                 self.recall = recall_m(yb, pred)
@@ -117,10 +103,6 @@ class cnn:
 
         self.model = torch_cnn()
         self.model.to(device)
-
-        search = grid_search()
-
-        search.test_model(self.model, X_train, y_train, X_val, y_val, num_combs=5)
 
         if np.unique(y_train).shape[0] > 2:
             self.criterion = torch.nn.CrossEntropyLoss()
