@@ -61,8 +61,8 @@ class torch_cnn(nn.Module):
                 xb = xb.type(torch.float)
                 pred = self(xb)
 
-                criterion = BCELoss()
-                optimizer = torch.optim.Adam(lr=lr)
+                criterion = torch.nn.BCEWithLogitsLoss()
+                optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
                 loss = criterion(pred, yb)
         
@@ -77,6 +77,7 @@ class torch_cnn(nn.Module):
                 yb = np.asarray(yb).astype(np.float)
                 self.loss = running_loss
                 pred = pred.flatten()
+                pred = pred.round().astype(np.float)
                 self.accuracy = accuracy_score(yb, pred)
                 self.f1_score = f1_m(yb, pred)
                 self.recall = recall_m(yb, pred)
@@ -87,7 +88,7 @@ class torch_cnn(nn.Module):
 
         print("Finished Training")
 
-        torch.save(self.state_dict(), "data/saved_models/image_only/torch_cnn_model.h5")
+        #torch.save(self.state_dict(), "..\\data\\saved_models\\image_only\\torch_cnn_model.h5")
 
 class cnn:
 

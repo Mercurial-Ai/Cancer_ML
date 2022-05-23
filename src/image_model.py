@@ -22,7 +22,9 @@ from ray import tune
 device = torch.device('cpu')
 
 class image_clinical(nn.Module):
-    def __init__(self):
+    def __init__(self, X_train, y_train):
+        self.X_train = X_train
+        self.y_train = y_train
         super().__init__()
         self.to(device)
         self.relu = nn.ReLU()
@@ -60,7 +62,10 @@ class image_clinical(nn.Module):
 
         return x
 
-    def train_func(self, X_train, y_train, config):
+    def train_func(self, config):
+        print(config)
+        X_train = self.X_train
+        y_train = self.y_train
         epochs = config['epochs']
         batch_size = config['batch_size']
         lr = config['lr']
@@ -81,9 +86,11 @@ class image_clinical(nn.Module):
                 yb = yb.type(torch.float)
                 pred = self(xb)
 
-                criterion = BCELoss()
-                optimizer = torch.optim.Adam(lr=lr)
+                criterion = torch.nn.BCEWithLogitsLoss()
+                optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
+                yb = yb.flatten()
+                pred = pred.flatten()
                 loss = criterion(pred, yb)
         
                 loss.backward()
@@ -98,17 +105,19 @@ class image_clinical(nn.Module):
                 yb = np.asarray(yb).astype(np.float)
                 self.loss = running_loss
                 pred = pred.flatten()
+                pred = pred.round().astype(np.float)
                 self.accuracy = accuracy_score(yb, pred)
                 self.f1_score = f1_m(yb, pred)
                 self.recall = recall_m(yb, pred)
                 self.balanced_acc = balanced_accuracy_score(yb, pred)
                 if i % 2000 == 1999: # print every 2000 mini-batches
                     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
+                tune.report(loss=running_loss, accuracy=self.accuracy)
                 running_loss = 0.0
 
         print("Finished Training")
 
-        torch.save(self.state_dict(), "data/saved_models/image_clinical/torch_image_clinical_model.h5")
+        #torch.save(self.state_dict(), "..\\data\\saved_models\\image_clinical\\torch_image_clinical_model.h5")
 
 class image_model:
 
@@ -122,11 +131,8 @@ class image_model:
         else:
             self.multi_target = False
 
-        self.model = image_clinical()
+        self.model = image_clinical(X_train, y_train)
         self.model.to(device)
-
-        self.criterion = torch.nn.MSELoss()
-        optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
         config = {
             'epochs':tune.choice([50, 100, 150]),
@@ -139,7 +145,7 @@ class image_model:
             reduction_factor=2)
         result = tune.run(
             tune.with_parameters(self.model.train_func),
-            resources_per_trial={"cpu":2, "gpu":gpus_per_trial},
+            resources_per_trial={"cpu":4},
             config=config,
             metric="loss",
             mode="min",
@@ -154,7 +160,7 @@ class image_model:
         print("Best trial final validation accuracy: {}".format(
             best_trial.last_result['accuracy']))
 
-        self.model.train_func(X_train, y_train, config=config)
+        self.model.train_func(config=best_trial.config)
 
         return self.model
 
