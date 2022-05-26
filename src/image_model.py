@@ -63,7 +63,6 @@ class image_clinical(nn.Module):
         return x
 
     def train_func(self, config):
-        print(config)
         X_train = self.X_train
         y_train = self.y_train
         epochs = config['epochs']
@@ -86,12 +85,12 @@ class image_clinical(nn.Module):
                 yb = yb.type(torch.float)
                 pred = self(xb)
 
-                criterion = torch.nn.BCEWithLogitsLoss()
+                self.criterion = torch.nn.BCEWithLogitsLoss()
                 optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
                 yb = yb.flatten()
                 pred = pred.flatten()
-                loss = criterion(pred, yb)
+                loss = self.criterion(pred, yb)
         
                 loss.backward()
                 optimizer.step()
@@ -105,11 +104,18 @@ class image_clinical(nn.Module):
                 yb = np.asarray(yb).astype(np.float)
                 self.loss = running_loss
                 pred = pred.flatten()
-                pred = pred.round().astype(np.float)
-                self.accuracy = accuracy_score(yb, pred)
-                self.f1_score = f1_m(yb, pred)
-                self.recall = recall_m(yb, pred)
-                self.balanced_acc = balanced_accuracy_score(yb, pred)
+                pred = pred.astype(np.float)
+                try:
+                    self.accuracy = accuracy_score(yb, pred)
+                    self.f1_score = f1_m(yb, pred)
+                    self.recall = recall_m(yb, pred)
+                    self.balanced_acc = balanced_accuracy_score(yb, pred)
+                except:
+                    pred = pred.round()
+                    self.accuracy = accuracy_score(yb, pred)
+                    self.f1_score = f1_m(yb, pred)
+                    self.recall = recall_m(yb, pred)
+                    self.balanced_acc = balanced_accuracy_score(yb, pred)
                 if i % 2000 == 1999: # print every 2000 mini-batches
                     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 tune.report(loss=running_loss, accuracy=self.accuracy)
@@ -164,7 +170,8 @@ class image_model:
 
         return self.model
 
-    def test_model(self, X_test, y_test, trial):
+    def test_model(self, X_test, y_test):
+        self.criterion = torch.nn.BCEWithLogitsLoss()
         X_test[0][1] = np.reshape(X_test[0][1], (X_test[0][1].shape[0], 1, 256, 256))
         X_test = [torch.from_numpy(X_test[0][0]).type(torch.float), torch.from_numpy(X_test[0][1]).type(torch.float)]
         y_test = torch.from_numpy(y_test).type(torch.float)
@@ -173,6 +180,8 @@ class image_model:
             y_pred = self.model(X_test)
             y_pred = y_pred.round()
             confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
+            y_pred = y_pred.flatten()
+            y_test = y_test.flatten()
             test_loss = self.criterion(y_pred, y_test)
             accuracy = accuracy_score(y_test, y_pred)
             f1_score = f1_m(y_test, y_pred)
