@@ -151,7 +151,7 @@ class image_model:
             reduction_factor=2)
         result = tune.run(
             tune.with_parameters(self.model.train_func),
-            resources_per_trial={"cpu":4},
+            resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
             config=config,
             metric="loss",
             mode="min",

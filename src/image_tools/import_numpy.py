@@ -13,37 +13,57 @@ import matplotlib.pyplot as plt
 from src.image_tools.filter_ids import filter_ids
 from src.image_tools.remove_ids import remove_ids
 
-def import_numpy_2d(path, clinical_ids, random_crop=True, crop_size=(512, 512)):
+def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
     img_array = np.load(path)
 
     img_array = filter_ids(img_array, clinical_ids)
 
-    if random_crop:
-        cropped_array = np.empty(shape=(img_array.shape[0], crop_size[0]*crop_size[1]+1), dtype=np.int8)
+    slice_locations_min = np.amin(img_array[:, -2])
+    slice_locations_max = np.amax(img_array[:, -2])
 
-        i = 0 
-        for image in img_array:
-            id = image[-1]
+    # subinterval length (mm)
+    subinterval_length = 7
+    interval_num = int(round((slice_locations_max - slice_locations_min)/subinterval_length, 0))
 
-            image = remove_ids(image)
+    # set min slice loc as initial interval marker
+    intervals = []
+    interval_marker = slice_locations_min
+    for i in range(interval_num):
+        intervals.append(interval_marker)
+        interval_marker = interval_marker+subinterval_length*i
+
+    # array to store all intervals; dim 1 is set to length of dataset
+    all_interval_imgs = np.empty(shape=(len(clinical_ids), len(intervals), 512**2+2), dtype=np.float16)
+
+    p = 0
+    for p_id in clinical_ids:
+        for i in range(len(intervals)):
+            if i < (len(intervals)-1):
+                low = intervals[i]
+                high = intervals[i+1]
+
+                interval_imgs = np.empty(shape=(len(intervals), 512**2+2), dtype=np.float16)
+
+                for image in img_array:
+                    id = image[-1]
+                    if int(id) == int(p_id):
+                        slice_location=image[-2]
+                        if slice_location < high and slice_location > low:
             
-            image = np.reshape(image, (-1, int(sqrt(len(image)))))
+                            interval_imgs[i] = image
 
-            image = tf.image.random_crop(value=image, size=crop_size)
+                            print(interval_imgs)
 
-            image = image.numpy()
+                            # break after adding one image from the interval
+                            break
 
-            image = image.flatten()
+                all_interval_imgs[p] = interval_imgs
 
-            image = np.append(image, id)
+        p = p + 1
 
-            cropped_array[i] = image
+    print(all_interval_imgs)
 
-            i = i + 1
-
-        img_array = cropped_array
-
-    return img_array
+    return all_interval_imgs
 
 def import_numpy_3d(dir):
     patients = os.listdir(dir)

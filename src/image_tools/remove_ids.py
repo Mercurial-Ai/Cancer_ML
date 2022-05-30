@@ -4,7 +4,7 @@ def remove_ids(img_array):
 
     try:
         new_shape = (img_array.shape[0], img_array.shape[1]-1)
-        new_array = np.empty(shape = new_shape, dtype=np.int8)
+        new_array = np.empty(shape = new_shape, dtype=np.float16)
 
         i = 0
         for img in img_array:

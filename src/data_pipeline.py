@@ -55,16 +55,17 @@ class data_pipeline:
         if self.image_path != None:
             self.img_array = import_numpy_2d(self.image_path, self.clinical_ids)
 
-            self.slice_data()
+            self.image_ids = self.img_array[:, -1, -1]
 
-            self.image_ids = self.img_array[:, -1]
+            self.slice_data()
 
             self.train_ids, self.test_ids = train_test_split(self.image_ids, test_size=0.2, random_state=84)
 
             self.test_ids, self.val_ids = train_test_split(self.test_ids, test_size=0.2, random_state=84)
 
-            # remove ids from img_array
-            self.img_array = np.delete(self.img_array, -1, axis=1)
+            # remove ids and slice location from img_array
+            self.img_array = np.delete(self.img_array, -1, axis=-2)
+            self.img_array = np.delete(self.img_array, -1, axis=-2)
 
             # get patients in clinical data with ids that correspond with image ids
             self.filtered_df = self.df.loc[self.image_ids]
@@ -101,7 +102,7 @@ class data_pipeline:
         y = self.df[self.target]
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
-
+        
         # normalize data
         min_max_scaler = MinMaxScaler()
         X_train = min_max_scaler.fit_transform(X_train)
@@ -121,7 +122,7 @@ class data_pipeline:
         image_x = x[:, self.clinical_x.shape[1]:]
 
         # unflatten images in image_x
-        unflattened_array = np.empty(shape=(image_x.shape[0], int(math.sqrt(image_x.shape[-1])), int(math.sqrt(image_x.shape[-1])), 1), dtype=np.int8)
+        unflattened_array = np.empty(shape=(image_x.shape[0], int(math.sqrt(image_x.shape[-1])), int(math.sqrt(image_x.shape[-1])), 1), dtype=np.float16)
         i = 0
         for image in image_x:
             image = np.reshape(image, (1, 512, 512, 1))
