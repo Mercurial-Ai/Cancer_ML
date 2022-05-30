@@ -12,56 +12,84 @@ import matplotlib.pyplot as plt
 
 from src.image_tools.filter_ids import filter_ids
 from src.image_tools.remove_ids import remove_ids
+from dcm_npy_loader.main import dcm_npy_loader
 
 def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
-    img_array = np.load(path)
+    patients, ids, sliceLocs = dcm_npy_loader(path)
 
-    img_array = filter_ids(img_array, clinical_ids)
+    i = 0
+    for p in patients:
+        p_id = ids[i]
+        if not p_id in clinical_ids:
+            del patients[i]
+        i = i + 1
 
-    slice_locations_min = np.amin(img_array[:, -2])
-    slice_locations_max = np.amax(img_array[:, -2])
+    slice_locations_min = []
+    slice_locations_max = []
+    for sl in sliceLocs:
+        mi = np.amin(sl)
+        ma = np.amax(sl)
+        slice_locations_min.append(mi)
+        slice_locations_max.append(ma)
 
     # subinterval length (mm)
     subinterval_length = 7
-    interval_num = int(round((slice_locations_max - slice_locations_min)/subinterval_length, 0))
+    interval_nums = []
+    all_intervals = []
+    for ma, mi in zip(slice_locations_max, slice_locations_min):
+        interval_num = int(round((ma - mi)/subinterval_length, 0))
+        interval_nums.append(interval_num)
 
-    # set min slice loc as initial interval marker
-    intervals = []
-    interval_marker = slice_locations_min
-    for i in range(interval_num):
-        intervals.append(interval_marker)
-        interval_marker = interval_marker+subinterval_length*i
+        interval_num = min(interval_nums)
+
+        # set min slice loc as initial interval marker
+        intervals = []
+        interval_marker = mi
+        for i in range(interval_num):
+            intervals.append(interval_marker)
+            interval_marker = interval_marker+subinterval_length*i
+
+        all_intervals.append(intervals)
 
     # array to store all intervals; dim 1 is set to length of dataset
     all_interval_imgs = np.empty(shape=(len(clinical_ids), len(intervals), 512**2+2), dtype=np.float16)
 
     p = 0
-    for p_id in clinical_ids:
+    for p_id in ids:
         for i in range(len(intervals)):
             if i < (len(intervals)-1):
                 low = intervals[i]
                 high = intervals[i+1]
 
-                interval_imgs = np.empty(shape=(len(intervals), 512**2+2), dtype=np.float16)
+                interval_imgs = np.empty(shape=(len(intervals), 512, 512), dtype=np.float16)
 
-                for image in img_array:
-                    id = image[-1]
+                j = 0
+                for p in patients:
+                    id = ids[j]
+
                     if int(id) == int(p_id):
-                        slice_location=image[-2]
-                        if slice_location < high and slice_location > low:
+
+                        k = 0
+                        for s in p:
+                            slice_location=sliceLocs[j][k]
+
+                            if slice_location < high and slice_location > low:
             
-                            interval_imgs[i] = image
+                                interval_imgs[i] = s
 
-                            print(interval_imgs)
+                                # break after adding one image from the interval
+                                break
 
-                            # break after adding one image from the interval
-                            break
+                            k = k + 1
+                    
+                    j = j + 1
 
                 all_interval_imgs[p] = interval_imgs
 
         p = p + 1
 
     print(all_interval_imgs)
+    print(all_interval_imgs.shape)
 
     return all_interval_imgs
 
