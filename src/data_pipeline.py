@@ -1,3 +1,4 @@
+from pydoc import cli
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
@@ -5,7 +6,7 @@ import numpy as np
 import math
 from src.image_tools.import_numpy import import_numpy_2d
 from src.tokenize_dataset import tokenize_dataset
-from src.balance_y_classes import balance_y_classes
+from src.four_dim_normalization import four_dim_normalization
 
 duke_dependent = ['Surgery', 'Days to Surgery (from the date of diagnosis)', 'Definitive Surgery Type', 'Clinical Response, Evaluated Through Imaging ', 'Pathologic Response to Neoadjuvant Therapy', 'Days to local recurrence (from the date of diagnosis) ', 'Days to distant recurrence(from the date of diagnosis) ', 'Days to death (from the date of diagnosis) ',
                             'Days to last local recurrence free assessment (from the date of diagnosis) ', 'Days to last distant recurrence free assemssment(from the date of diagnosis) ', 'Neoadjuvant Chemotherapy', 'Adjuvant Chemotherapy', 'Neoadjuvant Endocrine Therapy Medications ',
@@ -53,19 +54,15 @@ class data_pipeline:
 
         # if image path = None, dataset should be clinical only and imagery does not need to be imported
         if self.image_path != None:
-            self.img_array = import_numpy_2d(self.image_path, self.clinical_ids)
+            self.img_array, self.image_ids = import_numpy_2d(self.image_path, self.clinical_ids)
 
-            self.image_ids = self.img_array[:, -1, -1]
+            self.image_ids = np.asarray(self.image_ids)
 
             self.slice_data()
 
             self.train_ids, self.test_ids = train_test_split(self.image_ids, test_size=0.2, random_state=84)
 
             self.test_ids, self.val_ids = train_test_split(self.test_ids, test_size=0.2, random_state=84)
-
-            # remove ids and slice location from img_array
-            self.img_array = np.delete(self.img_array, -1, axis=-2)
-            self.img_array = np.delete(self.img_array, -1, axis=-2)
 
             # get patients in clinical data with ids that correspond with image ids
             self.filtered_df = self.df.loc[self.image_ids]
@@ -77,16 +74,32 @@ class data_pipeline:
 
     def concatenate_image_clinical(self, clinical_array):
 
-        concatenated_array = np.concatenate((clinical_array, self.img_array), axis=1)
+        concatenated_array = [self.img_array, clinical_array]
 
         return concatenated_array
 
     def split_data(self, x, y):
-        X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=84)
+        if type(x) == list:
+            X_train = []
+            X_test = []
+            X_val = []
+            for input in x:
+                i_X_train, i_X_test, y_train, y_test = train_test_split(input, y, test_size=0.2, random_state=84)
 
-        # split test data into validation and test
-        X_test, X_val = train_test_split(X_test, test_size=0.5, random_state=84)
-        y_test, y_val = train_test_split(y_test, test_size=0.5, random_state=84)
+                # split test data into validation and test
+                i_X_test, i_X_val = train_test_split(i_X_test, test_size=0.5, random_state=84)
+                y_test, y_val = train_test_split(y_test, test_size=0.5, random_state=84)
+
+                X_train.append(i_X_train)
+                X_test.append(i_X_test)
+                X_val.append(i_X_val)
+
+        else:
+            X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=84)
+
+            # split test data into validation and test
+            X_test, X_val = train_test_split(X_test, test_size=0.5, random_state=84)
+            y_test, y_val = train_test_split(y_test, test_size=0.5, random_state=84)
 
         return X_train, X_test, y_train, y_test, X_val, y_val
     
@@ -102,7 +115,7 @@ class data_pipeline:
         y = self.df[self.target]
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
-        
+
         # normalize data
         min_max_scaler = MinMaxScaler()
         X_train = min_max_scaler.fit_transform(X_train)
@@ -147,19 +160,17 @@ class data_pipeline:
 
         x = self.concatenate_image_clinical(self.clinical_x)
 
-        x, y = balance_y_classes(x, y, 11, shuffle_data=True)
-
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
+
+        X_train[0] = four_dim_normalization(X_train[0])
+        X_test[0] = four_dim_normalization(X_test[0])
+        X_val[0] = four_dim_normalization(X_val[0])
 
         # normalize data
         min_max_scaler = MinMaxScaler()
-        X_train = min_max_scaler.fit_transform(X_train)
-        X_test = min_max_scaler.fit_transform(X_test)
-        X_val = min_max_scaler.fit_transform(X_val)
-
-        X_train = [self.split_modalities(X_train)]
-        X_test = [self.split_modalities(X_test)]
-        X_val = [self.split_modalities(X_val)]
+        X_train[1] = min_max_scaler.fit_transform(X_train[1])
+        X_test[1] = min_max_scaler.fit_transform(X_test[1])
+        X_val[1] = min_max_scaler.fit_transform(X_val[1])
 
         self.image_clinical.X_train = X_train
         self.image_clinical.X_test = X_test
@@ -173,19 +184,11 @@ class data_pipeline:
         x = self.img_array
         y = self.filtered_df[self.target]
 
-        x, y = balance_y_classes(x, y, 11, shuffle_data=True)
-
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
-        min_max_scaler = MinMaxScaler()
-        X_train = min_max_scaler.fit_transform(X_train)
-        X_test = min_max_scaler.fit_transform(X_test)
-        X_val = min_max_scaler.fit_transform(X_val)
-
-        # reshape back into 2d images
-        X_train = np.reshape(X_train, (X_train.shape[0], int(math.sqrt(X_train.shape[1])), int(math.sqrt(X_train.shape[1]))))
-        X_test = np.reshape(X_test, (X_test.shape[0], int(math.sqrt(X_test.shape[1])), int(math.sqrt(X_test.shape[1]))))
-        X_val = np.reshape(X_val, (X_val.shape[0], int(math.sqrt(X_val.shape[1])), int(math.sqrt(X_val.shape[1]))))
+        X_train = four_dim_normalization(X_train)
+        X_test = four_dim_normalization(X_test)
+        X_val = four_dim_normalization(X_val)
 
         # add additional dimension at the end of the shape to each partition
         X_train = np.expand_dims(X_train, axis=-1)
@@ -200,8 +203,7 @@ class data_pipeline:
         self.image_only.y_val = y_val
 
     def slice_data(self):
-        slice_size = 0.25
+        slice_size = 1
 
         self.img_array = self.img_array[0:int(round(self.img_array.shape[0]*slice_size, 0))]
-
-        print("img_array shape:", self.img_array.shape)
+        self.image_ids = self.image_ids[0:int(round(self.image_ids.shape[0]*slice_size, 0))]

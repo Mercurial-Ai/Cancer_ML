@@ -1,4 +1,5 @@
 from ray.tune.schedulers.async_hyperband import ASHAScheduler
+from torch.cuda import is_available
 from torch.nn.modules.loss import BCELoss
 import numpy as np
 from src.confusion_matrix import confusion_matrix
@@ -42,7 +43,6 @@ class torch_cnn(nn.Module):
 
     def train_func(self, config):
         X_train = self.X_train
-        y_train = self.y_train
         epochs = config['epochs']
         batch_size = config['batch_size']
         lr = config['lr']
@@ -132,15 +132,26 @@ class cnn:
             grace_period=1,
             reduction_factor=2
         )
-        result = tune.run(
-            tune.with_parameters(self.model.train_func),
-            resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
-            config=config,
-            metric="loss",
-            mode="min",
-            num_samples=num_samples,
-            scheduler=scheduler
-        )
+        if torch.cuda.is_available():
+            result = tune.run(
+                tune.with_parameters(self.model.train_func),
+                resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
+                config=config,
+                metric="loss",
+                mode="min",
+                num_samples=num_samples,
+                scheduler=scheduler
+            )
+        else:
+            result = tune.run(
+                tune.with_parameters(self.model.train_func),
+                resources_per_trial={"cpu":4},
+                config=config,
+                metric="loss",
+                mode="min",
+                num_samples=num_samples,
+                scheduler=scheduler
+            )
 
         best_trial = result.get_best_trial("loss", "min", "last")
         print("Best trial config: {}".format(best_trial.config))

@@ -10,7 +10,6 @@ def isolation_forest(features, target):
     print("isolation forest starting")
 
     isolated_forest=IsolationForest(n_estimators=2, n_jobs=-1, random_state=42) 
-
     if type(features) == tuple or type(features) == list:
         # concatenate features for image clinical
         clinical_array = features[0]

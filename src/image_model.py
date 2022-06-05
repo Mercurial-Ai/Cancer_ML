@@ -13,7 +13,7 @@ from src.metrics import recall_m, precision_m, f1_m
 from tensorflow.keras.metrics import AUC
 import torch
 import torch.nn as nn
-from src.resnet import resnet18
+from src.resnet import generate_model
 import numpy as np
 
 import ray
@@ -38,7 +38,7 @@ class image_clinical(nn.Module):
         self.fc3 = nn.Linear(25, 15)
 
     def image_track(self):
-        self.res = resnet18(pretrained=False)
+        self.res = generate_model(18)
 
     def forward(self, data):
         if len(data) == 1:
@@ -79,7 +79,6 @@ class image_clinical(nn.Module):
                 yb = torch.from_numpy(y_train[start_i:end_i]).type(torch.float).to(device)
                 yb = Variable(yb)
 
-                xb[1] = torch.reshape(xb[1], (-1, 1, 256, 256))
                 xb[1] = xb[1].type(torch.float)
                 xb[0] = xb[0].type(torch.float)
                 yb = yb.type(torch.float)
@@ -149,15 +148,26 @@ class image_model:
             max_t=max_num_epochs,
             grace_period=1,
             reduction_factor=2)
-        result = tune.run(
-            tune.with_parameters(self.model.train_func),
-            resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
-            config=config,
-            metric="loss",
-            mode="min",
-            num_samples=num_samples,
-            scheduler=scheduler
-        )
+        if torch.cuda.is_available():
+            result = tune.run(
+                tune.with_parameters(self.model.train_func),
+                resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
+                config=config,
+                metric="loss",
+                mode="min",
+                num_samples=num_samples,
+                scheduler=scheduler
+            )
+        else:
+            result = tune.run(
+                tune.with_parameters(self.model.train_func),
+                resources_per_trial={"cpu":4},
+                config=config,
+                metric="loss",
+                mode="min",
+                num_samples=num_samples,
+                scheduler=scheduler
+            )
 
         best_trial = result.get_best_trial("loss", "min", "last")
         print("Best trial config: {}".format(best_trial.config))

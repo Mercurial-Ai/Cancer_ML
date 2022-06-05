@@ -17,6 +17,7 @@ def PeakCluster(data):
     summed_square_distance=[]
     calinski_score=[]
 
+    print(np.unique(data))
     for i in clusters: 
         kmeans=KMeans(n_clusters=i,init='random',random_state=1)
         kmeans=kmeans.fit(data)

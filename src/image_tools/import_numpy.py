@@ -51,10 +51,15 @@ def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
 
         all_intervals.append(intervals)
 
-    # array to store all intervals; dim 1 is set to length of dataset
-    all_interval_imgs = np.empty(shape=(len(clinical_ids), len(intervals), 512**2+2), dtype=np.float16)
+    # array to store all intervals
+    all_interval_imgs = np.empty(shape=(len(ids), len(intervals), 512, 512), dtype=np.float16)
 
-    p = 0
+    # reshape all patients into (num_slices, res1, res2)
+    for i, patient in enumerate(patients):
+        patient = np.reshape(patient, (patient.shape[-1], patient.shape[-2], patient.shape[-3]))
+        patients[i] = patient
+
+    m = 0
     for p_id in ids:
         for i in range(len(intervals)):
             if i < (len(intervals)-1):
@@ -67,9 +72,9 @@ def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
                 for p in patients:
                     id = ids[j]
 
+                    k = 0
                     if int(id) == int(p_id):
 
-                        k = 0
                         for s in p:
                             slice_location=sliceLocs[j][k]
 
@@ -84,14 +89,12 @@ def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
                     
                     j = j + 1
 
-                all_interval_imgs[p] = interval_imgs
+                if len(np.unique(interval_imgs)) > 1:
+                    all_interval_imgs[m] = interval_imgs
 
-        p = p + 1
+        m = m + 1
 
-    print(all_interval_imgs)
-    print(all_interval_imgs.shape)
-
-    return all_interval_imgs
+    return all_interval_imgs, ids
 
 def import_numpy_3d(dir):
     patients = os.listdir(dir)

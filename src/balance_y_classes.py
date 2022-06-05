@@ -11,8 +11,18 @@ def balance_y_classes(x, y, var_to_balance=0, shuffle_data=True):
     if type(y) == pd.DataFrame or type(y) == pd.Series:
         y = y.to_numpy()
 
-    if shuffle_data:
-        x, y = shuffle(x, y, random_state=31)
+    if type(x) == list:
+        if shuffle_data:
+            y = shuffle(y, random_state=31)
+            i = 0
+            for input in x:
+                xs = shuffle(input, random_state=31)
+                x[i] = xs
+                i = i + 1
+    else:
+
+        if shuffle_data:
+            x, y = shuffle(x, y, random_state=31)
 
     if len(y.shape) == 1:
         var = y
@@ -27,7 +37,10 @@ def balance_y_classes(x, y, var_to_balance=0, shuffle_data=True):
         if var_dist[class_] == overrepresented:
             overrepresented_class = class_
 
-    num_to_remove = x.shape[0]/len(var_dist.values())
+    if type(x) == list:
+        num_to_remove = x[0].shape[0]/len(var_dist.values())
+    else:
+        num_to_remove = x.shape[0]/len(var_dist.values())
 
     print('overrepresented class:', overrepresented_class)
     print('num to remove:', num_to_remove)
@@ -45,7 +58,15 @@ def balance_y_classes(x, y, var_to_balance=0, shuffle_data=True):
 
         i = i + 1
 
-    x = np.delete(x, indices_to_remove, axis=0)
+    if type(x) == list:
+        i = 0
+        for input in x:
+            input = np.delete(input, indices_to_remove, axis=0)
+            x[i] = input
+            i = i + 1
+    else:
+        x = np.delete(x, indices_to_remove, axis=0)
+    
     y = np.delete(y, indices_to_remove, axis=0)
 
     return x, y

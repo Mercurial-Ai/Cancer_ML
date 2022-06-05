@@ -93,7 +93,6 @@ class voting_ensemble:
 
                 # differentiate between image clinical and other submodels
                 if type(testX) == list:
-                    image_clinical_active = True
                     testX_clinical = testX[0][0]
                     testX_image = testX[0][1]
 
@@ -145,7 +144,6 @@ class voting_ensemble:
 
                             ensemble_prediction = np.flip(ensemble_prediction)
                 else:
-                    image_clinical_active = False
 
                     # differentiate between image-clinical and other submodels
                     if type(testX) != list:
