@@ -10,21 +10,21 @@ from src.get_weight_dict import get_weight_dict
 from src.confusion_matrix import confusion_matrix
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from src.metrics import recall_m, precision_m, f1_m
+from src.grey_to_rgb import grey_to_rgb
 from tensorflow.keras.metrics import AUC
 import torch
 import torch.nn as nn
-from src.resnet import generate_model
+from pytorch_summary.torchsummary import summary
+import torchvision.models as models
+from src.resnet import resnet18
 import numpy as np
-
 import ray
 from ray import tune
 
 device = torch.device('cpu')
 
 class image_clinical(nn.Module):
-    def __init__(self, X_train, y_train):
-        self.X_train = X_train
-        self.y_train = y_train
+    def __init__(self):
         super().__init__()
         self.to(device)
         self.relu = nn.ReLU()
@@ -38,13 +38,11 @@ class image_clinical(nn.Module):
         self.fc3 = nn.Linear(25, 15)
 
     def image_track(self):
-        self.res = generate_model(18)
+        pass
 
     def forward(self, data):
-        if len(data) == 1:
-            data = data[0]
-        clinical_data = data[0]
-        image_data = data[1]
+        image_data = data[0]
+        clinical_data = data[1]
 
         # clinical
         clinical_x = self.relu(self.fc1(clinical_data))
@@ -62,26 +60,45 @@ class image_clinical(nn.Module):
 
         return x
 
-    def train_func(self, config):
-        X_train = self.X_train
-        y_train = self.y_train
+    def train_func(self, config, data):
+        id_X_train = data[0]
+        id_y_train = data[1]
+        self.res = data[2]
+        X_train = ray.get(id_X_train)
+        y_train = ray.get(id_y_train)
         epochs = config['epochs']
         batch_size = config['batch_size']
         lr = config['lr']
         for epoch in range(int(epochs)):
             running_loss = 0.0
-            for i in range((X_train[0][1].shape[0]-1)//batch_size + 1):
+            for i in range((X_train[1].shape[0]-1)//batch_size + 1):
 
                 start_i = i*batch_size
                 end_i = start_i+batch_size
 
-                xb = [torch.from_numpy(X_train[0][0][start_i:end_i]).to(device), torch.from_numpy(X_train[0][1][start_i:end_i]).to(device)]
-                yb = torch.from_numpy(y_train[start_i:end_i]).type(torch.float).to(device)
+                i = 0
+                for arr in X_train:
+                    if type(arr) == np.ndarray:
+                        arr = torch.from_numpy(arr)
+                        X_train[i] = arr
+
+                    i = i + 1 
+
+                if type(y_train) == np.ndarray:
+                    y_train = torch.from_numpy(y_train)
+
+                xb = [X_train[0][start_i:end_i].to(device), X_train[1][start_i:end_i].to(device)]
+
+                yb = y_train[start_i:end_i].type(torch.float).to(device)
                 yb = Variable(yb)
 
+                xb[0] = torch.unsqueeze(xb[0].type(torch.float), -1)
+                xb[0] = grey_to_rgb(xb[0])/255
+                # reshape to have 3 channels
+                xb[0] = np.reshape(xb[0], (xb[0].shape[0], xb[0].shape[-1], xb[0].shape[1], xb[0].shape[2], xb[0].shape[3]))
+                print("aft xb 0 shape:", xb[0].shape)
+                xb[0] = torch.from_numpy(xb[0]).type(torch.float)
                 xb[1] = xb[1].type(torch.float)
-                xb[0] = xb[0].type(torch.float)
-                yb = yb.type(torch.float)
                 pred = self(xb)
 
                 self.criterion = torch.nn.BCEWithLogitsLoss()
@@ -135,8 +152,14 @@ class image_model:
             self.multi_target = True
         else:
             self.multi_target = False
+            
+        id_X_train = ray.put(X_train)
+        id_y_train = ray.put(y_train)
+        res = models.video.r3d_18(pretrained=False)
 
-        self.model = image_clinical(X_train, y_train)
+        print(id_X_train)
+
+        self.model = image_clinical()
         self.model.to(device)
 
         config = {
@@ -147,10 +170,10 @@ class image_model:
         scheduler = ASHAScheduler(
             max_t=max_num_epochs,
             grace_period=1,
-            reduction_factor=2)
+            reduction_factor=3)
         if torch.cuda.is_available():
             result = tune.run(
-                tune.with_parameters(self.model.train_func),
+                tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, res]),
                 resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
                 config=config,
                 metric="loss",
@@ -160,7 +183,7 @@ class image_model:
             )
         else:
             result = tune.run(
-                tune.with_parameters(self.model.train_func),
+                tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, res]),
                 resources_per_trial={"cpu":4},
                 config=config,
                 metric="loss",
@@ -176,14 +199,14 @@ class image_model:
         print("Best trial final validation accuracy: {}".format(
             best_trial.last_result['accuracy']))
 
-        self.model.train_func(config=best_trial.config)
+        self.model.train_func(config={'epochs':50, 'batch_size':64, 'lr':0.01}, data=[X_train, y_train])
 
         return self.model
 
     def test_model(self, X_test, y_test):
         self.criterion = torch.nn.BCEWithLogitsLoss()
-        X_test[0][1] = np.reshape(X_test[0][1], (X_test[0][1].shape[0], 1, 256, 256))
-        X_test = [torch.from_numpy(X_test[0][0]).type(torch.float), torch.from_numpy(X_test[0][1]).type(torch.float)]
+        X_test[1] = np.reshape([1], (X_test[0][1].shape[0], 1, 256, 256))
+        X_test = [torch.from_numpy(X_test[0]).type(torch.float), torch.from_numpy(X_test[1]).type(torch.float)]
         y_test = torch.from_numpy(y_test).type(torch.float)
         with torch.no_grad():
             self.model.eval()

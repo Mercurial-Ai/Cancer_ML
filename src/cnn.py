@@ -43,6 +43,7 @@ class torch_cnn(nn.Module):
 
     def train_func(self, config):
         X_train = self.X_train
+        y_train = self.y_train
         epochs = config['epochs']
         batch_size = config['batch_size']
         lr = config['lr']

@@ -122,5 +122,3 @@ def import_numpy_3d(dir):
     vertices = np.concatenate(all_vertices, axis=0)
 
     return vertices
-
-import_numpy_3d("C:\\Users\\trist\\cs_projects\\Cancer_Project\\Cancer Imagery\\3d_duke")

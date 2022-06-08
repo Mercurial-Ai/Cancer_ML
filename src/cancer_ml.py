@@ -13,6 +13,7 @@ import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 from src.tabular_k_means import tabular_k_means
 import tensorflow as tf
+import torch
 
 class cancer_ml:
 
@@ -88,48 +89,49 @@ class cancer_ml:
             self.model.get_model(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train, self.data_pipe.only_clinical.X_val, self.data_pipe.only_clinical.y_val)
         elif self.image_clinical:
             self.model = image_model(load_model=False)
-            if type(self.data_pipe.image_clinical.X_train) != np.array:
+            if type(self.data_pipe.image_clinical.X_train) != torch.Tensor:
                 i = 0
                 for arr in self.data_pipe.image_clinical.X_train:
-                    if type(arr) != np.array:
-                        arr = np.array(arr)
+                    if type(arr) != torch.Tensor:
+                        print("arr shape:", arr.shape)
+                        arr = torch.from_numpy(np.array(arr))
                         print("X_train shape", arr.shape)
                         self.data_pipe.image_clinical.X_train[i] = arr
 
-                i = i + 1
+                    i = i + 1
 
-            if type(self.data_pipe.image_clinical.X_val) != np.array:
+            if type(self.data_pipe.image_clinical.X_val) != torch.Tensor:
                 i = 0
                 for arr in self.data_pipe.image_clinical.X_val:
-                    if type(arr) != np.array:
-                        arr = np.array(arr)
+                    if type(arr) != torch.Tensor:
+                        arr = torch.from_numpy(np.array(arr))
                         print("X_val shape", arr.shape)
                         self.data_pipe.image_clinical.X_val[i] = arr
 
-                i = i + 1
-            if type(self.data_pipe.image_clinical.y_train) != np.array:
-                self.data_pipe.image_clinical.y_train = np.array(self.data_pipe.image_clinical.y_train)
-            if type(self.data_pipe.image_clinical.y_val) != np.array:
-                self.data_pipe.image_clinical.y_val = np.array(self.data_pipe.image_clinical.y_val)
+                    i = i + 1
+            if type(self.data_pipe.image_clinical.y_train) != torch.Tensor:
+                self.data_pipe.image_clinical.y_train = torch.from_numpy(np.array(self.data_pipe.image_clinical.y_train))
+            if type(self.data_pipe.image_clinical.y_val) != torch.Tensor:
+                self.data_pipe.image_clinical.y_val = torch.from_numpy(np.array(self.data_pipe.image_clinical.y_val))
             self.model.get_model(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train, self.data_pipe.image_clinical.X_val, self.data_pipe.image_clinical.y_val)
         elif self.cnn:
             self.model = cnn(load_model=False)
-            if type(self.data_pipe.image_clinical.X_train) != np.array:
-                self.data_pipe.image_clinical.X_train = np.array(self.data_pipe.image_clinical.X_train)
-            if type(self.data_pipe.image_clinical.y_train) != np.array:
-                self.data_pipe.image_clinical.y_train = np.array(self.data_pipe.image_clinical.y_train)
-            if type(self.data_pipe.image_clinical.X_val) != np.array:
-                self.data_pipe.image_clinical.X_val = np.array(self.data_pipe.image_clinical.X_val)
-            if type(self.data_pipe.image_clinical.y_val) != np.array:
-                self.data_pipe.image_clinical.y_val = np.array(self.data_pipe.image_clinical.y_val)
-            self.model.get_model(self.data_pipe.image_only.X_train.numpy(), self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
+            if type(self.data_pipe.image_clinical.X_train) != torch.Tensor:
+                self.data_pipe.image_clinical.X_train = torch.from_numpy(np.array(self.data_pipe.image_clinical.X_train))
+            if type(self.data_pipe.image_clinical.y_train) != torch.Tensor:
+                self.data_pipe.image_clinical.y_train = torch.from_numpy(np.array(self.data_pipe.image_clinical.y_train))
+            if type(self.data_pipe.image_clinical.X_val) != torch.Tensor:
+                self.data_pipe.image_clinical.X_val = torch.from_numpy(np.array(self.data_pipe.image_clinical.X_val))
+            if type(self.data_pipe.image_clinical.y_val) != torch.Tensor:
+                self.data_pipe.image_clinical.y_val = torch.from_numpy(np.array(self.data_pipe.image_clinical.y_val))
+            self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
 
     def test_model(self):
         
         if self.clinical:
             print(self.model.test_model(self.data_pipe.only_clinical.X_test, self.data_pipe.only_clinical.y_test))
         elif self.image_clinical:
-            print(self.model.test_model([self.data_pipe.image_clinical.X_test[0].numpy(), self.data_pipe.image_clinical.X_test[1].numpy()], self.data_pipe.image_clinical.y_test))
+            print(self.model.test_model([self.data_pipe.image_clinical.X_test[0], self.data_pipe.image_clinical.X_test[1]], self.data_pipe.image_clinical.y_test))
         elif self.cnn:
             print(self.model.test_model(self.data_pipe.image_only.X_test.numpy(), self.data_pipe.image_only.y_test))
 
