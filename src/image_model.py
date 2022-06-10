@@ -1,3 +1,4 @@
+import struct
 from ray.tune.schedulers.async_hyperband import ASHAScheduler
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense
@@ -30,7 +31,6 @@ class image_clinical(nn.Module):
         self.relu = nn.ReLU()
         self.clinical_track()
         self.image_track()
-        self.to(device)
 
     def clinical_track(self):
         self.fc1 = nn.Linear(603, 50)
@@ -38,7 +38,7 @@ class image_clinical(nn.Module):
         self.fc3 = nn.Linear(25, 15)
 
     def image_track(self):
-        pass
+        self.res = None
 
     def forward(self, data):
         image_data = data[0]
@@ -96,7 +96,6 @@ class image_clinical(nn.Module):
                 xb[0] = grey_to_rgb(xb[0])/255
                 # reshape to have 3 channels
                 xb[0] = np.reshape(xb[0], (xb[0].shape[0], xb[0].shape[-1], xb[0].shape[1], xb[0].shape[2], xb[0].shape[3]))
-                print("aft xb 0 shape:", xb[0].shape)
                 xb[0] = torch.from_numpy(xb[0]).type(torch.float)
                 xb[1] = xb[1].type(torch.float)
                 pred = self(xb)
@@ -139,12 +138,11 @@ class image_clinical(nn.Module):
 
         print("Finished Training")
 
-        #torch.save(self.state_dict(), "..\\data\\saved_models\\image_clinical\\torch_image_clinical_model.h5")
-
 class image_model:
 
     def __init__(self, load_model=True):
         self.load_model = load_model
+        self.res = models.video.r3d_18(pretrained=False)
 
     def main(self, X_train, y_train, num_samples=10, max_num_epochs=10, gpus_per_trial=2):
 
@@ -155,9 +153,6 @@ class image_model:
             
         id_X_train = ray.put(X_train)
         id_y_train = ray.put(y_train)
-        res = models.video.r3d_18(pretrained=False)
-
-        print(id_X_train)
 
         self.model = image_clinical()
         self.model.to(device)
@@ -165,7 +160,7 @@ class image_model:
         config = {
             'epochs':tune.choice([50, 100, 150]),
             'batch_size':tune.choice([8, 16, 32, 64]),
-            'lr':tune.loguniform(1e-4, 1e-1)
+            'lr':tune.loguniform(1e-3, 1e-1)
         }      
         scheduler = ASHAScheduler(
             max_t=max_num_epochs,
@@ -173,7 +168,7 @@ class image_model:
             reduction_factor=3)
         if torch.cuda.is_available():
             result = tune.run(
-                tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, res]),
+                tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
                 resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
                 config=config,
                 metric="loss",
@@ -183,7 +178,7 @@ class image_model:
             )
         else:
             result = tune.run(
-                tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, res]),
+                tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
                 resources_per_trial={"cpu":4},
                 config=config,
                 metric="loss",
@@ -199,17 +194,27 @@ class image_model:
         print("Best trial final validation accuracy: {}".format(
             best_trial.last_result['accuracy']))
 
-        self.model.train_func(config={'epochs':50, 'batch_size':64, 'lr':0.01}, data=[X_train, y_train])
+        self.model.train_func(config=best_trial.config, data=[id_X_train, id_y_train, self.res])
+
+        torch.save(self.model.state_dict(), "torch_image_clinical_model.pth")
 
         return self.model
 
     def test_model(self, X_test, y_test):
+        X_test = [torch.from_numpy(np.array(X_test[0])).type(torch.float), torch.from_numpy(np.array(X_test[1])).type(torch.float)]
+        X_test[0] = torch.unsqueeze(X_test[0], -1)
+        X_test[0] = grey_to_rgb(X_test[0])/255
+        # reshape to have 3 channels
+        X_test[0] = np.reshape(X_test[0], (X_test[0].shape[0], X_test[0].shape[-1], X_test[0].shape[1], X_test[0].shape[2], X_test[0].shape[3]))
+        i = 0
+        for arr in X_test:
+            if type(arr) == np.ndarray:
+                arr = torch.from_numpy(arr).type(torch.float)
+                X_test[i] = arr
+            i = i + 1
         self.criterion = torch.nn.BCEWithLogitsLoss()
-        X_test[1] = np.reshape([1], (X_test[0][1].shape[0], 1, 256, 256))
-        X_test = [torch.from_numpy(X_test[0]).type(torch.float), torch.from_numpy(X_test[1]).type(torch.float)]
-        y_test = torch.from_numpy(y_test).type(torch.float)
+        y_test = torch.from_numpy(np.array(y_test)).type(torch.float)
         with torch.no_grad():
-            self.model.eval()
             y_pred = self.model(X_test)
             y_pred = y_pred.round()
             confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
@@ -226,7 +231,9 @@ class image_model:
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=128):
         
         if self.load_model:
-            self.model = torch.load('data\\saved_models\\torch_image_clinical_model.h5')
+            self.model = image_clinical()
+            self.model.res = self.res
+            self.model.load_state_dict(torch.load("torch_image_clinical_model.pth"), strict=False)
         else:
             self.model = self.main(X_train, y_train)
 

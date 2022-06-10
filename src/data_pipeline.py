@@ -186,6 +186,8 @@ class data_pipeline:
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
+        print("b 4 norm. shape:", X_train.shape)
+
         X_train = four_dim_normalization(X_train)
         X_test = four_dim_normalization(X_test)
         X_val = four_dim_normalization(X_val)

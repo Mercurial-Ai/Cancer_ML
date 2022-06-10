@@ -88,7 +88,7 @@ class cancer_ml:
             self.model = clinical_only(load_model=False)
             self.model.get_model(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train, self.data_pipe.only_clinical.X_val, self.data_pipe.only_clinical.y_val)
         elif self.image_clinical:
-            self.model = image_model(load_model=False)
+            self.model = image_model(load_model=True)
             if type(self.data_pipe.image_clinical.X_train) != torch.Tensor:
                 i = 0
                 for arr in self.data_pipe.image_clinical.X_train:
@@ -116,14 +116,14 @@ class cancer_ml:
             self.model.get_model(self.data_pipe.image_clinical.X_train, self.data_pipe.image_clinical.y_train, self.data_pipe.image_clinical.X_val, self.data_pipe.image_clinical.y_val)
         elif self.cnn:
             self.model = cnn(load_model=False)
-            if type(self.data_pipe.image_clinical.X_train) != torch.Tensor:
-                self.data_pipe.image_clinical.X_train = torch.from_numpy(np.array(self.data_pipe.image_clinical.X_train))
-            if type(self.data_pipe.image_clinical.y_train) != torch.Tensor:
-                self.data_pipe.image_clinical.y_train = torch.from_numpy(np.array(self.data_pipe.image_clinical.y_train))
-            if type(self.data_pipe.image_clinical.X_val) != torch.Tensor:
-                self.data_pipe.image_clinical.X_val = torch.from_numpy(np.array(self.data_pipe.image_clinical.X_val))
-            if type(self.data_pipe.image_clinical.y_val) != torch.Tensor:
-                self.data_pipe.image_clinical.y_val = torch.from_numpy(np.array(self.data_pipe.image_clinical.y_val))
+            if type(self.data_pipe.image_only.X_train) != torch.Tensor:
+                self.data_pipe.image_only.X_train = torch.from_numpy(self.data_pipe.image_only.X_train)
+            if type(self.data_pipe.image_only.y_train) != torch.Tensor:
+                self.data_pipe.image_only.y_train = torch.from_numpy(self.data_pipe.image_only.y_train)
+            if type(self.data_pipe.image_only.X_val) != torch.Tensor:
+                self.data_pipe.image_only.X_val = torch.from_numpy(self.data_pipe.image_only.X_val)
+            if type(self.data_pipe.image_only.y_val) != torch.Tensor:
+                self.data_pipe.image_only.y_val = torch.from_numpy(self.data_pipe.image_only.y_val)
             self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
 
     def test_model(self):

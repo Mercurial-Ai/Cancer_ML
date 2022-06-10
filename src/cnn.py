@@ -2,6 +2,7 @@ from ray.tune.schedulers.async_hyperband import ASHAScheduler
 from torch.cuda import is_available
 from torch.nn.modules.loss import BCELoss
 import numpy as np
+from src.grey_to_rgb import grey_to_rgb
 from src.confusion_matrix import confusion_matrix
 from src.grid_search.grid_search import grid_search
 from src.metrics import recall_m, f1_m, BalancedSparseCategoricalAccuracy
@@ -9,41 +10,30 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
+import ray
 from ray import tune
+import torchvision.models as models
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class torch_cnn(nn.Module):
-    def __init__(self, X_train, y_train):
-        self.X_train = X_train
-        self.y_train = y_train
+    def __init__(self):
         super(torch_cnn, self).__init__()
-        self.conv1 = nn.Conv2d(1, 6, kernel_size=5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, kernel_size=5)
-        self.fc1 = nn.Linear(16 * 61 * 61, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 1)
+        self.to(device)
+        self.res = None
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = F.relu(x)
-        x = self.pool(x)
-        x = self.conv2(x)
-        x = F.relu(x)
-        x = self.pool(x)
-        x = torch.flatten(x, 1)
-        x = self.fc1(x)
-        x = F.relu(x)
-        x = self.fc2(x)
-        x = F.relu(x)
-        x = self.fc3(x)
+        x = self.res(x)
 
         return x
 
-    def train_func(self, config):
-        X_train = self.X_train
-        y_train = self.y_train
+    def train_func(self, config, data):
+        id_X_train = data[0]
+        id_y_train = data[1]
+        self.res = data[2]
+        X_train = ray.get(id_X_train)
+        y_train = ray.get(id_y_train)
+        print("x train shape:", X_train.shape)
         epochs = config['epochs']
         batch_size = config['batch_size']
         lr = config['lr']
@@ -56,16 +46,14 @@ class torch_cnn(nn.Module):
                 xb = X_train[start_i:end_i]
                 yb = y_train[start_i:end_i]
 
-                xb_shape = xb.shape
-
-                xb = torch.from_numpy(xb)
-                yb = torch.from_numpy(yb).type(torch.float)
-
                 xb = xb.to(device)
                 yb = yb.to(device)
 
-                xb = torch.reshape(xb, (xb_shape[0], 1, 256, 256))
-                xb = xb.type(torch.float)
+                xb = grey_to_rgb(xb)
+                xb = xb/255
+
+                xb = torch.from_numpy(xb)
+                xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
                 pred = self(xb)
 
                 criterion = torch.nn.BCEWithLogitsLoss()
@@ -106,12 +94,13 @@ class torch_cnn(nn.Module):
 
         print("Finished Training")
 
-        #torch.save(self.state_dict(), "..\\data\\saved_models\\image_only\\torch_cnn_model.h5")
+        torch.save(self.state_dict(), "torch_cnn_model.pth")
 
 class cnn:
 
     def __init__(self, load_model=True):
         self.load_model=load_model
+        self.res = models.video.r3d_18(pretrained=False)
 
     def main(self, X_train, y_train, num_samples=10, max_num_epochs=10, gpus_per_trial=2):
 
@@ -120,7 +109,10 @@ class cnn:
         else:
             self.multi_target = False
 
-        self.model = torch_cnn(X_train, y_train)
+        id_X_train = ray.put(X_train)
+        id_y_train = ray.put(y_train)
+
+        self.model = torch_cnn()
         self.model.to(device)
 
         config = {
@@ -135,7 +127,7 @@ class cnn:
         )
         if torch.cuda.is_available():
             result = tune.run(
-                tune.with_parameters(self.model.train_func),
+                tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
                 resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
                 config=config,
                 metric="loss",
@@ -145,7 +137,7 @@ class cnn:
             )
         else:
             result = tune.run(
-                tune.with_parameters(self.model.train_func),
+                tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
                 resources_per_trial={"cpu":4},
                 config=config,
                 metric="loss",
@@ -171,7 +163,6 @@ class cnn:
         X_test = torch.from_numpy(X_test).type(torch.float)
         y_test = torch.from_numpy(y_test).type(torch.float)
         with torch.no_grad():
-            self.model.eval()
             y_pred = self.model(X_test)
             confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
             y_pred = y_pred.flatten()
@@ -187,7 +178,9 @@ class cnn:
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=32):
 
         if self.load_model:
-            self.model = torch.load('data\\saved_models\\torch_cnn_model.h5')
+            self.model = torch_cnn()
+            self.model.res = self.res
+            self.model.load_state_dict(torch.load("torch_cnn_model.pth"), strict=False)
         else:
             self.model = self.main(X_train, y_train)
 
