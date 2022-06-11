@@ -235,6 +235,7 @@ class image_model:
             self.model.res = self.res
             self.model.load_state_dict(torch.load("torch_image_clinical_model.pth"), strict=False)
         else:
+            print("pre training img clin shape:", X_train[0].shape)
             self.model = self.main(X_train, y_train)
 
         return self.model

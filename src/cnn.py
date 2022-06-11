@@ -33,7 +33,6 @@ class torch_cnn(nn.Module):
         self.res = data[2]
         X_train = ray.get(id_X_train)
         y_train = ray.get(id_y_train)
-        print("x train shape:", X_train.shape)
         epochs = config['epochs']
         batch_size = config['batch_size']
         lr = config['lr']
