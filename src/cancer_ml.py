@@ -85,7 +85,7 @@ class cancer_ml:
             self.model = clinical_only(load_model=False)
             self.model.get_model(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train, self.data_pipe.only_clinical.X_val, self.data_pipe.only_clinical.y_val)
         elif self.image_clinical:
-            self.model = image_model(load_model=True)
+            self.model = image_model(load_model=False)
             if type(self.data_pipe.image_clinical.X_train) != torch.Tensor:
                 i = 0
                 for arr in self.data_pipe.image_clinical.X_train:
