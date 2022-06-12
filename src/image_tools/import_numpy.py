@@ -15,7 +15,7 @@ from src.image_tools.remove_ids import remove_ids
 from dcm_npy_loader.main import dcm_npy_loader
 
 def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
-    patients, ids, sliceLocs = dcm_npy_loader(path)
+    patients, ids, sliceLocs = dcm_npy_loader(path, load=False)
 
     i = 0
     for p in patients:
