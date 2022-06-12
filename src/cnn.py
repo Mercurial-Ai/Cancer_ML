@@ -181,6 +181,7 @@ class cnn:
             self.model.res = self.res
             self.model.load_state_dict(torch.load("torch_cnn_model.pth"), strict=False)
         else:
+            print("cnn get model:", X_train.shape)
             self.model = self.main(X_train, y_train)
 
         return self.model

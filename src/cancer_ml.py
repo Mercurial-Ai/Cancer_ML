@@ -66,9 +66,6 @@ class cancer_ml:
         elif self.model == "cnn":
             self.cnn = True
 
-            self.setup_cluster()
-            self.k_neighbors()
-
     def collect_duke(self):
 
         if self.model !="clinical_only":
@@ -88,7 +85,7 @@ class cancer_ml:
             self.model = clinical_only(load_model=False)
             self.model.get_model(self.data_pipe.only_clinical.X_train, self.data_pipe.only_clinical.y_train, self.data_pipe.only_clinical.X_val, self.data_pipe.only_clinical.y_val)
         elif self.image_clinical:
-            self.model = image_model(load_model=False)
+            self.model = image_model(load_model=True)
             if type(self.data_pipe.image_clinical.X_train) != torch.Tensor:
                 i = 0
                 for arr in self.data_pipe.image_clinical.X_train:
@@ -114,14 +111,13 @@ class cancer_ml:
         elif self.cnn:
             self.model = cnn(load_model=False)
             if type(self.data_pipe.image_only.X_train) != torch.Tensor:
-                self.data_pipe.image_only.X_train = torch.from_numpy(self.data_pipe.image_only.X_train)
+                self.data_pipe.image_only.X_train = torch.from_numpy(np.expand_dims(self.data_pipe.image_only.X_train, -1))
             if type(self.data_pipe.image_only.y_train) != torch.Tensor:
-                self.data_pipe.image_only.y_train = torch.from_numpy(self.data_pipe.image_only.y_train)
+                self.data_pipe.image_only.y_train = torch.from_numpy(np.array(self.data_pipe.image_only.y_train))
             if type(self.data_pipe.image_only.X_val) != torch.Tensor:
-                self.data_pipe.image_only.X_val = torch.from_numpy(self.data_pipe.image_only.X_val)
+                self.data_pipe.image_only.X_val = torch.from_numpy(np.expand_dims(self.data_pipe.image_only.X_val, -1))
             if type(self.data_pipe.image_only.y_val) != torch.Tensor:
-                self.data_pipe.image_only.y_val = torch.from_numpy(self.data_pipe.image_only.y_val)
-            print("X train shape get model:", self.data_pipe.image_only.X_train.shape)
+                self.data_pipe.image_only.y_val = torch.from_numpy(np.array(self.data_pipe.image_only.y_val))
             self.model.get_model(self.data_pipe.image_only.X_train, self.data_pipe.image_only.y_train, self.data_pipe.image_only.X_val, self.data_pipe.image_only.y_val)
 
     def test_model(self):
@@ -174,7 +170,7 @@ class cancer_ml:
     def setup_cluster(self):
         X = self.data_pipe.image_only.X_train
 
-        X = tf.image.random_crop(value=X, size=(X.shape[0], X.shape[1], self.crop_size[0], self.crop_size[1], 1))
+        X = tf.image.random_crop(value=X, size=(X.shape[0], X.shape[1], self.crop_size[0], self.crop_size[1]))
         
         X = np.reshape(X, (X.shape[0]*X.shape[1], X.shape[2]*X.shape[3]))
         self.model = PeakCluster(X)
@@ -197,18 +193,20 @@ class cancer_ml:
         X_test = self.data_pipe.image_only.X_test
         X_val = self.data_pipe.image_only.X_val
 
-        X = tf.image.random_crop(X, (X.shape[0], X.shape[1], self.crop_size[0], self.crop_size[1], 1))
-        X_test = tf.image.random_crop(X_test, (X_test.shape[0], X_test.shape[1], self.crop_size[0], self.crop_size[1], 1))
-        X_val = tf.image.random_crop(X_val, (X_val.shape[0], X_val.shape[1], self.crop_size[0], self.crop_size[1], 1))
+        X = tf.image.random_crop(X, (X.shape[0], X.shape[1], self.crop_size[0], self.crop_size[1]))
+        X_test = tf.image.random_crop(X_test, (X_test.shape[0], X_test.shape[1], self.crop_size[0], self.crop_size[1]))
+        X_val = tf.image.random_crop(X_val, (X_val.shape[0], X_val.shape[1], self.crop_size[0], self.crop_size[1]))
 
+        self.data_pipe.image_only.X_train = X
         self.data_pipe.image_only.X_test = X_test
         self.data_pipe.image_only.X_val = X_val
 
-        self.pre_x_shape_train = X.shape
-        self.pre_x_shape_test = X_test.shape
-        self.pre_x_shape_val = X_val.shape
+        x_shape_train = X.shape
+        x_shape_test = X_test.shape
+        x_shape_val = X_val.shape
+
         # flatten X for KNeighbors
-        X = np.reshape(X, (X.shape[0]*X.shape[1], X.shape[2]*X.shape[3])).astype('float16')
+        k_X = np.reshape(X, (X.shape[0]*X.shape[1], X.shape[2]*X.shape[3])).astype('float16')
 
         # adjust y for x format
         def y_2d_to_1d(pre_x_shape, y):
@@ -221,93 +219,100 @@ class cancer_ml:
             
             return new_y
 
-        self.data_pipe.image_only.y_train = y_2d_to_1d(self.pre_x_shape_train, self.data_pipe.image_only.y_train)
-        self.data_pipe.image_only.y_test = y_2d_to_1d(self.pre_x_shape_test, self.data_pipe.image_only.y_test)
-        self.data_pipe.image_only.y_val = y_2d_to_1d(self.pre_x_shape_val, self.data_pipe.image_only.y_val)
+        self.data_pipe.image_only.y_train = y_2d_to_1d(x_shape_train, self.data_pipe.image_only.y_train)
+        self.data_pipe.image_only.y_test = y_2d_to_1d(x_shape_test, self.data_pipe.image_only.y_test)
+        self.data_pipe.image_only.y_val = y_2d_to_1d(x_shape_val, self.data_pipe.image_only.y_val)
 
         n_clusters = len(list(set(self.model.labels_)))
 
         self.neigh = KNeighborsClassifier(n_neighbors=n_clusters)
-        self.neigh.fit(X, self.model.labels_)
+        self.neigh.fit(k_X, self.model.labels_)
 
-        # unflatten X
-        X = np.reshape(X, (-1, int(math.sqrt(X.shape[1])), int(math.sqrt(X.shape[1]))))
-
+        X = np.array(X)
         X_test = np.array(X_test)
         X_val = np.array(X_val)
 
-        X_test = np.reshape(X_test, (X_test.shape[0]*X_test.shape[1], X_test.shape[2], X_test.shape[3]))
-        X_val = np.reshape(X_val, (X_val.shape[0]*X_val.shape[1], X_val.shape[2], X_val.shape[3]))
+        print(X.shape)
 
-        self.equalize_classes(X)
-        self.equalize_test(X_test)
-        self.equalize_val(X_val)
+        self.all_indices_train = []
+        i = 0
+        for p in X:
+            p = self.equalize_classes(p)
+            self.all_indices_train.append(self.collected_indices_train)
+            X[i] = p
+            i = i + 1
+        self.all_indices_test = []
+        i = 0
+        for p in X_test:
+            p = self.equalize_test(p)
+            self.all_indices_test.append(self.collected_indices_test)
+            X[i] = p
+            i = i + 1
+        self.all_indices_val = []
+        i = 0
+        for p in X_val:
+            p = self.equalize_val(p)
+            self.all_indices_val.append(self.collected_indices_val)
+            X[i] = p
+            i = i + 1
 
         self.equalize_image_clinical()
 
     def get_classes(self):
         return self.model.labels_
 
+    def scale_clinical(self, arr, scalar):
+
+        new_array = np.empty((arr.shape[0]*scalar, arr.shape[-1]))
+        k = 0
+        for i in range(arr.shape[0]):
+            for j in range(scalar):
+                arr_slice = arr[i]
+                arr_slice = np.expand_dims(arr_slice, 0)
+                new_array[k] = arr_slice
+
+                k = k + 1
+
+        return new_array
+
     def equalize_image_clinical(self):
 
-        pre_shape_img_train = self.data_pipe.image_clinical.X_train[0].shape
-        pre_shape_img_test = self.data_pipe.image_clinical.X_test[0].shape
-        pre_shape_img_val = self.data_pipe.image_clinical.X_val[0].shape
+        self.data_pipe.image_clinical.X_train[1] = self.scale_clinical(self.data_pipe.image_clinical.X_train[1], self.pre_x_shape_train[1])
+        self.data_pipe.image_clinical.X_test[1] = self.scale_clinical(self.data_pipe.image_clinical.X_test[1], self.pre_x_shape_test[1])
+        self.data_pipe.image_clinical.X_val[1] = self.scale_clinical(self.data_pipe.image_clinical.X_val[1], self.pre_x_shape_val[1])
 
-        self.data_pipe.image_clinical.X_train[0] = np.reshape(self.data_pipe.image_clinical.X_train[0], (self.data_pipe.image_clinical.X_train[0].shape[0]*self.data_pipe.image_clinical.X_train[0].shape[1], self.data_pipe.image_clinical.X_train[0].shape[2], self.data_pipe.image_clinical.X_train[0].shape[3]))
-        self.data_pipe.image_clinical.X_test[0] = np.reshape(self.data_pipe.image_clinical.X_test[0], (self.data_pipe.image_clinical.X_test[0].shape[0]*self.data_pipe.image_clinical.X_test[0].shape[1], self.data_pipe.image_clinical.X_test[0].shape[2], self.data_pipe.image_clinical.X_test[0].shape[3]))
-        self.data_pipe.image_clinical.X_val[0] = np.reshape(self.data_pipe.image_clinical.X_val[0], (self.data_pipe.image_clinical.X_val[0].shape[0]*self.data_pipe.image_clinical.X_val[0].shape[1], self.data_pipe.image_clinical.X_val[0].shape[2], self.data_pipe.image_clinical.X_val[0].shape[3]))
+        i = 0
+        for p in self.data_pipe.image_clinical.X_train[0]:
+            p = p[self.all_indices_train[i]]
+            self.data_pipe.image_clinical.X_train[0][i] = p
 
-        self.data_pipe.image_only.X_train = np.reshape(self.data_pipe.image_only.X_train, (self.data_pipe.image_only.X_train.shape[0]*self.data_pipe.image_only.X_train.shape[1], self.data_pipe.image_only.X_train.shape[2], self.data_pipe.image_only.X_train.shape[3]))
-        self.data_pipe.image_only.X_test = np.reshape(self.data_pipe.image_only.X_test, (self.data_pipe.image_only.X_test.shape[0]*self.data_pipe.image_only.X_test.shape[1], self.data_pipe.image_only.X_test.shape[2], self.data_pipe.image_only.X_test.shape[3]))
-        self.data_pipe.image_only.X_val = np.reshape(self.data_pipe.image_only.X_val, (self.data_pipe.image_only.X_val.shape[0]*self.data_pipe.image_only.X_val.shape[1], self.data_pipe.image_only.X_val.shape[2], self.data_pipe.image_only.X_val.shape[3]))
+            i = i + 1
 
-        def scale_clinical(arr, scalar):
+        i = 0
+        for p in self.data_pipe.image_clinical.X_test[0]:
+            p = p[self.all_indices_test[i]]
+            self.data_pipe.image_clinical.X_test[0][i] = p
 
-            new_array = np.empty((arr.shape[0]*scalar, arr.shape[-1]))
-            k = 0
-            for i in range(arr.shape[0]):
-                for j in range(scalar):
-                    arr_slice = arr[i]
-                    arr_slice = np.expand_dims(arr_slice, 0)
-                    new_array[k] = arr_slice
+            i = i + 1
 
-                    k = k + 1
+        i = 0
+        for p in self.data_pipe.image_clinical.X_val[0]:
+            p = p[self.all_indices_val[i]]
+            self.data_pipe.image_clinical.X_val[0][i] = p
 
-            return new_array
+            i = i + 1
 
-        self.data_pipe.image_clinical.X_train[1] = scale_clinical(self.data_pipe.image_clinical.X_train[1], pre_shape_img_train[1])
-        self.data_pipe.image_clinical.X_test[1] = scale_clinical(self.data_pipe.image_clinical.X_test[1], pre_shape_img_test[1])
-        self.data_pipe.image_clinical.X_val[1] = scale_clinical(self.data_pipe.image_clinical.X_val[1], pre_shape_img_val[1])
-
-        self.data_pipe.image_clinical.X_train[0] = self.data_pipe.image_clinical.X_train[0][self.collected_indices_train]
-        self.data_pipe.image_clinical.X_test[0] = self.data_pipe.image_clinical.X_test[0][self.collected_indices_test]
-        self.data_pipe.image_clinical.X_val[0] = self.data_pipe.image_clinical.X_val[0][self.collected_indices_val]
-
-        self.data_pipe.image_only.X_train = self.data_pipe.image_only.X_train[self.collected_indices_train]
-        self.data_pipe.image_only.X_test = self.data_pipe.image_only.X_test[self.collected_indices_test]
-        self.data_pipe.image_only.X_val = self.data_pipe.image_only.X_val[self.collected_indices_val]
-
-        self.data_pipe.image_clinical.y_train = scale_clinical(np.expand_dims(self.data_pipe.image_clinical.y_train, -1), pre_shape_img_train[1])
-        self.data_pipe.image_clinical.y_test = scale_clinical(np.expand_dims(self.data_pipe.image_clinical.y_test, -1), pre_shape_img_test[1])
-        self.data_pipe.image_clinical.y_val = scale_clinical(np.expand_dims(self.data_pipe.image_clinical.y_val, -1), pre_shape_img_val[1])
+        self.data_pipe.image_clinical.y_train = self.scale_clinical(np.expand_dims(self.data_pipe.image_clinical.y_train, -1), self.pre_x_shape_train[1])
+        self.data_pipe.image_clinical.y_test = self.scale_clinical(np.expand_dims(self.data_pipe.image_clinical.y_test, -1), self.pre_x_shape_test[1])
+        self.data_pipe.image_clinical.y_val = self.scale_clinical(np.expand_dims(self.data_pipe.image_clinical.y_val, -1), self.pre_x_shape_val[1])
 
         self.data_pipe.image_clinical.y_train = self.data_pipe.image_clinical.y_train[self.collected_indices_train]
         self.data_pipe.image_clinical.y_test = self.data_pipe.image_clinical.y_test[self.collected_indices_test]
         self.data_pipe.image_clinical.y_val = self.data_pipe.image_clinical.y_val[self.collected_indices_val]
 
-        self.data_pipe.image_only.y_train = scale_clinical(np.expand_dims(self.data_pipe.image_only.y_train, -1), pre_shape_img_train[1])
-        self.data_pipe.image_only.y_test = scale_clinical(np.expand_dims(self.data_pipe.image_only.y_test, -1), pre_shape_img_test[1])
-        self.data_pipe.image_only.y_val = scale_clinical(np.expand_dims(self.data_pipe.image_only.y_val, -1), pre_shape_img_val[1])
-
-        self.data_pipe.image_only.y_train = self.data_pipe.image_only.y_train[self.collected_indices_train]
-        self.data_pipe.image_only.y_test = self.data_pipe.image_only.y_test[self.collected_indices_test]
-        self.data_pipe.image_only.y_val = self.data_pipe.image_only.y_val[self.collected_indices_val]
-
     def equalize_test(self, img_array):
 
         y_test = self.data_pipe.image_only.y_test
-        print("y test shape:", y_test.shape)
 
         if str(type(y_test)) == "<class 'pandas.core.series.Series'>":
             y_test = y_test.to_numpy()

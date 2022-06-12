@@ -186,16 +186,9 @@ class data_pipeline:
 
         X_train, X_test, y_train, y_test, X_val, y_val = self.split_data(x, y)
 
-        print("b 4 norm. shape:", X_train.shape)
-
         X_train = four_dim_normalization(X_train)
         X_test = four_dim_normalization(X_test)
         X_val = four_dim_normalization(X_val)
-
-        # add additional dimension at the end of the shape to each partition
-        X_train = np.expand_dims(X_train, axis=-1)
-        X_test = np.expand_dims(X_test, axis=-1)
-        X_val = np.expand_dims(X_val, axis=-1)
 
         self.image_only.X_train = X_train
         self.image_only.X_test = X_test
