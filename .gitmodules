@@ -1,0 +1,3 @@
+[submodule "dcm_npy_loader"]
+	path = dcm_npy_loader
+	url = https://github.com/Tpool1/dcm_npy_loader.git
