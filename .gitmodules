@@ -1,6 +1,0 @@
-[submodule "dcm_npy_loader"]
-	path = dcm_npy_loader
-	url = https://github.com/Tpool1/dcm_npy_loader.git
-[submodule "pytorch-summary"]
-	path = pytorch-summary
-	url = https://github.com/sksq96/pytorch-summary.git
