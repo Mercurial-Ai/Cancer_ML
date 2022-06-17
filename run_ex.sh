@@ -6,7 +6,6 @@
 #SBATCH --nodes=1
 #SBATCH --partition=mercurial
 #SBATCH -J braggNN 
-#SBATCH --time=12:00:00
 #SBATCH -e ./%J.err
 #SBATCH -o ./%J.out
 
