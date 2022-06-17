@@ -15,7 +15,7 @@ from src.grey_to_rgb import grey_to_rgb
 from tensorflow.keras.metrics import AUC
 import torch
 import torch.nn as nn
-from pytorch_summary.torchsummary import summary
+from torchsummary import summary
 import torchvision.models as models
 from src.resnet import resnet18
 import numpy as np
