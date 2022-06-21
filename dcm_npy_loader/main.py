@@ -3,6 +3,7 @@ import os
 import pydicom
 from torch.utils.data import Dataset
 import numpy as np
+import math
 
 class dcm_npy_loader(Dataset):
 
@@ -27,6 +28,8 @@ class dcm_npy_loader(Dataset):
                         ids.append(id)
                 except:
                     print("Image " + path + " could not be loaded")
+
+            print("Files Collected")
 
             # remove duplicates
             ids = list(set(ids))
