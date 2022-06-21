@@ -2,7 +2,7 @@ import pickle
 import os
 import pydicom
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import numpy as np
 
 class dcm_npy_loader(Dataset):
@@ -91,7 +91,6 @@ class dcm_npy_loader(Dataset):
                 self.data = pickle.load(fp)
 
     def __len__(self):
-        print(len(self.data[0]))
         return len(self.data[0])
 
     def __getitem__(self, idx):

@@ -9,13 +9,20 @@ from trimesh import voxel
 from trimesh.voxel import creation
 import os
 import matplotlib.pyplot as plt
+import time
+from torch.utils.data import DataLoader
 
 from src.image_tools.filter_ids import filter_ids
 from src.image_tools.remove_ids import remove_ids
 from dcm_npy_loader.main import dcm_npy_loader
 
 def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
+    prev_time = time.time()
     ds = dcm_npy_loader(path, load=False)
+    ds = DataLoader(ds, batch_size=4, num_workers=4)
+    after_time = time.time()
+    execTime = after_time - prev_time
+    print("Dataloader Execution Time:", execTime)
 
     patients = []
     ids = []
