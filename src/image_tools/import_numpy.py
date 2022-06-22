@@ -19,7 +19,7 @@ from dcm_npy_loader.main import dcm_npy_loader
 def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
     prev_time = time.time()
     ds = dcm_npy_loader(path, load=False)
-    ds = DataLoader(ds)
+    ds = DataLoader(ds, num_workers=14)
     after_time = time.time()
     execTime = after_time - prev_time
     print("Dataloader Execution Time:", execTime)
