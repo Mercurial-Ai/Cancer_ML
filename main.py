@@ -1,3 +1,4 @@
 from src.ensemble import voting_ensemble
 
-en = voting_ensemble(load_models=False)
+if __name__ == '__main__':
+    en = voting_ensemble(load_models=False)

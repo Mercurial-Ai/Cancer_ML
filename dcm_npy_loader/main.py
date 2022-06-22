@@ -1,9 +1,10 @@
 import pickle
 import os
 import pydicom
+import torchio
 from torch.utils.data import Dataset
 import numpy as np
-import math
+import torch
 
 class dcm_npy_loader(Dataset):
 
@@ -17,19 +18,31 @@ class dcm_npy_loader(Dataset):
             for (dirpath, dirnames, filenames) in os.walk(img_dir):
                 load_paths += [os.path.join(dirpath, file) for file in filenames]
 
-            files = []
-            ids = []
+            ids = np.array([], dtype=np.int8)
+            img_list = []
             for path in load_paths:
                 try:
                     file = pydicom.dcmread(path)
                     if file.pixel_array.shape == self.shape:
-                        files.append(file)
                         id = file.PatientID
-                        ids.append(id)
+                        for c in id:
+                            if not c.isdigit():
+                                id = id.replace(c, '')
+
+                        ids = np.append(ids, id)
+
+                        subject_dict = {
+                            'one image': torchio.ScalarImage(path),
+                            'id':id,
+                            'SliceLocation':file.SliceLocation
+                        }
+                        subject = torchio.Subject(subject_dict)
+
+                        img_list.append(subject)
                 except:
                     print("Image " + path + " could not be loaded")
 
-            print("Files Collected")
+            slice_dataset = torchio.SubjectsDataset(img_list, load_getitem=True)
 
             # remove duplicates
             ids = list(set(ids))
@@ -39,47 +52,47 @@ class dcm_npy_loader(Dataset):
             all_sliceLocs = []
             for id in ids:
 
-                # skip files with no SliceLocation
                 slices = []
-                skipcount = 0
-                for f in files:
-                    if f.PatientID == id:
-                        if hasattr(f, 'SliceLocation'):
-                            slices.append(f)
-                        else:
-                            skipcount = skipcount + 1
+                for slice in slice_dataset:
+        
+                    p_id = int(slice['id'])
+                    image = slice['one image']
+
+                    if int(p_id) == int(id):
+                        slice = torchio.Subject({
+                            'one image': image,
+                            'id': p_id,
+                            'SliceLocation': slice['SliceLocation']})
+                            
+                        slices.append(slice)
+        
+                id_slices = torchio.SubjectsDataset(slices)
 
                 # ensure slices are in the correct order
-                slices = sorted(slices, key=lambda s: s.SliceLocation)
-
-                # pixel aspects, assuming all slices are the same
-                ps = slices[0].PixelSpacing
-                ss = slices[0].SliceThickness
-                ax_aspect = ps[1]/ps[0]
-                sag_aspect = ps[1]/ss
-                cor_aspect = ss/ps[0]
+                id_slices = sorted(id_slices, key=lambda s: s.SliceLocation)
 
                 # create 3D array
-                img_shape = list(slices[0].pixel_array.shape)
-                img_shape.append(len(slices))
+                img_shape = list(id_slices[0]['one image']['data'].shape)
+                img_shape.append(len(id_slices))
                 img3d = np.zeros(img_shape, dtype=np.int8)
 
-                p_id = slices[0].PatientID
+                p_id = id_slices[0]['id']
                 # get only numbers from patient id
-                p_id = [int(s) for s in p_id if s.isdigit()]
+                p_id = [int(s) for s in str(p_id) if s.isdigit()]
                 p_id = int(''.join([str(i) for i in p_id]))
 
                 slice_locs = []
 
                 # fill 3D array with the images from the files
-                for i, s in enumerate(slices):
-                    img2d = s.pixel_array
+                for i, s in enumerate(id_slices):
+                    img2d = s['one image']['data']
 
-                    slice_locs.append(s.get('SliceLocation'))
+                    slice_locs.append(s['SliceLocation'])
                     if list(img2d.shape) == img_shape[:2]:
                         img3d[:, :, i] = img2d
 
                 all_ids.append(p_id)
+                img3d = np.squeeze(img3d)
                 all_img3d.append(img3d)
                 all_sliceLocs.append(slice_locs)
 
