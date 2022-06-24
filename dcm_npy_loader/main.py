@@ -5,6 +5,7 @@ import torchio
 from torch.utils.data import Dataset
 import numpy as np
 import torch
+import time
 
 class dcm_npy_loader(Dataset):
 
@@ -20,6 +21,7 @@ class dcm_npy_loader(Dataset):
 
             ids = np.array([], dtype=np.int8)
             img_list = []
+            num_exceptions = 0
             for path in load_paths:
                 try:
                     file = pydicom.dcmread(path)
@@ -40,7 +42,12 @@ class dcm_npy_loader(Dataset):
 
                         img_list.append(subject)
                 except:
-                    print("Image " + path + " could not be loaded")
+                    if num_exceptions < 5:
+                        print("Image " + path + " could not be loaded")
+                    elif num_exceptions == 5:
+                        print("5 or more exceptions occured")
+                    
+                    num_exceptions = num_exceptions + 1
 
             slice_dataset = torchio.SubjectsDataset(img_list, load_getitem=True)
 
@@ -51,6 +58,7 @@ class dcm_npy_loader(Dataset):
             all_ids = []
             all_sliceLocs = []
             for id in ids:
+                prev_time_id = time.time()
 
                 slices = []
                 for slice in slice_dataset:
@@ -95,6 +103,11 @@ class dcm_npy_loader(Dataset):
                 img3d = np.squeeze(img3d)
                 all_img3d.append(img3d)
                 all_sliceLocs.append(slice_locs)
+
+                aft_time_id = time.time()
+                id_load_time = aft_time_id - prev_time_id
+
+                print("id: " + str(id) + " has completed " + "in " + str(round(id_load_time,0)) + " seconds!")
 
             self.data = [all_img3d, all_ids, all_sliceLocs]
 
