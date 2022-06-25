@@ -99,13 +99,10 @@ class dcm_npy_loader(Dataset):
                     if list(img2d.shape) == img_shape[:2]:
                         img3d[:, :, i] = img2d
 
-                b_append = time.time()
                 all_ids.append(p_id)
                 img3d = np.squeeze(img3d)
                 all_img3d.append(img3d)
                 all_sliceLocs.append(slice_locs)
-                a_append = time.time()
-                print("Time to append:", a_append - b_append)
 
                 aft_time_id = time.time()
                 id_load_time = aft_time_id - prev_time_id
