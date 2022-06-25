@@ -111,11 +111,11 @@ class dcm_npy_loader(Dataset):
 
             self.data = [all_img3d, all_ids, all_sliceLocs]
 
-            with open('data\\Duke-Breast-Cancer-MRI\\data', 'wb') as fp:
+            with open('data/Duke-Breast-Cancer-MRI/data', 'wb') as fp:
                 pickle.dump(self.data, fp)
         
         else:
-            with open('data\\Duke-Breast-Cancer-MRI\\data', 'rb') as fp:
+            with open('data/Duke-Breast-Cancer-MRI/data', 'rb') as fp:
                 self.data = pickle.load(fp)
 
     def __len__(self):
