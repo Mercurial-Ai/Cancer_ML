@@ -45,14 +45,13 @@ class dcm_npy_loader(Dataset):
                     if num_exceptions < 5:
                         print("Image " + path + " could not be loaded")
                     elif num_exceptions == 5:
-                        print("5 or more exceptions occured")
+                        print("More than 5 exceptions occured")
                     
                     num_exceptions = num_exceptions + 1
 
-            slice_dataset = torchio.SubjectsDataset(img_list, load_getitem=True)
+            img_list.sort(key=lambda s: int(s['id']))
 
-            # remove duplicates
-            ids = list(set(ids))
+            ids = set([int(s['id']) for s in img_list])
 
             all_img3d = []
             all_ids = []
@@ -61,19 +60,20 @@ class dcm_npy_loader(Dataset):
                 prev_time_id = time.time()
 
                 slices = []
-                for slice in slice_dataset:
-        
+                i = 0
+                for slice in img_list:
+
                     p_id = int(slice['id'])
-                    image = slice['one image']
 
                     if int(p_id) == int(id):
-                        slice = torchio.Subject({
-                            'one image': image,
-                            'id': p_id,
-                            'SliceLocation': slice['SliceLocation']})
                             
                         slices.append(slice)
-        
+
+                        # remove slices from dataset that have already been appended
+                        del img_list[i]
+
+                    i = i + 1
+
                 id_slices = torchio.SubjectsDataset(slices)
 
                 # ensure slices are in the correct order
@@ -82,7 +82,7 @@ class dcm_npy_loader(Dataset):
                 # create 3D array
                 img_shape = list(id_slices[0]['one image']['data'].shape)
                 img_shape.append(len(id_slices))
-                img3d = np.zeros(img_shape, dtype=np.int8)
+                img3d = np.empty(img_shape, dtype=np.int8)
 
                 p_id = id_slices[0]['id']
                 # get only numbers from patient id
@@ -99,10 +99,13 @@ class dcm_npy_loader(Dataset):
                     if list(img2d.shape) == img_shape[:2]:
                         img3d[:, :, i] = img2d
 
+                b_append = time.time()
                 all_ids.append(p_id)
                 img3d = np.squeeze(img3d)
                 all_img3d.append(img3d)
                 all_sliceLocs.append(slice_locs)
+                a_append = time.time()
+                print("Time to append:", a_append - b_append)
 
                 aft_time_id = time.time()
                 id_load_time = aft_time_id - prev_time_id

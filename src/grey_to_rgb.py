@@ -1,7 +1,6 @@
 import numpy as np
 
 def grey_to_rgb(img_array):
-    print("grey rgb img array:", img_array.shape)
     width = img_array.shape[-3]
     height = img_array.shape[-2]
     new_img_array = np.empty((img_array.shape[0], img_array.shape[1], width, height, 3), dtype=np.uint8)
