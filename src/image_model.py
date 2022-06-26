@@ -169,7 +169,7 @@ class image_model:
         if torch.cuda.is_available():
             result = tune.run(
                 tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
-                resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
+                resources_per_trial={"cpu":14, "gpu":gpus_per_trial},
                 config=config,
                 metric="loss",
                 mode="min",
@@ -179,7 +179,7 @@ class image_model:
         else:
             result = tune.run(
                 tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
-                resources_per_trial={"cpu":4},
+                resources_per_trial={"cpu":14},
                 config=config,
                 metric="loss",
                 mode="min",
