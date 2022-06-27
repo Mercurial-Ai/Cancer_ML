@@ -32,6 +32,9 @@ class image_clinical(nn.Module):
         self.clinical_track()
         self.image_track()
 
+        self.fc1_cat = nn.Linear(415, 26)
+        self.fc2_cat = nn.Linear(26, 1)
+
     def clinical_track(self):
         self.fc1 = nn.Linear(603, 50)
         self.fc2 = nn.Linear(50, 25)
@@ -53,9 +56,8 @@ class image_clinical(nn.Module):
         image_x = self.res(image_data)
 
         x = torch.cat([clinical_x, image_x], dim=1)
-        self.fc1_cat = nn.Linear(x.shape[-1], 26)
+        
         x = self.relu(self.fc1_cat(x))
-        self.fc2_cat = nn.Linear(26, 1)
         x = self.fc2_cat(x)
 
         return x
@@ -69,6 +71,7 @@ class image_clinical(nn.Module):
         epochs = config['epochs']
         batch_size = config['batch_size']
         lr = config['lr']
+        self.criterion = config['criterion']
         for epoch in range(int(epochs)):
             running_loss = 0.0
             for i in range((X_train[1].shape[0]-1)//batch_size + 1):
@@ -100,7 +103,6 @@ class image_clinical(nn.Module):
                 xb[1] = xb[1].type(torch.float)
                 pred = self(xb)
 
-                self.criterion = torch.nn.BCEWithLogitsLoss()
                 optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
                 yb = yb.flatten()
@@ -120,6 +122,8 @@ class image_clinical(nn.Module):
                 self.loss = running_loss
                 pred = pred.flatten()
                 pred = pred.astype(np.float)
+                print("yb:", yb)
+                print("pred:", pred)
                 try:
                     self.accuracy = accuracy_score(yb, pred)
                     self.f1_score = f1_m(yb, pred)
@@ -160,7 +164,8 @@ class image_model:
         config = {
             'epochs':tune.choice([50, 100, 150]),
             'batch_size':tune.choice([8, 16, 32, 64]),
-            'lr':tune.loguniform(1e-3, 1e-1)
+            'lr':tune.loguniform(1e-3, 1e-1),
+            'criterion':tune.choice([torch.nn.L1Loss(), torch.nn.BCEWithLogitsLoss(), torch.nn.MSELoss()])
         }      
         scheduler = ASHAScheduler(
             max_t=max_num_epochs,

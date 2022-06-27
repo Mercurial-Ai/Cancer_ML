@@ -57,17 +57,18 @@ class voting_ensemble:
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
         for target in duke_dependent:
-            print("BEGINNING", target)
-            image_clinical = cancer_ml("duke", target, model="image_clinical")
-            image_only = cancer_ml("duke", target, model="cnn")
+            if target != 'Surgery' or target != 'Days to Surgery (from the date of diagnosis)':
+                print("BEGINNING", target)
+                image_clinical = cancer_ml("duke", target, model="image_clinical")
+                image_only = cancer_ml("duke", target, model="cnn")
 
-            if not load_models:
+                if not load_models:
 
-                image_clinical.run_model()
-                image_clinical.test_model()
+                    image_clinical.run_model()
+                    image_clinical.test_model()
 
-                image_only.run_model()
-                image_only.test_model()
+                    image_only.run_model()
+                    image_only.test_model()
 
         self.image_only_models = self.load_models('data/saved_models/image_only')
 

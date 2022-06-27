@@ -36,6 +36,7 @@ class torch_cnn(nn.Module):
         epochs = config['epochs']
         batch_size = config['batch_size']
         lr = config['lr']
+        criterion = config['criterion']
         for epoch in range(int(epochs)):
             running_loss = 0.0
             for i in range((X_train.shape[0]-1)//batch_size + 1):
@@ -55,7 +56,6 @@ class torch_cnn(nn.Module):
                 xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
                 pred = self(xb)
 
-                criterion = torch.nn.BCEWithLogitsLoss()
                 optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
                 pred = pred.flatten()
@@ -117,7 +117,8 @@ class cnn:
         config = {
             'epochs':tune.choice([50, 100, 150]),
             'batch_size':tune.choice([8, 16, 32, 64]),
-            'lr':tune.loguniform(1e-4, 1e-1)
+            'lr':tune.loguniform(1e-4, 1e-1),
+            'criterion':tune.choice([torch.nn.L1Loss(), torch.nn.BCEWithLogitsLoss(), torch.nn.MSELoss()])
         }
         scheduler = ASHAScheduler(
             max_t=max_num_epochs,
