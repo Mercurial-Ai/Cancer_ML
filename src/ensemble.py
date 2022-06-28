@@ -51,13 +51,17 @@ class voting_ensemble:
                             'Lymphadenopathy or Suspicious Nodes', 'Skin/Nipple Invovlement', 'Pec/Chest Involvement', 'Age at mammo (days)', 'Breast Density', 'Shape', 'Margin', 'Architectural distortion', 'Mass Density', 'Calcifications', 'Tumor Size (cm)', 'Shape.1', 'Margin.1', 'Tumor Size (cm).1', 'Echogenicity', 'Solid'
                             'Posterior acoustic shadowing', 'Known Ovarian Status', 'Number of Ovaries In Situ', ]
 
-        duke_dependent = ['Surgery', 'Days to Surgery (from the date of diagnosis)', 'Definitive Surgery Type', 'Clinical Response, Evaluated Through Imaging ', 'Pathologic Response to Neoadjuvant Therapy', 'Days to local recurrence (from the date of diagnosis) ', 'Days to distant recurrence(from the date of diagnosis) ', 'Days to death (from the date of diagnosis) ',
-                            'Days to last local recurrence free assessment (from the date of diagnosis) ', 'Days to last distant recurrence free assemssment(from the date of diagnosis) ', 'Neoadjuvant Chemotherapy', 'Adjuvant Chemotherapy', 'Neoadjuvant Endocrine Therapy Medications ',
+        duke_dependent_class = ['Surgery', 'Definitive Surgery Type', 'Clinical Response, Evaluated Through Imaging ', 'Pathologic Response to Neoadjuvant Therapy',
+                            'Neoadjuvant Chemotherapy', 'Adjuvant Chemotherapy', 'Neoadjuvant Endocrine Therapy Medications ',
                             'Adjuvant Endocrine Therapy Medications ', 'Therapeutic or Prophylactic Oophorectomy as part of Endocrine Therapy ', 'Neoadjuvant Anti-Her2 Neu Therapy', 'Adjuvant Anti-Her2 Neu Therapy ', 'Received Neoadjuvant Therapy or Not', 'Pathologic response to Neoadjuvant therapy: Pathologic stage (T) following neoadjuvant therapy ',
                             'Pathologic response to Neoadjuvant therapy:  Pathologic stage (N) following neoadjuvant therapy', 'Pathologic response to Neoadjuvant therapy:  Pathologic stage (M) following neoadjuvant therapy ', 'Overall Near-complete Response:  Stricter Definition', 'Overall Near-complete Response:  Looser Definition', 'Near-complete Response (Graded Measure)']
 
-        for target in duke_dependent:
-            if target != 'Surgery' or target != 'Days to Surgery (from the date of diagnosis)':
+        duke_dependent_reg = ['Days to Surgery (from the date of diagnosis)', 'Days to local recurrence (from the date of diagnosis) ', 'Days to distant recurrence(from the date of diagnosis) ', 'Days to death (from the date of diagnosis) ', 'Days to last local recurrence free assessment (from the date of diagnosis) ', 'Days to last distant recurrence free assemssment(from the date of diagnosis) ']
+
+        target_skips = ['Surgery']
+
+        for target in duke_dependent_class:
+            if target not in target_skips:
                 print("BEGINNING", target)
                 image_clinical = cancer_ml("duke", target, model="image_clinical")
                 image_only = cancer_ml("duke", target, model="cnn")
@@ -194,10 +198,10 @@ class voting_ensemble:
         accuracy, f1, recall, balanced_acc = self.eval(duke_image_predictions, duke_image_true)
 
         if len(self.ensembled_prediction[0].shape) != 1:
-            accuracy = dict(zip(duke_dependent, accuracy))
-            f1 = dict(zip(duke_dependent, f1))
-            recall = dict(zip(duke_dependent, recall))
-            balanced_acc = dict(zip(duke_dependent, balanced_acc))
+            accuracy = dict(zip(duke_dependent_class, accuracy))
+            f1 = dict(zip(duke_dependent_class, f1))
+            recall = dict(zip(duke_dependent_class, recall))
+            balanced_acc = dict(zip(duke_dependent_class, balanced_acc))
 
         print("Accuracy:", accuracy)
         print("F1:", float(f1))
