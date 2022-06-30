@@ -224,14 +224,11 @@ class image_model:
                 arr = torch.from_numpy(arr).type(torch.float)
                 X_test[i] = arr
             i = i + 1
-        self.criterion = torch.nn.BCEWithLogitsLoss()
+        self.criterion = torch.nn.CrossEntropyLoss()
         y_test = torch.from_numpy(np.array(y_test)).type(torch.float)
         with torch.no_grad():
             y_pred = self.model(X_test)
-            y_pred = y_pred.round()
             confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
-            y_pred = y_pred.flatten()
-            y_test = y_test.flatten()
             test_loss = self.criterion(y_pred, y_test)
             accuracy = accuracy_score(y_test, y_pred)
             f1_score = f1_m(y_test, y_pred)

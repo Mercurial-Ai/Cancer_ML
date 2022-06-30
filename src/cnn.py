@@ -168,10 +168,14 @@ class cnn:
         return self.model
 
     def test_model(self, X_test, y_test):
-        self.criterion = torch.nn.BCEWithLogitsLoss()
-        X_test = np.reshape(X_test, (X_test.shape[0], 1, 256, 256))
-        X_test = torch.from_numpy(X_test).type(torch.float)
-        y_test = torch.from_numpy(y_test).type(torch.float)
+        self.criterion = torch.nn.CrossEntropyLoss()
+        X_test = torch.unsqueeze(X_test, -1)
+        X_test = grey_to_rgb(X_test)/255
+        # reshape to have 3 channels
+        X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[-1], X_test.shape[1], X_test.shape[2], X_test.shape[3]))
+        if type(X_test) == np.ndarray:
+            X_test = torch.from_numpy(X_test).type(torch.float)
+        y_test = torch.from_numpy(np.array(y_test))
         with torch.no_grad():
             y_pred = self.model(X_test)
             confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
