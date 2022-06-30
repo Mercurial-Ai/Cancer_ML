@@ -17,8 +17,9 @@ import torchvision.models as models
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class torch_cnn(nn.Module):
-    def __init__(self):
+    def __init__(self, num_classes):
         super(torch_cnn, self).__init__()
+        self.num_classes = num_classes
         self.to(device)
         self.res = None
 
@@ -36,7 +37,7 @@ class torch_cnn(nn.Module):
         epochs = config['epochs']
         batch_size = config['batch_size']
         lr = config['lr']
-        criterion = config['criterion']
+        criterion = torch.nn.CrossEntropyLoss()
         for epoch in range(int(epochs)):
             running_loss = 0.0
             for i in range((X_train.shape[0]-1)//batch_size + 1):
@@ -58,8 +59,6 @@ class torch_cnn(nn.Module):
 
                 optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
-                pred = pred.flatten()
-                yb = yb.flatten()
                 loss = criterion(pred, yb)
         
                 loss.backward()
@@ -70,22 +69,13 @@ class torch_cnn(nn.Module):
 
                 # print stats
                 running_loss += loss.item()
-                pred = pred.detach().numpy()
-                yb = np.asarray(yb).astype(np.float)
+                pred = pred.detach()
                 self.loss = running_loss
-                pred = pred.flatten()
-                pred = pred.astype(np.float)
-                try:
-                    self.accuracy = accuracy_score(yb, pred)
-                    self.f1_score = f1_m(yb, pred)
-                    self.recall = recall_m(yb, pred)
-                    self.balanced_acc = balanced_accuracy_score(yb, pred)
-                except:
-                    pred = pred.round()
-                    self.accuracy = accuracy_score(yb, pred)
-                    self.f1_score = f1_m(yb, pred)
-                    self.recall = recall_m(yb, pred)
-                    self.balanced_acc = balanced_accuracy_score(yb, pred)
+                pred = np.argmax(pred, axis=1)
+                self.accuracy = accuracy_score(yb, pred)
+                self.f1_score = f1_m(yb, pred)
+                self.recall = recall_m(yb, pred)
+                self.balanced_acc = balanced_accuracy_score(yb, pred)
                 if i % 2000 == 1999: # print every 2000 mini-batches
                     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 tune.report(loss=running_loss, accuracy=self.accuracy)
@@ -102,6 +92,27 @@ class cnn:
         self.res = models.video.r3d_18(pretrained=False)
 
     def main(self, X_train, y_train, num_samples=10, max_num_epochs=10, gpus_per_trial=2):
+        X_train = X_train.type(torch.int8)
+
+        # get number of classes in y
+        y = []
+        for i in y_train:
+            i = int(i)
+            y.append(i)
+
+        y = list(set(y))
+        num_classes = len(y)
+
+        # make classes start from 0
+        class_dict = dict()
+        for i in range(num_classes):
+            class_dict[y[i]] = i
+
+        i = 0
+        for val in y_train:
+            new_val = class_dict[int(val)]
+            y_train[i] = new_val
+            i = i + 1
 
         if len(y_train.shape) > 1:
             self.multi_target = True
@@ -111,14 +122,13 @@ class cnn:
         id_X_train = ray.put(X_train)
         id_y_train = ray.put(y_train)
 
-        self.model = torch_cnn()
+        self.model = torch_cnn(num_classes)
         self.model.to(device)
 
         config = {
             'epochs':tune.choice([50, 100, 150]),
             'batch_size':tune.choice([8, 16, 32, 64]),
             'lr':tune.loguniform(1e-4, 1e-1),
-            'criterion':tune.choice([torch.nn.L1Loss(), torch.nn.BCEWithLogitsLoss(), torch.nn.MSELoss()])
         }
         scheduler = ASHAScheduler(
             max_t=max_num_epochs,
@@ -165,8 +175,6 @@ class cnn:
         with torch.no_grad():
             y_pred = self.model(X_test)
             confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
-            y_pred = y_pred.flatten()
-            y_pred = torch.abs(torch.round(y_pred))
             test_loss = self.criterion(y_pred, y_test)
             accuracy = accuracy_score(y_test, y_pred)
             f1_score = f1_m(y_test, y_pred)
@@ -182,7 +190,6 @@ class cnn:
             self.model.res = self.res
             self.model.load_state_dict(torch.load("torch_cnn_model.pth"), strict=False)
         else:
-            print("cnn get model:", X_train.shape)
             self.model = self.main(X_train, y_train)
 
         return self.model

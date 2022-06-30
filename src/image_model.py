@@ -25,15 +25,17 @@ from ray import tune
 device = torch.device('cpu')
 
 class image_clinical(nn.Module):
-    def __init__(self):
+    def __init__(self, num_classes):
         super().__init__()
         self.to(device)
+        print("Num Classes:", num_classes)
+        self.num_classes = num_classes
         self.relu = nn.ReLU()
         self.clinical_track()
         self.image_track()
 
         self.fc1_cat = nn.Linear(415, 26)
-        self.fc2_cat = nn.Linear(26, 1)
+        self.fc2_cat = nn.Linear(26, num_classes)
 
     def clinical_track(self):
         self.fc1 = nn.Linear(603, 50)
@@ -71,7 +73,7 @@ class image_clinical(nn.Module):
         epochs = config['epochs']
         batch_size = config['batch_size']
         lr = config['lr']
-        self.criterion = config['criterion']
+        self.criterion = torch.nn.CrossEntropyLoss()
         for epoch in range(int(epochs)):
             running_loss = 0.0
             for i in range((X_train[1].shape[0]-1)//batch_size + 1):
@@ -92,7 +94,7 @@ class image_clinical(nn.Module):
 
                 xb = [X_train[0][start_i:end_i].to(device), X_train[1][start_i:end_i].to(device)]
 
-                yb = y_train[start_i:end_i].type(torch.float).to(device)
+                yb = y_train[start_i:end_i].to(device)
                 yb = Variable(yb)
 
                 xb[0] = torch.unsqueeze(xb[0].type(torch.float), -1)
@@ -105,8 +107,6 @@ class image_clinical(nn.Module):
 
                 optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
-                yb = yb.flatten()
-                pred = pred.flatten()
                 loss = self.criterion(pred, yb)
         
                 loss.backward()
@@ -117,24 +117,13 @@ class image_clinical(nn.Module):
 
                 # print stats
                 running_loss += loss.item()
-                pred = pred.detach().numpy()
-                yb = np.asarray(yb).astype(np.float)
+                pred = pred.detach()
                 self.loss = running_loss
-                pred = pred.flatten()
-                pred = pred.astype(np.float)
-                print("yb:", yb)
-                print("pred:", pred)
-                try:
-                    self.accuracy = accuracy_score(yb, pred)
-                    self.f1_score = f1_m(yb, pred)
-                    self.recall = recall_m(yb, pred)
-                    self.balanced_acc = balanced_accuracy_score(yb, pred)
-                except:
-                    pred = pred.round()
-                    self.accuracy = accuracy_score(yb, pred)
-                    self.f1_score = f1_m(yb, pred)
-                    self.recall = recall_m(yb, pred)
-                    self.balanced_acc = balanced_accuracy_score(yb, pred)
+                pred = np.argmax(pred, axis=1)
+                self.accuracy = accuracy_score(yb, pred)
+                self.f1_score = f1_m(yb, pred)
+                self.recall = recall_m(yb, pred)
+                self.balanced_acc = balanced_accuracy_score(yb, pred)
                 if i % 2000 == 1999: # print every 2000 mini-batches
                     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
                 tune.report(loss=running_loss, accuracy=self.accuracy)
@@ -149,6 +138,25 @@ class image_model:
         self.res = models.video.r3d_18(pretrained=False)
 
     def main(self, X_train, y_train, num_samples=10, max_num_epochs=10, gpus_per_trial=2):
+        # get number of classes in y
+        y = []
+        for i in y_train:
+            i = int(i)
+            y.append(i)
+        
+        y = list(set(y))
+        num_classes = len(y)
+
+        # make classes start from 0
+        class_dict = dict()
+        for i in range(num_classes):
+            class_dict[y[i]] = i
+
+        i = 0
+        for val in y_train:
+            new_val = class_dict[int(val)]
+            y_train[i] = new_val
+            i = i + 1
 
         if len(y_train.shape) > 1:
             self.multi_target = True
@@ -158,14 +166,13 @@ class image_model:
         id_X_train = ray.put(X_train)
         id_y_train = ray.put(y_train)
 
-        self.model = image_clinical()
+        self.model = image_clinical(num_classes)
         self.model.to(device)
 
         config = {
             'epochs':tune.choice([50, 100, 150]),
             'batch_size':tune.choice([8, 16, 32, 64]),
-            'lr':tune.loguniform(1e-3, 1e-1),
-            'criterion':tune.choice([torch.nn.L1Loss(), torch.nn.BCEWithLogitsLoss(), torch.nn.MSELoss()])
+            'lr':tune.loguniform(1e-4, 1e-1)
         }      
         scheduler = ASHAScheduler(
             max_t=max_num_epochs,
