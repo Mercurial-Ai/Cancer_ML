@@ -41,12 +41,13 @@ def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
         slice_locations_min.append(mi)
         slice_locations_max.append(ma)
 
-    # subinterval length (mm)
-    subinterval_length = 7
+    # number of intervals to collect for each patient
+    interval_num = 20
+
     interval_nums = []
     all_intervals = []
     for ma, mi in zip(slice_locations_max, slice_locations_min):
-        interval_num = int(round((ma - mi)/subinterval_length, 0))
+        subinterval_length = int(round((ma-mi)/interval_num, 0))
         interval_nums.append(interval_num)
 
         interval_num = min(interval_nums)
