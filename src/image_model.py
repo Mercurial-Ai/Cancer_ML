@@ -183,7 +183,7 @@ class image_model:
                 tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
                 resources_per_trial={"cpu":14, "gpu":gpus_per_trial},
                 config=config,
-                metric="loss",
+                metric="accuracy",
                 mode="min",
                 num_samples=num_samples,
                 scheduler=scheduler
@@ -193,7 +193,7 @@ class image_model:
                 tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
                 resources_per_trial={"cpu":14},
                 config=config,
-                metric="loss",
+                metric="accuracy",
                 mode="min",
                 num_samples=num_samples,
                 scheduler=scheduler
