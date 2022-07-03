@@ -69,7 +69,7 @@ class cancer_ml:
     def collect_duke(self):
 
         if self.model !="clinical_only":
-            self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", "data/Duke-Breast-Cancer-MRI/Imaging_Features.csv", "data/Duke-Breast-Cancer-MRI/Duke-Breast-Cancer-MRI", self.target)
+            self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", "data/Duke-Breast-Cancer-MRI/Imaging_Features.csv", "/scratch/data/Duke-Breast-Cancer-MRI/Duke-Breast-Cancer-MRI", self.target)
         else: 
             self.data_pipe = data_pipeline("data/Duke-Breast-Cancer-MRI/Clinical and Other Features (edited).csv", None, None, self.target)
 

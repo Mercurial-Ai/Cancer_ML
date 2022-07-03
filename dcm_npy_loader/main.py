@@ -96,8 +96,8 @@ class dcm_npy_loader(Dataset):
                     img2d = s['one image']['data']
 
                     slice_locs.append(s['SliceLocation'])
-                    if list(img2d.shape) == img_shape[:2]:
-                        img3d[:, :, i] = img2d
+                    if list(img2d.shape) == img_shape[:4]:
+                        img3d[:, :, :, :, i] = img2d
 
                 all_ids.append(p_id)
                 img3d = np.squeeze(img3d)

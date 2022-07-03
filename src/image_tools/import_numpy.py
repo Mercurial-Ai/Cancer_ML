@@ -7,7 +7,6 @@ from trimesh import Trimesh
 from trimesh import voxel
 from trimesh.voxel import creation
 import os
-import matplotlib.pyplot as plt
 import time
 from torch.utils.data import DataLoader
 
@@ -16,7 +15,7 @@ from src.image_tools.remove_ids import remove_ids
 from dcm_npy_loader.main import dcm_npy_loader
 
 def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
-    ds = dcm_npy_loader(path, load=True)
+    ds = dcm_npy_loader(path, load=False)
 
     patients = []
     ids = []
@@ -31,6 +30,7 @@ def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
         p_id = ids[i]
         if not p_id in clinical_ids:
             del patients[i]
+
         i = i + 1
 
     slice_locations_min = []
@@ -42,7 +42,7 @@ def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
         slice_locations_max.append(ma)
 
     # number of intervals to collect for each patient
-    interval_num = 20
+    interval_num = 100
 
     interval_nums = []
     all_intervals = []
@@ -65,9 +65,12 @@ def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
     all_interval_imgs = np.empty(shape=(len(ids), len(intervals), 512, 512), dtype=np.float16)
 
     # reshape all patients into (num_slices, res1, res2)
-    for i, patient in enumerate(patients):
+    new_patients = []
+    for patient in patients:
         patient = np.reshape(patient, (patient.shape[-1], patient.shape[-2], patient.shape[-3]))
-        patients[i] = patient
+        new_patients.append(patient)
+
+    patients = new_patients
 
     m = 0
     for p_id in ids:
@@ -89,7 +92,6 @@ def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
                             slice_location=sliceLocs[j][k]
 
                             if slice_location < high and slice_location > low:
-            
                                 interval_imgs[i] = s
 
                                 # break after adding one image from the interval
@@ -98,9 +100,6 @@ def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
                             k = k + 1
                     
                     j = j + 1
-
-                if len(np.unique(interval_imgs)) > 1:
-                    all_interval_imgs[m] = interval_imgs
 
         m = m + 1
 
