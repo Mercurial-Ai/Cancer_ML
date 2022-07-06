@@ -58,7 +58,7 @@ class voting_ensemble:
 
         duke_dependent_reg = ['Days to Surgery (from the date of diagnosis)', 'Days to local recurrence (from the date of diagnosis) ', 'Days to distant recurrence(from the date of diagnosis) ', 'Days to death (from the date of diagnosis) ', 'Days to last local recurrence free assessment (from the date of diagnosis) ', 'Days to last distant recurrence free assemssment(from the date of diagnosis) ']
 
-        target_skips = ['Surgery']
+        target_skips = []
 
         for target in duke_dependent_class:
             if target not in target_skips:
