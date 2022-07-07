@@ -169,6 +169,8 @@ class image_model:
         self.model = image_clinical(num_classes)
         self.model.to(device)
 
+        '''
+
         config = {
             'epochs':tune.choice([50, 100, 150]),
             'batch_size':tune.choice([8, 16, 20]),
@@ -206,9 +208,17 @@ class image_model:
         print("Best trial final validation accuracy: {}".format(
             best_trial.last_result['accuracy']))
 
-        self.model.train_func(config=best_trial.config, data=[id_X_train, id_y_train, self.res])
+        '''
 
-        torch.save(self.model.state_dict(), "torch_image_clinical_model.pth")
+        config = {
+            'epochs':50,
+            'batch_size':20,
+            'lr':0.0297877
+        }
+
+        self.model.train_func(config=config, data=[id_X_train, id_y_train, self.res])
+
+        torch.save(self.model.state_dict(), "torch_image_clinical_model_surgery.pth")
 
         return self.model
 
