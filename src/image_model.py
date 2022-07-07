@@ -252,7 +252,7 @@ class image_model:
         if self.load_model:
             self.model = image_clinical()
             self.model.res = self.res
-            self.model.load_state_dict(torch.load("torch_image_clinical_model.pth"), strict=False)
+            self.model.load_state_dict(torch.load("torch_image_clinical_model_surgery.pth"), strict=False)
         else:
             self.model = self.main(X_train, y_train)
 
