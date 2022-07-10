@@ -14,7 +14,7 @@ from src.image_tools.filter_ids import filter_ids
 from src.image_tools.remove_ids import remove_ids
 from dcm_npy_loader.main import dcm_npy_loader
 
-def import_numpy_2d(path, clinical_ids, crop_size=(512, 512)):
+def import_numpy_2d(path, clinical_ids):
     ds = dcm_npy_loader(path, load=True)
 
     patients = []
