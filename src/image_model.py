@@ -22,7 +22,7 @@ import numpy as np
 import ray
 from ray import tune
 
-device = torch.device('cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class image_clinical(nn.Module):
     def __init__(self, num_classes):
