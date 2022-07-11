@@ -22,9 +22,11 @@ class torch_cnn(nn.Module):
         self.num_classes = num_classes
         self.to(device)
         self.res = None
+        self.fc1 = nn.Linear(400, 1)
 
     def forward(self, x):
         x = self.res(x)
+        x = self.fc1(x)
 
         return x
 
