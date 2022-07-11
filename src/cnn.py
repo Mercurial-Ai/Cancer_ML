@@ -91,6 +91,7 @@ class cnn:
     def __init__(self, load_model=True):
         self.load_model=load_model
         self.res = models.video.r3d_18(pretrained=False)
+        self.res.to(device)
 
     def main(self, X_train, y_train, num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         X_train = X_train.type(torch.int8)
@@ -139,7 +140,7 @@ class cnn:
         if torch.cuda.is_available():
             result = tune.run(
                 tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
-                resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
+                resources_per_trial={"cpu":14, "gpu":gpus_per_trial},
                 config=config,
                 metric="loss",
                 mode="min",
@@ -149,7 +150,7 @@ class cnn:
         else:
             result = tune.run(
                 tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
-                resources_per_trial={"cpu":4},
+                resources_per_trial={"cpu":14},
                 config=config,
                 metric="loss",
                 mode="min",
