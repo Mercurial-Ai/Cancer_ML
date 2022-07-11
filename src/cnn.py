@@ -55,7 +55,6 @@ class torch_cnn(nn.Module):
                 xb = grey_to_rgb(xb)
                 xb = xb/255
 
-                xb = torch.from_numpy(xb)
                 xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
                 pred = self(xb)
 
@@ -140,7 +139,7 @@ class cnn:
         if torch.cuda.is_available():
             result = tune.run(
                 tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
-                resources_per_trial={"cpu":14, "gpu":gpus_per_trial},
+                resources_per_trial={"cpu":4, "gpu":gpus_per_trial},
                 config=config,
                 metric="loss",
                 mode="min",
@@ -150,7 +149,7 @@ class cnn:
         else:
             result = tune.run(
                 tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
-                resources_per_trial={"cpu":14},
+                resources_per_trial={"cpu":4},
                 config=config,
                 metric="loss",
                 mode="min",
