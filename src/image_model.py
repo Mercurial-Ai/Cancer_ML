@@ -67,7 +67,7 @@ class image_clinical(nn.Module):
     def train_func(self, config, data):
         id_X_train = data[0]
         id_y_train = data[1]
-        self.res = data[2]
+        self.res = data[2].to(device)
         X_train = ray.get(id_X_train)
         y_train = ray.get(id_y_train)
         epochs = config['epochs']
