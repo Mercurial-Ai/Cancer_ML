@@ -62,7 +62,7 @@ class data_pipeline:
 
             self.train_ids, self.test_ids = train_test_split(self.image_ids, test_size=0.2, random_state=84)
 
-            self.test_ids, self.val_ids = train_test_split(self.test_ids, test_size=0.2, random_state=84)
+            self.test_ids, self.val_ids = train_test_split(self.test_ids, test_size=0.5, random_state=84)
 
             # get patients in clinical data with ids that correspond with image ids
             self.filtered_df = self.df.loc[self.image_ids]

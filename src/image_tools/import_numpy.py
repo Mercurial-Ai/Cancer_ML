@@ -42,7 +42,7 @@ def import_numpy_2d(path, clinical_ids):
         slice_locations_max.append(ma)
 
     # number of intervals to collect for each patient
-    interval_num = 100
+    interval_num = 20
 
     interval_nums = []
     all_intervals = []
