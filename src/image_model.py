@@ -100,8 +100,7 @@ class image_clinical(nn.Module):
                 xb[0] = torch.unsqueeze(xb[0].type(torch.float), -1)
                 xb[0] = grey_to_rgb(xb[0])/255
                 # reshape to have 3 channels
-                xb[0] = torch.reshape(xb[0], (xb[0].shape[0], xb[0].shape[-1], xb[0].shape[1], xb[0].shape[2], xb[0].shape[3]))
-                xb[0] = torch.from_numpy(xb[0]).type(torch.float)
+                xb[0] = torch.reshape(xb[0], (xb[0].shape[0], xb[0].shape[-1], xb[0].shape[1], xb[0].shape[2], xb[0].shape[3])).type(torch.float)
                 xb[1] = xb[1].type(torch.float)
                 pred = self(xb)
 
