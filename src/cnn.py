@@ -72,7 +72,7 @@ class torch_cnn(nn.Module):
                 running_loss += loss.item()
                 pred = pred.detach()
                 self.loss = running_loss
-                pred = np.argmax(pred, axis=1)
+                pred = torch.argmax(pred, axis=1)
                 self.accuracy = accuracy_score(yb, pred)
                 self.f1_score = f1_m(yb, pred)
                 self.recall = recall_m(yb, pred)
@@ -174,7 +174,7 @@ class cnn:
         X_test = torch.unsqueeze(X_test, -1)
         X_test = grey_to_rgb(X_test)/255
         # reshape to have 3 channels
-        X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[-1], X_test.shape[1], X_test.shape[2], X_test.shape[3]))
+        X_test = torch.reshape(X_test, (X_test.shape[0], X_test.shape[-1], X_test.shape[1], X_test.shape[2], X_test.shape[3]))
         if type(X_test) == np.ndarray:
             X_test = torch.from_numpy(X_test).type(torch.float)
         y_test = torch.from_numpy(np.array(y_test))
