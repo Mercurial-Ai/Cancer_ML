@@ -73,6 +73,8 @@ class torch_cnn(nn.Module):
                 pred = pred.detach()
                 self.loss = running_loss
                 pred = torch.argmax(pred, axis=1)
+                yb = yb.cpu()
+                pred = pred.cpu()
                 self.accuracy = accuracy_score(yb, pred)
                 self.f1_score = f1_m(yb, pred)
                 self.recall = recall_m(yb, pred)
