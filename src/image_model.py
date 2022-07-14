@@ -128,6 +128,8 @@ class image_clinical(nn.Module):
                 tune.report(loss=running_loss, accuracy=self.accuracy)
                 running_loss = 0.0
 
+        torch.cuda.empty_cache()
+
         print("Finished Training")
 
 class image_model:
