@@ -84,6 +84,8 @@ class torch_cnn(nn.Module):
                 tune.report(loss=running_loss, accuracy=self.accuracy)
                 running_loss = 0.0
 
+            torch.cuda.empty_cache()
+
         print("Finished Training")
 
         torch.save(self.state_dict(), "torch_cnn_model.pth")
