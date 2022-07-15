@@ -119,6 +119,8 @@ class image_clinical(nn.Module):
                 pred = pred.detach()
                 self.loss = running_loss
                 pred = torch.argmax(pred, axis=1)
+                pred = pred.cpu().detach()
+                yb = yb.cpu().detach()
                 self.accuracy = accuracy_score(yb, pred)
                 self.f1_score = f1_m(yb, pred)
                 self.recall = recall_m(yb, pred)
