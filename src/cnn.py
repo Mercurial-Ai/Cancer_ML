@@ -132,6 +132,7 @@ class cnn:
         self.model = torch_cnn(num_classes)
         self.model.to(device)
 
+        torch.distributed.init_process_group(backend='nccl', world_size=4, init_method='...')
         self.model = torch.nn.parallel.DistributedDataParallel(self.model)
 
         config = {
