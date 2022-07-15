@@ -56,7 +56,9 @@ class torch_cnn(nn.Module):
                 xb = xb/255
 
                 xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
-                pred = self(xb)
+
+                net = torch.nn.DataParallel(self)
+                pred = net(xb)
 
                 optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
@@ -129,7 +131,6 @@ class cnn:
         id_y_train = ray.put(y_train)
 
         self.model = torch_cnn(num_classes)
-        self.model.to(device)
 
         config = {
             'epochs':tune.choice([50, 100, 150]),
