@@ -130,10 +130,11 @@ class cnn:
         id_y_train = ray.put(y_train)
 
         self.model = torch_cnn(num_classes)
-        self.model.to(device)
+        if torch.cuda.device_count() > 1:
+            print("Using ", torch.cuda.device_count(), "gpus!")
+            self.model = nn.DataParallel(self.model)
 
-        torch.distributed.init_process_group(backend='nccl', world_size=4, init_method='...')
-        self.model = torch.nn.parallel.DistributedDataParallel(self.model)
+        self.model = self.model.to(device)
 
         config = {
             'epochs':tune.choice([50, 100, 150]),
