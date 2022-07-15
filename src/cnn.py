@@ -17,10 +17,10 @@ import torchvision.models as models
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class torch_cnn(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, res):
         super(torch_cnn, self).__init__()
         self.num_classes = num_classes
-        self.res = None
+        self.res = res
         self.fc1 = nn.Linear(400, self.num_classes)
 
     def forward(self, x):
@@ -29,71 +29,69 @@ class torch_cnn(nn.Module):
 
         return x
 
-    def train_func(self, config, data):
-        id_X_train = data[0]
-        id_y_train = data[1]
-        self.res = data[2]
-        X_train = ray.get(id_X_train)
-        y_train = ray.get(id_y_train)
-        epochs = config['epochs']
-        batch_size = config['batch_size']
-        lr = config['lr']
-        criterion = torch.nn.CrossEntropyLoss()
-        for epoch in range(int(epochs)):
+def train_func(model, config, data):
+    id_X_train = data[0]
+    id_y_train = data[1]
+    X_train = ray.get(id_X_train)
+    y_train = ray.get(id_y_train)
+    epochs = config['epochs']
+    batch_size = config['batch_size']
+    lr = config['lr']
+    criterion = torch.nn.CrossEntropyLoss()
+    for epoch in range(int(epochs)):
+        running_loss = 0.0
+        for i in range((X_train.shape[0]-1)//batch_size + 1):
+            start_i = i*batch_size
+            end_i = start_i+batch_size
+
+            xb = X_train[start_i:end_i]
+            yb = y_train[start_i:end_i]
+
+            xb = grey_to_rgb(xb)
+            xb = xb/255
+
+            xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
+
+            net = torch.nn.DataParallel(model)
+            pred = net(xb)
+
+            optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+            loss = criterion(pred, yb)
+    
+            loss.backward()
+            optimizer.step()
+
+            # zero the parameter gradients
+            optimizer.zero_grad()
+
+            # print stats
+            running_loss += loss.item()
+            pred = pred.detach()
+            loss = running_loss
+            pred = torch.argmax(pred, axis=1)
+            yb = yb.cpu()
+            pred = pred.cpu()
+            accuracy = accuracy_score(yb, pred)
+            f1_score = f1_m(yb, pred)
+            recall = recall_m(yb, pred)
+            balanced_acc = balanced_accuracy_score(yb, pred)
+            if i % 2000 == 1999: # print every 2000 mini-batches
+                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %accuracy, 'F1: %.4f' %f1_score, 'Recall: %.4f' %recall, 'Balanced Accuracy: %.4f' %balanced_acc)
+            tune.report(loss=running_loss, accuracy=accuracy)
             running_loss = 0.0
-            for i in range((X_train.shape[0]-1)//batch_size + 1):
-                start_i = i*batch_size
-                end_i = start_i+batch_size
 
-                xb = X_train[start_i:end_i]
-                yb = y_train[start_i:end_i]
+        torch.cuda.empty_cache()
 
-                xb = grey_to_rgb(xb)
-                xb = xb/255
+    print("Finished Training")
 
-                xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
-
-                net = torch.nn.DataParallel(self)
-                pred = net(xb)
-
-                optimizer = torch.optim.Adam(self.parameters(), lr=lr)
-
-                loss = criterion(pred, yb)
-        
-                loss.backward()
-                optimizer.step()
-
-                # zero the parameter gradients
-                optimizer.zero_grad()
-
-                # print stats
-                running_loss += loss.item()
-                pred = pred.detach()
-                self.loss = running_loss
-                pred = torch.argmax(pred, axis=1)
-                yb = yb.cpu()
-                pred = pred.cpu()
-                self.accuracy = accuracy_score(yb, pred)
-                self.f1_score = f1_m(yb, pred)
-                self.recall = recall_m(yb, pred)
-                self.balanced_acc = balanced_accuracy_score(yb, pred)
-                if i % 2000 == 1999: # print every 2000 mini-batches
-                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %self.accuracy, 'F1: %.4f' %self.f1_score, 'Recall: %.4f' %self.recall, 'Balanced Accuracy: %.4f' %self.balanced_acc)
-                tune.report(loss=running_loss, accuracy=self.accuracy)
-                running_loss = 0.0
-
-            torch.cuda.empty_cache()
-
-        print("Finished Training")
-
-        torch.save(self.state_dict(), "torch_cnn_model.pth")
+    torch.save(model.state_dict(), "torch_cnn_model.pth")
 
 class cnn:
 
     def __init__(self, load_model=True):
         self.load_model=load_model
         self.res = models.video.r3d_18(pretrained=False)
-        self.res.to(device)
 
     def main(self, X_train, y_train, num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         X_train = X_train.type(torch.int8)
@@ -129,7 +127,7 @@ class cnn:
         id_X_train = ray.put(X_train)
         id_y_train = ray.put(y_train)
 
-        self.model = torch_cnn(num_classes)
+        self.model = torch_cnn(num_classes, self.res)
         if torch.cuda.device_count() > 1:
             print("Using ", torch.cuda.device_count(), "gpus!")
             self.model = nn.DataParallel(self.model)
@@ -148,7 +146,7 @@ class cnn:
         )
         if torch.cuda.is_available():
             result = tune.run(
-                tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
+                tune.with_parameters(train_func, model=self.model, data=[id_X_train, id_y_train]),
                 resources_per_trial={"cpu":14, "gpu":gpus_per_trial},
                 config=config,
                 metric="loss",
@@ -158,7 +156,7 @@ class cnn:
             )
         else:
             result = tune.run(
-                tune.with_parameters(self.model.train_func, data=[id_X_train, id_y_train, self.res]),
+                tune.with_parameters(train_func, model=self.model, data=[id_X_train, id_y_train]),
                 resources_per_trial={"cpu":14},
                 config=config,
                 metric="loss",
@@ -173,8 +171,6 @@ class cnn:
             best_trial.last_result["loss"]))
         print("Best trial final validation accuracy: {}".format(
             best_trial.last_result['accuracy']))
-
-        self.model.train_func(config=best_trial.config)
 
         return self.model
 
