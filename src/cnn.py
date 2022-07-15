@@ -20,7 +20,6 @@ class torch_cnn(nn.Module):
     def __init__(self, num_classes):
         super(torch_cnn, self).__init__()
         self.num_classes = num_classes
-        self.to(device)
         self.res = None
         self.fc1 = nn.Linear(400, self.num_classes)
 
@@ -48,9 +47,6 @@ class torch_cnn(nn.Module):
 
                 xb = X_train[start_i:end_i]
                 yb = y_train[start_i:end_i]
-
-                xb = xb.to(device)
-                yb = yb.to(device)
 
                 xb = grey_to_rgb(xb)
                 xb = xb/255
@@ -127,10 +123,16 @@ class cnn:
         else:
             self.multi_target = False
 
+        X_train = X_train.to(device)
+        y_train = y_train.to(device)
+
         id_X_train = ray.put(X_train)
         id_y_train = ray.put(y_train)
 
         self.model = torch_cnn(num_classes)
+        self.model.to(device)
+
+        self.model = torch.nn.parallel.DistributedDataParallel(self.model)
 
         config = {
             'epochs':tune.choice([50, 100, 150]),

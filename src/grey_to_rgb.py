@@ -1,7 +1,5 @@
 import torch
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 def grey_to_rgb(img_array):
     width = img_array.shape[-3]
     height = img_array.shape[-2]
@@ -25,5 +23,5 @@ def grey_to_rgb(img_array):
 
         i = i + 1
     
-    return new_img_array.to(device)
+    return new_img_array
         
