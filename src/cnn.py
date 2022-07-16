@@ -79,18 +79,30 @@ def train_func(config, data):
             running_loss += loss.item()
 
             with torch.no_grad():
-                loss = running_loss
-                pred = model(X_val)
+
+                # train metrics
+                train_loss = running_loss
                 pred = torch.argmax(pred, axis=1)
                 pred = pred.cpu()
-                accuracy = accuracy_score(y_val, pred)
-                f1_score = f1_m(y_val, pred)
-                recall = recall_m(y_val, pred)
-                balanced_acc = balanced_accuracy_score(y_val, pred)
-                if i % 2000 == 1999: # print every 2000 mini-batches
-                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %accuracy, 'F1: %.4f' %f1_score, 'Recall: %.4f' %recall, 'Balanced Accuracy: %.4f' %balanced_acc)
-                tune.report(loss=running_loss, accuracy=accuracy)
-            running_loss = 0.0
+                yb = yb.cpu()
+                train_acc = accuracy_score(yb, pred)
+                train_f1 = f1_m(yb, pred)
+                train_recall = recall_m(yb, pred)
+                train_balanced = balanced_accuracy_score(yb, pred)
+
+                # val metrics
+                pred = model(X_val)
+                val_loss = criterion(pred, y_val)
+                pred = torch.argmax(pred, axis=1)
+                pred = pred.cpu()
+                val_accuracy = accuracy_score(y_val, pred)
+                val_f1_score = f1_m(y_val, pred)
+                val_recall = recall_m(y_val, pred)
+                val_balanced = balanced_accuracy_score(yb, pred)
+
+                tune.report(loss=val_loss, accuracy=val_accuracy, b_acc=val_balanced)
+
+                running_loss = 0.0
 
         torch.cuda.empty_cache()
 
@@ -144,7 +156,7 @@ class cnn:
 
         config = {
             'epochs':tune.choice([50, 100, 150]),
-            'batch_size':tune.choice([1, 2, 3, 4]),
+            'batch_size':tune.choice([2, 4, 8, 16]),
             'lr':tune.loguniform(1e-4, 1e-1),
         }
         scheduler = ASHAScheduler(
@@ -157,7 +169,7 @@ class cnn:
                 tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train, id_X_val, id_y_val]),
                 resources_per_trial={"cpu":14, "gpu":gpus_per_trial},
                 config=config,
-                metric="loss",
+                metric="b_acc",
                 mode="min",
                 num_samples=num_samples,
                 scheduler=scheduler
@@ -167,7 +179,7 @@ class cnn:
                 tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train, id_X_val, id_y_val]),
                 resources_per_trial={"cpu":14},
                 config=config,
-                metric="loss",
+                metric="b_acc",
                 mode="min",
                 num_samples=num_samples,
                 scheduler=scheduler
@@ -179,6 +191,12 @@ class cnn:
             best_trial.last_result["loss"]))
         print("Best trial final validation accuracy: {}".format(
             best_trial.last_result['accuracy']))
+        print("Best trial final validation balanced accuracy: {}".format(
+            best_trial.last_result['b_acc']))
+        
+        self.model.train_func(config=best_trial.config, data=[id_X_train, id_y_train, self.res])
+
+        torch.save(self.model.state_dict(), "torch_image_only_model.pth")
 
         return self.model
 
