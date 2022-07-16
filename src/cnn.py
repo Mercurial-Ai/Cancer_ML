@@ -33,8 +33,12 @@ def train_func(config, data):
     model = data[0]
     id_X_train = data[1]
     id_y_train = data[2]
+    id_X_val = data[3]
+    id_y_val = data[4]
     X_train = ray.get(id_X_train)
     y_train = ray.get(id_y_train)
+    X_val = ray.get(id_X_val)
+    y_val = ray.get(id_y_val)
     epochs = config['epochs']
     batch_size = config['batch_size']
     lr = config['lr']
@@ -51,9 +55,13 @@ def train_func(config, data):
             xb = grey_to_rgb(xb).to(device)
             xb = xb/255
 
+            X_val = grey_to_rgb(X_val).to(device)
+            X_val = X_val/255
+
             yb = yb.to(device)
 
             xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
+            X_val = torch.reshape(X_val, (X_val.shape[0], X_val.shape[-1], X_val.shape[1], X_val.shape[2], X_val.shape[3]))
 
             pred = model(xb)
 
@@ -69,18 +77,19 @@ def train_func(config, data):
 
             # print stats
             running_loss += loss.item()
-            pred = pred.detach()
-            loss = running_loss
-            pred = torch.argmax(pred, axis=1)
-            yb = yb.cpu()
-            pred = pred.cpu()
-            accuracy = accuracy_score(yb, pred)
-            f1_score = f1_m(yb, pred)
-            recall = recall_m(yb, pred)
-            balanced_acc = balanced_accuracy_score(yb, pred)
-            if i % 2000 == 1999: # print every 2000 mini-batches
-                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %accuracy, 'F1: %.4f' %f1_score, 'Recall: %.4f' %recall, 'Balanced Accuracy: %.4f' %balanced_acc)
-            tune.report(loss=running_loss, accuracy=accuracy)
+
+            with torch.no_grad():
+                loss = running_loss
+                pred = model(X_val)
+                pred = torch.argmax(pred, axis=1)
+                pred = pred.cpu()
+                accuracy = accuracy_score(y_val, pred)
+                f1_score = f1_m(y_val, pred)
+                recall = recall_m(y_val, pred)
+                balanced_acc = balanced_accuracy_score(y_val, pred)
+                if i % 2000 == 1999: # print every 2000 mini-batches
+                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}', 'Accuracy: %.4f' %accuracy, 'F1: %.4f' %f1_score, 'Recall: %.4f' %recall, 'Balanced Accuracy: %.4f' %balanced_acc)
+                tune.report(loss=running_loss, accuracy=accuracy)
             running_loss = 0.0
 
         torch.cuda.empty_cache()
@@ -95,8 +104,9 @@ class cnn:
         self.load_model=load_model
         self.res = models.video.r3d_18(pretrained=False)
 
-    def main(self, X_train, y_train, num_samples=10, max_num_epochs=10, gpus_per_trial=2):
+    def main(self, X_train, y_train, X_val, y_val, num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         X_train = X_train.type(torch.int8)
+        X_val = X_val.type(torch.int8)
 
         # get number of classes in y
         y = []
@@ -113,18 +123,17 @@ class cnn:
             class_dict[y[i]] = i
 
         i = 0
-        for val in y_train:
+        for train, val in zip(y_train, y_val):
+            new_train = class_dict[int(train)]
             new_val = class_dict[int(val)]
-            y_train[i] = new_val
+            y_train[i] = new_train
+            y_val[i] = new_val
             i = i + 1
 
-        if len(y_train.shape) > 1:
-            self.multi_target = True
-        else:
-            self.multi_target = False
-
         id_X_train = ray.put(X_train)
+        id_X_val = ray.put(X_val)
         id_y_train = ray.put(y_train)
+        id_y_val = ray.put(y_val)
 
         self.model = torch_cnn(self.num_classes, self.res)
         if torch.cuda.device_count() > 1:
@@ -145,7 +154,7 @@ class cnn:
         )
         if torch.cuda.is_available():
             result = tune.run(
-                tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train]),
+                tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train, id_X_val, id_y_val]),
                 resources_per_trial={"cpu":14, "gpu":gpus_per_trial},
                 config=config,
                 metric="loss",
@@ -155,7 +164,7 @@ class cnn:
             )
         else:
             result = tune.run(
-                tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train]),
+                tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train, id_X_val, id_y_val]),
                 resources_per_trial={"cpu":14},
                 config=config,
                 metric="loss",
@@ -175,13 +184,9 @@ class cnn:
 
     def test_model(self, X_test, y_test):
         self.criterion = torch.nn.CrossEntropyLoss()
-        X_test = torch.unsqueeze(X_test, -1)
-        X_test = grey_to_rgb(X_test)/255
+        X_test = grey_to_rgb(X_test).to(device)/255
         # reshape to have 3 channels
         X_test = torch.reshape(X_test, (X_test.shape[0], X_test.shape[-1], X_test.shape[1], X_test.shape[2], X_test.shape[3]))
-        if type(X_test) == np.ndarray:
-            X_test = torch.from_numpy(X_test).type(torch.float)
-        y_test = torch.from_numpy(np.array(y_test))
         with torch.no_grad():
             y_pred = self.model(X_test)
             confusion_matrix(y_test, y_pred, save_name="image_only_c_mat_torch")
@@ -193,13 +198,13 @@ class cnn:
 
         return test_loss, accuracy, f1_score, recall, balanced_acc
 
-    def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=32):
+    def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None):
 
         if self.load_model:
             self.model = torch_cnn(self.num_classes, self.res)
             self.model.load_state_dict(torch.load("torch_cnn_model.pth"), strict=False)
         else:
-            self.model = self.main(X_train, y_train)
+            self.model = self.main(X_train, y_train, X_val, y_val)
 
         return self.model
         
