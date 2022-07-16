@@ -51,6 +51,8 @@ def train_func(config, data):
             xb = grey_to_rgb(xb).to(device)
             xb = xb/255
 
+            yb = yb.to(device)
+
             xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
 
             pred = model(xb)
