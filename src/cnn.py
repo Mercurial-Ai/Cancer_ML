@@ -53,8 +53,7 @@ def train_func(config, data):
 
             xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
 
-            net = torch.nn.DataParallel(model)
-            pred = net(xb)
+            pred = model(xb)
 
             optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
