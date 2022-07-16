@@ -29,9 +29,10 @@ class torch_cnn(nn.Module):
 
         return x
 
-def train_func(model, config, data):
-    id_X_train = data[0]
-    id_y_train = data[1]
+def train_func(config, data):
+    model = data[0]
+    id_X_train = data[1]
+    id_y_train = data[2]
     X_train = ray.get(id_X_train)
     y_train = ray.get(id_y_train)
     epochs = config['epochs']
@@ -146,7 +147,7 @@ class cnn:
         )
         if torch.cuda.is_available():
             result = tune.run(
-                tune.with_parameters(train_func, model=self.model, data=[id_X_train, id_y_train]),
+                tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train]),
                 resources_per_trial={"cpu":14, "gpu":gpus_per_trial},
                 config=config,
                 metric="loss",
@@ -156,7 +157,7 @@ class cnn:
             )
         else:
             result = tune.run(
-                tune.with_parameters(train_func, model=self.model, data=[id_X_train, id_y_train]),
+                tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train]),
                 resources_per_trial={"cpu":14},
                 config=config,
                 metric="loss",
