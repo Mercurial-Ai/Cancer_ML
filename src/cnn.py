@@ -165,7 +165,7 @@ class cnn:
 
         config = {
             'epochs':tune.choice([50, 100, 150]),
-            'batch_size':tune.choice([2, 4, 8, 16]),
+            'batch_size':tune.choice([2]),
             'lr':tune.loguniform(1e-4, 1e-1),
         }
         scheduler = ASHAScheduler(
