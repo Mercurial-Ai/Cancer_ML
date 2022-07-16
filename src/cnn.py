@@ -121,9 +121,6 @@ class cnn:
         else:
             self.multi_target = False
 
-        X_train = X_train.to(device)
-        y_train = y_train.to(device)
-
         id_X_train = ray.put(X_train)
         id_y_train = ray.put(y_train)
 
