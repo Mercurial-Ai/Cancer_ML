@@ -105,11 +105,11 @@ class cnn:
             y.append(i)
 
         y = list(set(y))
-        num_classes = len(y)
+        self.num_classes = len(y)
 
         # make classes start from 0
         class_dict = dict()
-        for i in range(num_classes):
+        for i in range(self.num_classes):
             class_dict[y[i]] = i
 
         i = 0
@@ -126,7 +126,7 @@ class cnn:
         id_X_train = ray.put(X_train)
         id_y_train = ray.put(y_train)
 
-        self.model = torch_cnn(num_classes, self.res)
+        self.model = torch_cnn(self.num_classes, self.res)
         if torch.cuda.device_count() > 1:
             print("Using ", torch.cuda.device_count(), "gpus!")
             self.model = nn.DataParallel(self.model)
@@ -196,8 +196,7 @@ class cnn:
     def get_model(self, X_train=None, y_train=None, X_val=None, y_val=None, epochs=10, batch_size=32):
 
         if self.load_model:
-            self.model = torch_cnn()
-            self.model.res = self.res
+            self.model = torch_cnn(self.num_classes, self.res)
             self.model.load_state_dict(torch.load("torch_cnn_model.pth"), strict=False)
         else:
             self.model = self.main(X_train, y_train)
