@@ -55,9 +55,6 @@ def train_func(config, data):
             xb = grey_to_rgb(xb).to(device)
             xb = xb/255
 
-            X_val = grey_to_rgb(X_val).to(device)
-            X_val = X_val/255
-
             yb = yb.to(device)
 
             xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
@@ -91,16 +88,28 @@ def train_func(config, data):
                 train_balanced = balanced_accuracy_score(yb, pred)
 
                 # val metrics
-                pred = model(X_val)
-                val_loss = criterion(pred, y_val)
-                pred = torch.argmax(pred, axis=1)
-                pred = pred.cpu()
-                val_accuracy = accuracy_score(y_val, pred)
-                val_f1_score = f1_m(y_val, pred)
-                val_recall = recall_m(y_val, pred)
-                val_balanced = balanced_accuracy_score(yb, pred)
+                # use batch size of 2 for validation
+                test_batch_size = 2
+                for i in range((X_val.shape[0]-1)//test_batch_size + 1):
+                    start_i = i*test_batch_size
+                    end_i = start_i+test_batch_size
 
-                tune.report(loss=val_loss, accuracy=val_accuracy, b_acc=val_balanced)
+                    xb_val = X_val[start_i:end_i]
+                    yb_val = y_val[start_i:end_i]
+
+                    xb_val = grey_to_rgb(xb_val)
+                    xb_val = xb_val/255
+
+                    pred = model(xb_val)
+                    val_loss = criterion(yb_val, pred)
+                    pred = torch.argmax(pred, axis=1)
+                    pred = pred.cpu()
+                    val_accuracy = accuracy_score(yb_val, pred)
+                    val_f1_score = f1_m(yb_val, pred)
+                    val_recall = recall_m(yb_val, pred)
+                    val_balanced = balanced_accuracy_score(yb_val, pred)
+
+                    tune.report(loss=val_loss, accuracy=val_accuracy, b_acc=val_balanced)
 
                 running_loss = 0.0
 
