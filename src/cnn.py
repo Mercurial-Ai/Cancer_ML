@@ -20,7 +20,7 @@ class torch_cnn(nn.Module):
     def __init__(self, num_classes, res):
         super(torch_cnn, self).__init__()
         self.num_classes = num_classes
-        self.res = res
+        self.res = res.to(device)
         self.fc1 = nn.Linear(400, self.num_classes)
 
     def forward(self, x):

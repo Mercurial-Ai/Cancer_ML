@@ -27,7 +27,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class image_clinical(nn.Module):
     def __init__(self, num_classes, res):
         super(image_clinical, self).__init__()
-        self.res = res
+        self.res = res.to(device)
         self.num_classes = num_classes
         self.relu = nn.ReLU()
         self.clinical_track()
