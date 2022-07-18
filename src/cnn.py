@@ -80,8 +80,6 @@ def train_func(config, data):
                 # train metrics
                 train_loss = running_loss
                 pred = torch.argmax(pred, axis=1)
-                pred = pred.cpu()
-                yb = yb.cpu()
                 train_acc = accuracy_score(yb, pred)
                 train_f1 = f1_m(yb, pred)
                 train_recall = recall_m(yb, pred)
@@ -103,7 +101,6 @@ def train_func(config, data):
                     pred = model(xb_val)
                     val_loss = criterion(yb_val, pred)
                     pred = torch.argmax(pred, axis=1)
-                    pred = pred.cpu()
                     val_accuracy = accuracy_score(yb_val, pred)
                     val_f1_score = f1_m(yb_val, pred)
                     val_recall = recall_m(yb_val, pred)

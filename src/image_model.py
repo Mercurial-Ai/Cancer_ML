@@ -59,14 +59,14 @@ class image_clinical(nn.Module):
 
 def train_func(config, data):
     model = data[0]
-    id_X_train_image = data[1][0]
-    id_X_train_clinical = data[1][1]
+    id_X_train = data[1]
     id_y_train = data[2]
     id_X_val_image = data[3][0]
     id_X_val_clinical = data[4][1]
     id_y_val = data[5]
-    X_train_image = ray.get(id_X_train_image)
-    X_train_clinical = ray.get(id_X_train_clinical)
+    X_train = ray.get(id_X_train)
+    X_train_image = X_train[0]
+    X_train_clinical = X_train[1]
     y_train = ray.get(id_y_train)
     X_val_image = ray.get(id_X_val_image)
     X_val_clinical = ray.get(id_X_val_clinical)
