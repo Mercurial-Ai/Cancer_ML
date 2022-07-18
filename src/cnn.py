@@ -33,12 +33,8 @@ def train_func(config, data):
     model = data[0]
     id_X_train = data[1]
     id_y_train = data[2]
-    id_X_val = data[3]
-    id_y_val = data[4]
     X_train = ray.get(id_X_train)
     y_train = ray.get(id_y_train)
-    X_val = ray.get(id_X_val)
-    y_val = ray.get(id_y_val)
     epochs = config['epochs']
     batch_size = config['batch_size']
     lr = config['lr']
@@ -58,7 +54,6 @@ def train_func(config, data):
             yb = yb.to(device)
 
             xb = torch.reshape(xb, (xb.shape[0], xb.shape[-1], xb.shape[1], xb.shape[2], xb.shape[3]))
-            X_val = torch.reshape(X_val, (X_val.shape[0], X_val.shape[-1], X_val.shape[1], X_val.shape[2], X_val.shape[3]))
 
             pred = model(xb)
 
@@ -75,40 +70,17 @@ def train_func(config, data):
             # print stats
             running_loss += loss.item()
 
-            with torch.no_grad():
+            # train metrics
+            train_loss = running_loss
+            pred = torch.argmax(pred, axis=1)
+            train_acc = accuracy_score(yb, pred)
+            train_f1 = f1_m(yb, pred)
+            train_recall = recall_m(yb, pred)
+            train_balanced = balanced_accuracy_score(yb, pred)
 
-                # train metrics
-                train_loss = running_loss
-                pred = torch.argmax(pred, axis=1)
-                train_acc = accuracy_score(yb, pred)
-                train_f1 = f1_m(yb, pred)
-                train_recall = recall_m(yb, pred)
-                train_balanced = balanced_accuracy_score(yb, pred)
+            tune.report(loss=train_loss, accuracy=train_acc, b_acc=train_balanced)
 
-                # val metrics
-                # use batch size of 2 for validation
-                test_batch_size = 2
-                for i in range((X_val.shape[0]-1)//test_batch_size + 1):
-                    start_i = i*test_batch_size
-                    end_i = start_i+test_batch_size
-
-                    xb_val = X_val[start_i:end_i]
-                    yb_val = y_val[start_i:end_i]
-
-                    xb_val = grey_to_rgb(xb_val)
-                    xb_val = xb_val/255
-
-                    pred = model(xb_val)
-                    val_loss = criterion(yb_val, pred)
-                    pred = torch.argmax(pred, axis=1)
-                    val_accuracy = accuracy_score(yb_val, pred)
-                    val_f1_score = f1_m(yb_val, pred)
-                    val_recall = recall_m(yb_val, pred)
-                    val_balanced = balanced_accuracy_score(yb_val, pred)
-
-                    tune.report(loss=val_loss, accuracy=val_accuracy, b_acc=val_balanced)
-
-                running_loss = 0.0
+            running_loss = 0.0
 
         torch.cuda.empty_cache()
 
@@ -149,9 +121,7 @@ class cnn:
             i = i + 1
 
         id_X_train = ray.put(X_train)
-        id_X_val = ray.put(X_val)
         id_y_train = ray.put(y_train)
-        id_y_val = ray.put(y_val)
 
         self.model = torch_cnn(self.num_classes, self.res)
         if torch.cuda.device_count() > 1:
@@ -172,7 +142,7 @@ class cnn:
         )
         if torch.cuda.is_available():
             result = tune.run(
-                tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train, id_X_val, id_y_val]),
+                tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train]),
                 resources_per_trial={"cpu":14, "gpu":gpus_per_trial},
                 config=config,
                 metric="b_acc",
@@ -182,7 +152,7 @@ class cnn:
             )
         else:
             result = tune.run(
-                tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train, id_X_val, id_y_val]),
+                tune.with_parameters(train_func, data=[self.model, id_X_train, id_y_train]),
                 resources_per_trial={"cpu":14},
                 config=config,
                 metric="b_acc",
