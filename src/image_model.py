@@ -61,15 +61,15 @@ def train_func(config, data):
     model = data[0]
     id_X_train = data[1]
     id_y_train = data[2]
-    id_X_val_image = data[3][0]
-    id_X_val_clinical = data[4][1]
-    id_y_val = data[5]
+    id_X_val = data[3]
+    id_y_val = data[4]
     X_train = ray.get(id_X_train)
     X_train_image = X_train[0]
     X_train_clinical = X_train[1]
     y_train = ray.get(id_y_train)
-    X_val_image = ray.get(id_X_val_image)
-    X_val_clinical = ray.get(id_X_val_clinical)
+    X_val = ray.get(id_X_val)
+    X_val_image = X_val[0]
+    X_val_clinical = X_val[1]
     y_val = ray.get(id_y_val)
     epochs = config['epochs']
     batch_size = config['batch_size']
@@ -119,8 +119,6 @@ def train_func(config, data):
                 # train metrics
                 train_loss = running_loss
                 pred = torch.argmax(pred, axis=1)
-                pred = pred.cpu()
-                yb = yb.cpu()
                 train_acc = accuracy_score(yb, pred)
                 train_f1 = f1_m(yb, pred)
                 train_recall = recall_m(yb, pred)
@@ -130,7 +128,6 @@ def train_func(config, data):
                 pred = model(X_val_image, X_val_clinical)
                 val_loss = criterion(pred, y_val)
                 pred = torch.argmax(pred, axis=1)
-                pred = pred.cpu()
                 val_accuracy = accuracy_score(y_val, pred)
                 val_f1_score = f1_m(y_val, pred)
                 val_recall = recall_m(y_val, pred)
