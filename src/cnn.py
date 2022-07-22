@@ -93,10 +93,6 @@ class cnn:
     def __init__(self, load_model=True):
         self.load_model=load_model
         self.res = models.video.r3d_18(pretrained=False)
-        if torch.cuda.device_count() > 1:
-            self.res = nn.DataParallel(self.res)
-
-        self.res.to(device)
 
     def main(self, X_train, y_train, X_val, y_val, num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         X_train = X_train.type(torch.int8)
