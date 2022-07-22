@@ -73,6 +73,8 @@ def train_func(config, data):
             # train metrics
             train_loss = running_loss
             pred = torch.argmax(pred, axis=1)
+            yb = yb.cpu()
+            pred = pred.cpu()
             train_acc = accuracy_score(yb, pred)
             train_f1 = f1_m(yb, pred)
             train_recall = recall_m(yb, pred)
